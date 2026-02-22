@@ -1,0 +1,255 @@
+// =============================================================================
+// The Iron Compass — Minimal stylesheet
+// =============================================================================
+
+// -- Variables
+$bg:        #0f0f0f;
+$surface:   #161616;
+$border:    #2a2a2a;
+$muted:     #666;
+$body-text: #c9c9c9;
+$heading:   #f0f0f0;
+$accent:    #c8a96e;  // warm gold — stoic bronze
+$font-body: 'Georgia', 'Times New Roman', serif;
+$font-mono: 'Courier New', Courier, monospace;
+$max-width: 680px;
+
+// -- Reset
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+// -- Base
+html {
+  font-size: 18px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: $bg;
+  color: $body-text;
+  font-family: $font-body;
+  line-height: 1.75;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+a {
+  color: $accent;
+  text-decoration: none;
+  &:hover { text-decoration: underline; }
+}
+
+// -- Layout
+header, main, footer {
+  width: 100%;
+  max-width: $max-width;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+header {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid $border;
+}
+
+main {
+  flex: 1;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+footer {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+  border-top: 1px solid $border;
+  font-size: 0.85rem;
+  color: $muted;
+
+  a { color: $muted; &:hover { color: $accent; } }
+}
+
+// -- Nav
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+
+  .site-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: $heading;
+    letter-spacing: 0.02em;
+    &:hover { text-decoration: none; color: $accent; }
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.9rem;
+    color: $muted;
+
+    a { color: $muted; &:hover { color: $accent; } }
+  }
+}
+
+// -- Homepage
+.intro {
+  margin-bottom: 3rem;
+
+  .tagline {
+    color: $muted;
+    font-style: italic;
+    font-size: 0.95rem;
+  }
+}
+
+// -- Post list
+.posts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.post-item {
+  time {
+    display: block;
+    font-size: 0.8rem;
+    color: $muted;
+    font-family: $font-mono;
+    margin-bottom: 0.25rem;
+  }
+
+  h2 {
+    font-size: 1.2rem;
+    color: $heading;
+    margin-bottom: 0.4rem;
+
+    a { color: $heading; &:hover { color: $accent; text-decoration: none; } }
+  }
+
+  .excerpt {
+    font-size: 0.9rem;
+    color: $muted;
+  }
+}
+
+// -- Individual post
+.post {
+  .post-header {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid $border;
+
+    time {
+      display: block;
+      font-size: 0.8rem;
+      color: $muted;
+      font-family: $font-mono;
+      margin-bottom: 0.75rem;
+    }
+
+    h1 {
+      font-size: 1.9rem;
+      color: $heading;
+      line-height: 1.3;
+      margin-bottom: 0.75rem;
+    }
+
+    .post-description {
+      color: $muted;
+      font-style: italic;
+    }
+  }
+
+  .post-content {
+    h2, h3, h4 {
+      color: $heading;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    h2 { font-size: 1.4rem; }
+    h3 { font-size: 1.15rem; }
+
+    p { margin-bottom: 1.25rem; }
+
+    blockquote {
+      border-left: 3px solid $accent;
+      margin: 1.75rem 0;
+      padding: 0.5rem 0 0.5rem 1.25rem;
+      color: $body-text;
+      font-style: italic;
+
+      p { margin: 0; }
+    }
+
+    code {
+      font-family: $font-mono;
+      font-size: 0.85em;
+      background: $surface;
+      padding: 0.1em 0.4em;
+      border-radius: 3px;
+      color: $accent;
+    }
+
+    pre {
+      background: $surface;
+      border: 1px solid $border;
+      border-radius: 4px;
+      padding: 1.25rem;
+      overflow-x: auto;
+      margin-bottom: 1.25rem;
+
+      code {
+        background: none;
+        padding: 0;
+        color: $body-text;
+      }
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid $border;
+      margin: 2rem 0;
+    }
+
+    ul, ol {
+      padding-left: 1.5rem;
+      margin-bottom: 1.25rem;
+      li { margin-bottom: 0.3rem; }
+    }
+
+    a { border-bottom: 1px solid $border; &:hover { border-color: $accent; } }
+  }
+
+  .post-footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid $border;
+
+    .post-nav {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      gap: 1rem;
+
+      a { color: $muted; &:hover { color: $accent; } }
+      .nav-next { margin-left: auto; }
+    }
+  }
+}
+
+// -- Headings on section pages
+h1 {
+  color: $heading;
+  font-size: 1.6rem;
+  margin-bottom: 2rem;
+}
+
+// -- Responsive
+@media (max-width: 480px) {
+  html { font-size: 16px; }
+  .post .post-header h1 { font-size: 1.5rem; }
+}

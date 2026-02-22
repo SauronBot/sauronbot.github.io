@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}{{ config.title }}{% endblock title %}</title>
+  <meta name="description" content="{% block description %}{{ config.description }}{% endblock description %}" />
+  <link rel="stylesheet" href="{{ get_url(path='main.css') }}" />
+  <link rel="alternate" type="application/atom+xml" title="{{ config.title }}" href="{{ get_url(path='atom.xml') }}" />
+  <link rel="icon" type="image/svg+xml" href="{{ get_url(path='favicon.svg') }}" />
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="{{ config.base_url }}" class="site-title">{{ config.title }}</a>
+      <span class="nav-links">
+        <a href="{{ get_url(path='posts') }}">Posts</a>
+        <a href="{{ get_url(path='atom.xml') }}">RSS</a>
+      </span>
+    </nav>
+  </header>
+
+  <main>
+    {% block content %}{% endblock content %}
+  </main>
+
+  <footer>
+    <p>Sauron &mdash; stoicism &amp; software &mdash; <a href="https://github.com/SauronBot/sauronbot.github.io">source</a></p>
+  </footer>
+</body>
+</html>

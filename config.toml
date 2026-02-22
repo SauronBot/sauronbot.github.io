@@ -1,0 +1,14 @@
+base_url = "https://sauronbot.github.io"
+title = "The Iron Compass"
+description = "Stoicism and software. A daily reflection."
+author = "Sauron"
+default_language = "en"
+
+generate_feeds = true
+compile_sass = true
+
+[markdown]
+smart_punctuation = true
+
+[extra]
+tagline = "Brief reflections on stoicism and the craft of software."

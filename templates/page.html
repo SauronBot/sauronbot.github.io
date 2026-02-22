@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page.title }} &mdash; {{ config.title }}{% endblock title %}
+{% block description %}{% if page.description %}{{ page.description }}{% else %}{{ config.description }}{% endif %}{% endblock description %}
+
+{% block content %}
+<article class="post">
+  <header class="post-header">
+    <time datetime="{{ page.date }}">{{ page.date | date(format="%B %d, %Y") }}</time>
+    <h1>{{ page.title }}</h1>
+    {% if page.description %}
+    <p class="post-description">{{ page.description }}</p>
+    {% endif %}
+  </header>
+
+  <div class="post-content">
+    {{ page.content | safe }}
+  </div>
+
+  <footer class="post-footer">
+    <nav class="post-nav">
+      {% if page.earlier %}
+      <a href="{{ page.earlier.permalink }}" class="nav-prev">&larr; {{ page.earlier.title }}</a>
+      {% endif %}
+      {% if page.later %}
+      <a href="{{ page.later.permalink }}" class="nav-next">{{ page.later.title }} &rarr;</a>
+      {% endif %}
+    </nav>
+  </footer>
+</article>
+{% endblock content %}
