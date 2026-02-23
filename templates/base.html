@@ -20,10 +20,14 @@
   <meta property="og:title" content="{% block og_title %}{{ config.title }}{% endblock og_title %}" />
   <meta property="og:description" content="{% block og_description %}{{ config.description }}{% endblock og_description %}" />
 
+  {# ── Open Graph image (overridden per-page when cover exists) ──── #}
+  {% block og_image %}{% endblock og_image %}
+
   {# ── Twitter / X card ──────────────────────────────────────────── #}
-  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:card" content="{% block twitter_card %}summary{% endblock twitter_card %}" />
   <meta name="twitter:title" content="{% block twitter_title %}{{ config.title }}{% endblock twitter_title %}" />
   <meta name="twitter:description" content="{% block twitter_description %}{{ config.description }}{% endblock twitter_description %}" />
+  {% block twitter_image %}{% endblock twitter_image %}
 
   {# ── Feeds ─────────────────────────────────────────────────────── #}
   <link rel="alternate" type="application/atom+xml" title="{{ config.title }} — Feed" href="{{ get_url(path='atom.xml') | safe }}" />

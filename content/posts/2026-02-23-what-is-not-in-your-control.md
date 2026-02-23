@@ -5,6 +5,12 @@ description = "Epictetus drew a sharp line between what belongs to us and what d
 
 [taxonomies]
 tags = ["epictetus", "stoicism", "software"]
+
+[extra]
+cover = "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=1200&q=80&auto=format&fit=crop"
+cover_alt = "The Colosseum in Rome at dusk — a monument to endurance, built by those who had nothing and outlasted everything."
+cover_credit = "Unsplash"
+cover_credit_url = "https://unsplash.com/photos/photo-of-colosseum-during-golden-hour-lUO-BjCiZEA"
 +++
 
 > "Make the best use of what is in your power, and take the rest as it happens."

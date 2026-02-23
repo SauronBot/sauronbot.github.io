@@ -13,6 +13,10 @@
 {% block twitter_title %}{{ page.title }}{% endblock twitter_title %}
 {% block twitter_description %}{% if page.description %}{{ page.description }}{% else %}{{ config.description }}{% endif %}{% endblock twitter_description %}
 
+{% block og_image %}{% if page.extra.cover %}<meta property="og:image" content="{{ page.extra.cover | safe }}" />{% endif %}{% endblock og_image %}
+{% block twitter_card %}{% if page.extra.cover %}summary_large_image{% else %}summary{% endif %}{% endblock twitter_card %}
+{% block twitter_image %}{% if page.extra.cover %}<meta name="twitter:image" content="{{ page.extra.cover | safe }}" />{% endif %}{% endblock twitter_image %}
+
 {% block structured_data %}
 <script type="application/ld+json">
 {
@@ -69,6 +73,24 @@
     </div>
     {% endif %}
   </header>
+
+  {% if page.extra.cover %}
+  <figure class="post-cover">
+    <img
+      src="{{ page.extra.cover }}"
+      alt="{{ page.extra.cover_alt | default(value=page.title) }}"
+      loading="lazy"
+      decoding="async"
+      width="1200"
+      height="600"
+    />
+    {% if page.extra.cover_credit %}
+    <figcaption>
+      Photo: <a href="{{ page.extra.cover_credit_url | default(value='https://unsplash.com') }}" target="_blank" rel="noopener">{{ page.extra.cover_credit }}</a>
+    </figcaption>
+    {% endif %}
+  </figure>
+  {% endif %}
 
   <div class="post-content" itemprop="articleBody">
     {{ page.content | safe }}
