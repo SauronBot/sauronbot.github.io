@@ -2,62 +2,116 @@
 // The Iron Compass — Minimal stylesheet
 // =============================================================================
 
-// -- Variables
-$bg:        #0f0f0f;
-$surface:   #161616;
-$border:    #2a2a2a;
-$muted:     #666;
-$body-text: #c9c9c9;
-$heading:   #f0f0f0;
-$accent:    #c8a96e;  // warm gold — stoic bronze
+// SCSS-only constants (not theme-dependent)
 $font-body: 'Georgia', 'Times New Roman', serif;
 $font-mono: 'Courier New', Courier, monospace;
 $max-width: 680px;
 
-// -- Reset
+// =============================================================================
+// Theme tokens — CSS custom properties
+// =============================================================================
+
+// Dark theme (default)
+:root {
+  --bg:           #0f0f0f;
+  --surface:      #161616;
+  --border:       #2a2a2a;
+  --muted:        #666666;
+  --body-text:    #c9c9c9;
+  --heading:      #f0f0f0;
+  --accent:       #c8a96e;
+  --accent-hover: #b08040;
+  --shadow:       rgba(0, 0, 0, 0.40);
+  --shadow-hover: rgba(0, 0, 0, 0.55);
+}
+
+// Light theme values
+@mixin light-tokens {
+  --bg:           #faf9f6;
+  --surface:      #f0ede8;
+  --border:       #ddd8d0;
+  --muted:        #888888;
+  --body-text:    #3a3530;
+  --heading:      #1a1510;
+  --accent:       #7a5c12;
+  --accent-hover: #5e4509;
+  --shadow:       rgba(0, 0, 0, 0.10);
+  --shadow-hover: rgba(0, 0, 0, 0.18);
+}
+
+// System preference: light
+@media (prefers-color-scheme: light) {
+  :root { @include light-tokens; }
+}
+
+// Explicit overrides via [data-theme]
+[data-theme="light"] { @include light-tokens; }
+
+[data-theme="dark"] {
+  --bg:           #0f0f0f;
+  --surface:      #161616;
+  --border:       #2a2a2a;
+  --muted:        #666666;
+  --body-text:    #c9c9c9;
+  --heading:      #f0f0f0;
+  --accent:       #c8a96e;
+  --accent-hover: #b08040;
+  --shadow:       rgba(0, 0, 0, 0.40);
+  --shadow-hover: rgba(0, 0, 0, 0.55);
+}
+
+// =============================================================================
+// Reset
+// =============================================================================
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-// -- Skip link (accessibility + crawlability)
+// =============================================================================
+// Skip link
+// =============================================================================
 .skip-link {
   position: absolute;
   top: -100%;
   left: 1rem;
-  background: $accent;
-  color: $bg;
+  background: var(--accent);
+  color: var(--bg);
   padding: 0.5rem 1rem;
   font-family: $font-mono;
   font-size: 0.85rem;
   border-radius: 0 0 4px 4px;
   z-index: 9999;
   text-decoration: none;
-
   &:focus { top: 0; }
 }
 
-// -- Base
+// =============================================================================
+// Base
+// =============================================================================
 html {
-  // Font scale is handled by clamp() in the responsive section below
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  color-scheme: light dark;
 }
 
 body {
-  background: $bg;
-  color: $body-text;
+  background: var(--bg);
+  color: var(--body-text);
   font-family: $font-body;
   line-height: 1.75;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 a {
-  color: $accent;
+  color: var(--accent);
   text-decoration: none;
   &:hover { text-decoration: underline; }
 }
 
-// -- Layout
+// =============================================================================
+// Layout
+// =============================================================================
 header, main, footer {
   width: 100%;
   max-width: $max-width;
@@ -68,7 +122,7 @@ header, main, footer {
 header {
   padding-top: 2rem;
   padding-bottom: 2rem;
-  border-bottom: 1px solid $border;
+  border-bottom: 1px solid var(--border);
 }
 
 main {
@@ -80,88 +134,107 @@ main {
 footer {
   padding-top: 2rem;
   padding-bottom: 2rem;
-  border-top: 1px solid $border;
+  border-top: 1px solid var(--border);
   font-size: 0.85rem;
-  color: $muted;
-
-  a { color: $muted; &:hover { color: $accent; } }
+  color: var(--muted);
+  a { color: var(--muted); &:hover { color: var(--accent); } }
 }
 
-// -- Nav
+// =============================================================================
+// Nav
+// =============================================================================
 nav {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   gap: 1rem;
 
   .site-title {
     font-size: 1.1rem;
     font-weight: bold;
-    color: $heading;
+    color: var(--heading);
     letter-spacing: 0.02em;
-    &:hover { text-decoration: none; color: $accent; }
+    &:hover { text-decoration: none; color: var(--accent); }
   }
 
   .nav-links {
     display: flex;
-    gap: 1.5rem;
+    align-items: center;
+    gap: 1.25rem;
     font-size: 0.9rem;
-    color: $muted;
-
-    a { color: $muted; &:hover { color: $accent; } }
+    a { color: var(--muted); &:hover { color: var(--accent); } }
   }
 }
 
-// -- Homepage
+// Theme toggle button
+.theme-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.2em 0.55em;
+  line-height: 1;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+}
+
+// =============================================================================
+// Homepage
+// =============================================================================
 .intro {
   margin-bottom: 1.75rem;
-
   .tagline {
-    color: $muted;
+    color: var(--muted);
     font-style: italic;
     font-size: 0.9rem;
   }
 }
 
-// -- Post meta (date + reading time)
+// =============================================================================
+// Post meta
+// =============================================================================
 .post-meta {
   display: flex;
   align-items: center;
   gap: 0.4rem;
   font-size: 0.8rem;
-  color: $muted;
+  color: var(--muted);
   font-family: $font-mono;
   margin-bottom: 0.3rem;
-
-  .sep { color: $border; }
+  .sep { color: var(--border); }
 }
 
-// -- Tags
+// =============================================================================
+// Tags
+// =============================================================================
 .tags {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
-  margin-top: 0.6rem;
+  margin-top: 0.5rem;
 
   .tag {
     font-size: 0.75rem;
     font-family: $font-mono;
-    color: $muted;
-    border: 1px solid $border;
+    color: var(--muted);
+    border: 1px solid var(--border);
     border-radius: 3px;
     padding: 0.1em 0.5em;
     transition: color 0.15s, border-color 0.15s;
 
     &:hover {
-      color: $accent;
-      border-color: $accent;
+      color: var(--accent);
+      border-color: var(--accent);
       text-decoration: none;
     }
 
-    .tag-count {
-      color: $border;
-      margin-left: 0.2em;
-    }
+    .tag-count { color: var(--border); margin-left: 0.2em; }
   }
 
   &.tags-list {
@@ -170,29 +243,29 @@ nav {
   }
 }
 
-// -- Post list
+// =============================================================================
+// Post list
+// =============================================================================
 .posts-list {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
-// -- Post card
 .post-card {
   display: flex;
   align-items: stretch;
   border-radius: 10px;
-  border: 1px solid $border;
-  background: $surface;
+  border: 1px solid var(--border);
+  background: var(--surface);
   overflow: hidden;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 
   &:hover {
-    border-color: darken($accent, 10%);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+    border-color: var(--accent-hover);
+    box-shadow: 0 4px 16px var(--shadow);
   }
 
-  // Thumbnail link (image only, no text colour)
   &__thumbnail {
     flex-shrink: 0;
     width: 130px;
@@ -210,7 +283,6 @@ nav {
     &:hover img { opacity: 0.88; }
   }
 
-  // Content area
   &__content {
     flex: 1;
     min-width: 0;
@@ -220,7 +292,6 @@ nav {
     gap: 0.3rem;
   }
 
-  // Title link — heading colour, not accent
   &__title {
     font-size: 1.05rem;
     font-weight: bold;
@@ -228,23 +299,18 @@ nav {
     margin: 0;
 
     a {
-      color: $heading;
+      color: var(--heading);
       text-decoration: none;
       border: none;
-
-      &:hover {
-        color: $accent;
-        text-decoration: none;
-      }
+      &:hover { color: var(--accent); text-decoration: none; }
     }
   }
 
   &__summary {
     font-size: 0.82rem;
-    color: $muted;
+    color: var(--muted);
     line-height: 1.5;
     margin: 0;
-    // Clamp to 2 lines to keep cards compact
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -252,84 +318,66 @@ nav {
   }
 }
 
-.all-posts {
-  margin-top: 0.5rem;
-  font-size: 0.9rem;
-}
+.all-posts { margin-top: 0.5rem; font-size: 0.9rem; }
 
-// -- Individual post
+// =============================================================================
+// Individual post
+// =============================================================================
 .post {
   .post-header {
     margin-bottom: 2.5rem;
     padding-bottom: 1.5rem;
-    border-bottom: 1px solid $border;
+    border-bottom: 1px solid var(--border);
 
     .post-meta { margin-bottom: 0.75rem; }
 
     h1 {
       font-size: 1.9rem;
-      color: $heading;
+      color: var(--heading);
       line-height: 1.3;
       margin-bottom: 0.75rem;
     }
 
-    .post-description {
-      color: $muted;
-      font-style: italic;
-    }
+    .post-description { color: var(--muted); font-style: italic; }
   }
 
   .post-content {
-    h2, h3, h4 {
-      color: $heading;
-      margin-top: 2rem;
-      margin-bottom: 0.75rem;
-    }
-
+    h2, h3, h4 { color: var(--heading); margin-top: 2rem; margin-bottom: 0.75rem; }
     h2 { font-size: 1.4rem; }
     h3 { font-size: 1.15rem; }
 
     p { margin-bottom: 1.25rem; }
 
     blockquote {
-      border-left: 3px solid $accent;
+      border-left: 3px solid var(--accent);
       margin: 1.75rem 0;
       padding: 0.5rem 0 0.5rem 1.25rem;
-      color: $body-text;
+      color: var(--body-text);
       font-style: italic;
-
       p { margin: 0; }
     }
 
     code {
       font-family: $font-mono;
       font-size: 0.85em;
-      background: $surface;
+      background: var(--surface);
       padding: 0.1em 0.4em;
       border-radius: 3px;
-      color: $accent;
+      color: var(--accent);
     }
 
     pre {
-      background: $surface;
-      border: 1px solid $border;
+      background: var(--surface);
+      border: 1px solid var(--border);
       border-radius: 4px;
       padding: 1.25rem;
       overflow-x: auto;
       margin-bottom: 1.25rem;
 
-      code {
-        background: none;
-        padding: 0;
-        color: $body-text;
-      }
+      code { background: none; padding: 0; color: var(--body-text); }
     }
 
-    hr {
-      border: none;
-      border-top: 1px solid $border;
-      margin: 2rem 0;
-    }
+    hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
 
     ul, ol {
       padding-left: 1.5rem;
@@ -337,16 +385,10 @@ nav {
       li { margin-bottom: 0.3rem; }
     }
 
-    a { border-bottom: 1px solid $border; &:hover { border-color: $accent; } }
+    a { border-bottom: 1px solid var(--border); &:hover { border-color: var(--accent); } }
 
-    // Responsive media
-    img, video, iframe {
-      max-width: 100%;
-      height: auto;
-      border-radius: 4px;
-    }
+    img, video, iframe { max-width: 100%; height: auto; border-radius: 4px; }
 
-    // Prevent tables from breaking layout
     table {
       width: 100%;
       border-collapse: collapse;
@@ -354,20 +396,15 @@ nav {
       overflow-x: auto;
       display: block;
 
-      th, td {
-        padding: 0.5rem 0.75rem;
-        border: 1px solid $border;
-        text-align: left;
-      }
-
-      th { color: $heading; background: $surface; }
+      th, td { padding: 0.5rem 0.75rem; border: 1px solid var(--border); text-align: left; }
+      th { color: var(--heading); background: var(--surface); }
     }
   }
 
   .post-footer {
     margin-top: 3rem;
     padding-top: 1.5rem;
-    border-top: 1px solid $border;
+    border-top: 1px solid var(--border);
 
     .post-nav {
       display: flex;
@@ -375,36 +412,15 @@ nav {
       font-size: 0.9rem;
       gap: 1rem;
 
-      a { color: $muted; &:hover { color: $accent; } }
+      a { color: var(--muted); &:hover { color: var(--accent); } }
       .nav-next { margin-left: auto; }
     }
   }
 }
 
-// -- About page
-.about {
-  h1 {
-    color: $heading;
-    font-size: 1.6rem;
-    margin-bottom: 2rem;
-  }
-
-  .about-content {
-    p { margin-bottom: 1.25rem; color: $body-text; line-height: 1.75; }
-    strong { color: $heading; }
-    a { border-bottom: 1px solid $border; &:hover { border-color: $accent; } }
-  }
-}
-
-// -- Headings on section pages
-h1 {
-  color: $heading;
-  font-size: 1.6rem;
-  margin-bottom: 2rem;
-}
-
-// -- Cover image (post page)
-// Contained, rounded, modest height — inspired by chemaclass.com
+// =============================================================================
+// Cover image
+// =============================================================================
 .post-cover {
   margin: 2rem 0;
   border-radius: 10px;
@@ -423,150 +439,92 @@ h1 {
     line-height: 1.4;
     font-size: 0.72rem;
     font-family: $font-mono;
-    color: $muted;
+    color: var(--muted);
     padding: 0.4rem 0.1rem 0;
     text-align: right;
 
     a {
-      color: $muted;
-      border-bottom: 1px solid $border;
-      &:hover { color: $accent; border-color: $accent; }
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      &:hover { color: var(--accent); border-color: var(--accent); }
     }
   }
 }
 
 // =============================================================================
-// Responsive — mobile-first breakpoints
-// xs: < 400px  |  sm: 400–639px  |  md: 640–767px  |  lg: 768px+
+// About page
 // =============================================================================
-
-// -- Fluid type scale (clamp base font 15px → 18px)
-html {
-  font-size: clamp(15px, 2.5vw, 18px);
+.about {
+  h1 { color: var(--heading); font-size: 1.6rem; margin-bottom: 2rem; }
+  .about-content {
+    p { margin-bottom: 1.25rem; color: var(--body-text); line-height: 1.75; }
+    strong { color: var(--heading); }
+    a { border-bottom: 1px solid var(--border); &:hover { border-color: var(--accent); } }
+  }
 }
 
-// -- xs: very small phones (< 400px)
+// =============================================================================
+// Section headings
+// =============================================================================
+h1 { color: var(--heading); font-size: 1.6rem; margin-bottom: 2rem; }
+
+// =============================================================================
+// Responsive
+// =============================================================================
+html { font-size: clamp(15px, 2.5vw, 18px); }
+
+// xs: < 400px
 @media (max-width: 399px) {
-  header, main, footer {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
+  header, main, footer { padding-left: 1rem; padding-right: 1rem; }
+  header { padding-top: 1.25rem; padding-bottom: 1.25rem; }
+  main { padding-top: 2rem; padding-bottom: 2rem; }
 
-  header {
-    padding-top: 1.25rem;
-    padding-bottom: 1.25rem;
-  }
-
-  main {
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-  }
-
-  nav {
-    flex-direction: column;
-    gap: 0.6rem;
-
-    .nav-links { gap: 1rem; }
-  }
+  nav { flex-direction: column; gap: 0.6rem; .nav-links { gap: 0.85rem; } }
 
   .intro { margin-bottom: 2rem; }
 
-  // Stack card on very small phones
-  .post-card {
-    flex-direction: column;
-  }
-
-  .post-card__thumbnail {
-    width: 100%;
-    height: 130px;
-  }
-
+  .post-card { flex-direction: column; }
+  .post-card__thumbnail { width: 100%; height: 130px; }
   .post-card__title { font-size: 0.95rem; }
 
   .post {
-    .post-header {
-      margin-bottom: 1.75rem;
-      padding-bottom: 1.25rem;
-
-      h1 { font-size: 1.4rem; }
-    }
-
+    .post-header { margin-bottom: 1.75rem; padding-bottom: 1.25rem; h1 { font-size: 1.4rem; } }
     .post-content {
-      blockquote {
-        padding-left: 0.85rem;
-        margin: 1.25rem 0;
-      }
-
-      pre {
-        padding: 0.85rem;
-        font-size: 0.8rem;
-        // Force horizontal scroll — never break layout
-        max-width: calc(100vw - 2rem);
-      }
+      blockquote { padding-left: 0.85rem; margin: 1.25rem 0; }
+      pre { padding: 0.85rem; font-size: 0.8rem; max-width: calc(100vw - 2rem); }
     }
-
-    .post-footer .post-nav {
-      flex-direction: column;
-      gap: 0.75rem;
-
-      .nav-next { margin-left: 0; }
-    }
+    .post-footer .post-nav { flex-direction: column; gap: 0.75rem; .nav-next { margin-left: 0; } }
   }
 
   .tags.tags-list .tag { font-size: 0.85rem; }
 }
 
-// -- sm: phones (400–639px)
+// sm: 400–639px
 @media (min-width: 400px) and (max-width: 639px) {
-  header, main, footer {
-    padding-left: 1.25rem;
-    padding-right: 1.25rem;
-  }
+  header, main, footer { padding-left: 1.25rem; padding-right: 1.25rem; }
+  nav { flex-wrap: wrap; .nav-links { gap: 1rem; } }
 
-  nav {
-    flex-wrap: wrap;
-    .nav-links { gap: 1.1rem; }
-  }
-
-  // Cover: reduce max-height on phones
   .post-cover img { max-height: 200px; }
-
-  // Narrower thumbnail on phones — keep side-by-side
   .post-card__thumbnail { width: 100px; }
   .post-card__content { padding: 0.75rem 0.85rem; }
 
   .post {
     .post-header h1 { font-size: 1.6rem; }
-
-    .post-content pre {
-      max-width: calc(100vw - 2.5rem);
-    }
-
-    .post-footer .post-nav {
-      flex-direction: column;
-      gap: 0.75rem;
-
-      .nav-next { margin-left: 0; }
-    }
+    .post-content pre { max-width: calc(100vw - 2.5rem); }
+    .post-footer .post-nav { flex-direction: column; gap: 0.75rem; .nav-next { margin-left: 0; } }
   }
 }
 
-// -- md: large phones / small tablets (640–767px)
+// md: 640–767px
 @media (min-width: 640px) and (max-width: 767px) {
   .post .post-header h1 { font-size: 1.75rem; }
 }
 
-// -- lg+: anything above max-width gets centered (already handled by margin: auto)
-// Nothing needed — layout naturally centers at $max-width = 680px
-
-// -- Print: clean, no chrome
+// Print
 @media print {
   body { background: #fff; color: #000; }
   header, footer { display: none; }
   a { color: #000; text-decoration: underline; }
-  .post-content pre, .post-content code {
-    background: #f4f4f4;
-    color: #000;
-  }
-  .skip-link, .post-footer { display: none; }
+  .post-content pre, .post-content code { background: #f4f4f4; color: #000; }
+  .skip-link, .post-footer, .theme-toggle { display: none; }
 }

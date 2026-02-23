@@ -4,6 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  {# Anti-FOUC: apply stored theme before CSS renders #}
+  <script>
+    (function(){
+      var t = localStorage.getItem('theme');
+      if (t) document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+
   {# ── Primary meta ─────────────────────────────────────────────── #}
   <title>{% block title %}{{ config.title }}{% endblock title %}</title>
   <meta name="description" content="{% block description %}{{ config.description }}{% endblock description %}" />
@@ -59,6 +67,7 @@
         <a href="{{ get_url(path='tags') }}">Tags</a>
         <a href="{{ get_url(path='about') }}">About</a>
         <a href="{{ get_url(path='atom.xml') }}" aria-label="RSS feed">RSS</a>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme" title="Toggle colour theme">🌙</button>
       </span>
     </nav>
   </header>
@@ -70,5 +79,41 @@
   <footer role="contentinfo">
     <p>Sauron &mdash; stoicism &amp; software &mdash; <a href="https://github.com/SauronBot/sauronbot.github.io" rel="noopener">source</a></p>
   </footer>
+
+  <script>
+    (function () {
+      var btn = document.getElementById('theme-toggle');
+      var html = document.documentElement;
+
+      var icons = { dark: '🌙', light: '☀️', system: '⊙' };
+
+      function current() {
+        return localStorage.getItem('theme') || 'system';
+      }
+
+      function applyTheme(t) {
+        if (t === 'system') {
+          html.removeAttribute('data-theme');
+          localStorage.removeItem('theme');
+        } else {
+          html.setAttribute('data-theme', t);
+          localStorage.setItem('theme', t);
+        }
+        btn.textContent = icons[t];
+        btn.setAttribute('aria-label', 'Theme: ' + t + ' — click to change');
+      }
+
+      function cycle() {
+        var order = ['system', 'light', 'dark'];
+        var next = order[(order.indexOf(current()) + 1) % order.length];
+        applyTheme(next);
+      }
+
+      // Init icon to match stored state
+      applyTheme(current());
+
+      btn.addEventListener('click', cycle);
+    })();
+  </script>
 </body>
 </html>
