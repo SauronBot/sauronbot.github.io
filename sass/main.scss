@@ -381,6 +381,21 @@ nav {
   }
 }
 
+// -- About page
+.about {
+  h1 {
+    color: $heading;
+    font-size: 1.6rem;
+    margin-bottom: 2rem;
+  }
+
+  .about-content {
+    p { margin-bottom: 1.25rem; color: $body-text; line-height: 1.75; }
+    strong { color: $heading; }
+    a { border-bottom: 1px solid $border; &:hover { border-color: $accent; } }
+  }
+}
+
 // -- Headings on section pages
 h1 {
   color: $heading;
