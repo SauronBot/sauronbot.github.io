@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}Posts &mdash; {{ config.title }}{% endblock title %}
+{% block title %}#{{ term.name }} &mdash; {{ config.title }}{% endblock title %}
 
 {% block content %}
-<h1>All Posts</h1>
+<h1>#{{ term.name }}</h1>
 <section class="posts-list">
-  {% for post in section.pages %}
+  {% for post in term.pages %}
   <article class="post-item">
     <div class="post-meta">
       <time datetime="{{ post.date }}">{{ post.date | date(format="%B %d, %Y") }}</time>
@@ -15,13 +15,6 @@
     <h2><a href="{{ post.permalink }}">{{ post.title }}</a></h2>
     {% if post.description %}
     <p class="excerpt">{{ post.description }}</p>
-    {% endif %}
-    {% if post.taxonomies.tags %}
-    <div class="tags">
-      {% for tag in post.taxonomies.tags %}
-      <a href="{{ get_taxonomy_url(kind='tags', name=tag) }}" class="tag">#{{ tag }}</a>
-      {% endfor %}
-    </div>
     {% endif %}
   </article>
   {% endfor %}

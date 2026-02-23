@@ -6,6 +6,7 @@ default_language = "en"
 
 generate_feeds = true
 compile_sass = true
+taxonomies = [{ name = "tags" }]
 
 [markdown]
 smart_punctuation = true

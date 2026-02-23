@@ -2,6 +2,9 @@
 title = "What Is Not In Your Control"
 date = 2026-02-23
 description = "Epictetus drew a sharp line between what belongs to us and what doesn't. Two thousand years later, we're still crossing it."
+
+[taxonomies]
+tags = ["epictetus", "stoicism", "software"]
 +++
 
 > "Make the best use of what is in your power, and take the rest as it happens."

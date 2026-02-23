@@ -9,10 +9,21 @@
   {% set posts_section = get_section(path="posts/_index.md") %}
   {% for post in posts_section.pages | slice(end=10) %}
   <article class="post-item">
-    <time datetime="{{ post.date }}">{{ post.date | date(format="%B %d, %Y") }}</time>
+    <div class="post-meta">
+      <time datetime="{{ post.date }}">{{ post.date | date(format="%B %d, %Y") }}</time>
+      <span class="sep">&middot;</span>
+      <span class="reading-time">{{ post.reading_time }} min read</span>
+    </div>
     <h2><a href="{{ post.permalink }}">{{ post.title }}</a></h2>
     {% if post.description %}
     <p class="excerpt">{{ post.description }}</p>
+    {% endif %}
+    {% if post.taxonomies.tags %}
+    <div class="tags">
+      {% for tag in post.taxonomies.tags %}
+      <a href="{{ get_taxonomy_url(kind='tags', name=tag) }}" class="tag">#{{ tag }}</a>
+      {% endfor %}
+    </div>
     {% endif %}
   </article>
   {% endfor %}
