@@ -28,48 +28,17 @@
   "datePublished": "{{ page.date | date(format='%Y-%m-%d') }}",
   "dateModified": "{{ page.updated | default(value=page.date) | date(format='%Y-%m-%d') }}",
   {% if page.extra.cover %}"image": "{{ page.extra.cover | safe }}",{% endif %}
-  "author": {
-    "@type": "Person",
-    "name": "{{ config.author }}"
-  },
-  "publisher": {
-    "@type": "Organization",
-    "name": "{{ config.title }}",
-    "url": "{{ config.base_url | safe }}"
-  },
-  "mainEntityOfPage": {
-    "@type": "WebPage",
-    "@id": "{{ page.permalink | safe }}"
-  }
+  "author": { "@type": "Person", "name": "{{ config.author }}" },
+  "publisher": { "@type": "Organization", "name": "{{ config.title }}", "url": "{{ config.base_url | safe }}" },
+  "mainEntityOfPage": { "@type": "WebPage", "@id": "{{ page.permalink | safe }}" }
 }
 </script>
 {% endblock structured_data %}
 
 {# ── Content ───────────────────────────────────────────────────────── #}
 {% block content %}
-<article class="post {% if page.extra.cover %}has-cover{% endif %}" itemscope itemtype="https://schema.org/BlogPosting">
+<article class="post" itemscope itemtype="https://schema.org/BlogPosting">
   <meta itemprop="author" content="{{ config.author }}" />
-  <meta itemprop="datePublished" content="{{ page.date | date(format='%Y-%m-%d') }}" />
-
-  {# Cover — above everything, full-width #}
-  {% if page.extra.cover %}
-  <figure class="post-cover">
-    <img
-      src="{{ page.extra.cover | safe }}"
-      alt="{{ page.extra.cover_alt | default(value=page.title) }}"
-      loading="eager"
-      decoding="async"
-      width="1200"
-      height="600"
-      itemprop="image"
-    />
-    {% if page.extra.cover_credit %}
-    <figcaption>
-      Photo: <a href="{{ page.extra.cover_credit_url | default(value='https://unsplash.com') }}" target="_blank" rel="noopener noreferrer">{{ page.extra.cover_credit }}</a>
-    </figcaption>
-    {% endif %}
-  </figure>
-  {% endif %}
 
   <header class="post-header">
     <div class="post-meta">
@@ -94,6 +63,23 @@
     </div>
     {% endif %}
   </header>
+
+  {# Cover — after the header, before the body text #}
+  {% if page.extra.cover %}
+  <figure class="post-cover" itemprop="image">
+    <img
+      src="{{ page.extra.cover | safe }}"
+      alt="{{ page.extra.cover_alt | default(value=page.title) }}"
+      loading="eager"
+      decoding="async"
+    />
+    {% if page.extra.cover_credit %}
+    <figcaption>
+      Photo: <a href="{{ page.extra.cover_credit_url | default(value='https://unsplash.com') }}" target="_blank" rel="noopener noreferrer">{{ page.extra.cover_credit }}</a>
+    </figcaption>
+    {% endif %}
+  </figure>
+  {% endif %}
 
   <div class="post-content" itemprop="articleBody">
     {{ page.content | safe }}

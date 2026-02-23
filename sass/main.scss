@@ -324,25 +324,27 @@ h1 {
 }
 
 // -- Cover image (post page)
+// Contained, rounded, modest height — inspired by chemaclass.com
 .post-cover {
-  margin: 0 0 2.5rem;
-  line-height: 0; // collapse figure whitespace
+  margin: 2rem 0;
+  border-radius: 10px;
+  overflow: hidden;
+  line-height: 0;
 
   img {
     display: block;
     width: 100%;
-    // 2:1 on desktop — never grows beyond the content column
-    aspect-ratio: 2 / 1;
+    height: auto;
+    max-height: 260px;
     object-fit: cover;
-    border-radius: 6px;
   }
 
   figcaption {
-    font-size: 0.75rem;
+    line-height: 1.4;
+    font-size: 0.72rem;
     font-family: $font-mono;
     color: $muted;
-    padding: 0.4rem 0 0;
-    line-height: 1.4;
+    padding: 0.4rem 0.1rem 0;
     text-align: right;
 
     a {
@@ -351,34 +353,6 @@ h1 {
       &:hover { color: $accent; border-color: $accent; }
     }
   }
-}
-
-// -- Cover thumbnail (post list)
-.post-item.has-cover {
-  display: grid;
-  grid-template-columns: 140px 1fr;
-  gap: 1.25rem;
-  align-items: start;
-
-  .post-thumb {
-    display: block;
-    border-radius: 4px;
-    overflow: hidden;
-    aspect-ratio: 4 / 3;
-    flex-shrink: 0;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      transition: opacity 0.2s;
-    }
-
-    &:hover img { opacity: 0.85; }
-  }
-
-  .post-body { min-width: 0; } // prevent grid blowout
 }
 
 // =============================================================================
@@ -418,28 +392,6 @@ html {
   .intro { margin-bottom: 2rem; }
 
   .posts-list { gap: 2rem; }
-
-  // Stack thumbnail above text on tiny screens
-  .post-item.has-cover {
-    grid-template-columns: 1fr;
-
-    .post-thumb {
-      aspect-ratio: 16 / 7;
-    }
-  }
-
-  // Cover: full-bleed edge-to-edge + 16:9 on tiny screens
-  .post-cover {
-    margin-left: -1rem;
-    margin-right: -1rem;
-
-    img {
-      aspect-ratio: 16 / 9;
-      border-radius: 0;
-    }
-
-    figcaption { padding-left: 1rem; padding-right: 1rem; }
-  }
 
   .post-item h2 { font-size: 1.1rem; }
 
@@ -489,24 +441,8 @@ html {
     .nav-links { gap: 1.1rem; }
   }
 
-  // Smaller thumb on phones
-  .post-item.has-cover {
-    grid-template-columns: 100px 1fr;
-    gap: 0.85rem;
-  }
-
-  // Cover: full-bleed + 16:9 on phones
-  .post-cover {
-    margin-left: -1.25rem;
-    margin-right: -1.25rem;
-
-    img {
-      aspect-ratio: 16 / 9;
-      border-radius: 0;
-    }
-
-    figcaption { padding-left: 1.25rem; padding-right: 1.25rem; }
-  }
+  // Cover: reduce max-height on small phones
+  .post-cover img { max-height: 180px; }
 
   .post {
     .post-header h1 { font-size: 1.6rem; }
