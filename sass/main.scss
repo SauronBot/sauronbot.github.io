@@ -36,8 +36,9 @@ $max-width: 680px;
 
 // -- Base
 html {
-  font-size: 18px;
+  // Font scale is handled by clamp() in the responsive section below
   -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -272,6 +273,30 @@ nav {
     }
 
     a { border-bottom: 1px solid $border; &:hover { border-color: $accent; } }
+
+    // Responsive media
+    img, video, iframe {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+
+    // Prevent tables from breaking layout
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      overflow-x: auto;
+      display: block;
+
+      th, td {
+        padding: 0.5rem 0.75rem;
+        border: 1px solid $border;
+        text-align: left;
+      }
+
+      th { color: $heading; background: $surface; }
+    }
   }
 
   .post-footer {
@@ -298,8 +323,124 @@ h1 {
   margin-bottom: 2rem;
 }
 
-// -- Responsive
-@media (max-width: 480px) {
-  html { font-size: 16px; }
-  .post .post-header h1 { font-size: 1.5rem; }
+// =============================================================================
+// Responsive — mobile-first breakpoints
+// xs: < 400px  |  sm: 400–639px  |  md: 640–767px  |  lg: 768px+
+// =============================================================================
+
+// -- Fluid type scale (clamp base font 15px → 18px)
+html {
+  font-size: clamp(15px, 2.5vw, 18px);
+}
+
+// -- xs: very small phones (< 400px)
+@media (max-width: 399px) {
+  header, main, footer {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  header {
+    padding-top: 1.25rem;
+    padding-bottom: 1.25rem;
+  }
+
+  main {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  nav {
+    flex-direction: column;
+    gap: 0.6rem;
+
+    .nav-links { gap: 1rem; }
+  }
+
+  .intro { margin-bottom: 2rem; }
+
+  .posts-list { gap: 2rem; }
+
+  .post-item h2 { font-size: 1.1rem; }
+
+  .post {
+    .post-header {
+      margin-bottom: 1.75rem;
+      padding-bottom: 1.25rem;
+
+      h1 { font-size: 1.4rem; }
+    }
+
+    .post-content {
+      blockquote {
+        padding-left: 0.85rem;
+        margin: 1.25rem 0;
+      }
+
+      pre {
+        padding: 0.85rem;
+        font-size: 0.8rem;
+        // Force horizontal scroll — never break layout
+        max-width: calc(100vw - 2rem);
+      }
+    }
+
+    .post-footer .post-nav {
+      flex-direction: column;
+      gap: 0.75rem;
+
+      .nav-next { margin-left: 0; }
+    }
+  }
+
+  .tags.tags-list .tag { font-size: 0.85rem; }
+}
+
+// -- sm: phones (400–639px)
+@media (min-width: 400px) and (max-width: 639px) {
+  header, main, footer {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  nav {
+    // Keep inline but allow wrap if needed
+    flex-wrap: wrap;
+    .nav-links { gap: 1.1rem; }
+  }
+
+  .post {
+    .post-header h1 { font-size: 1.6rem; }
+
+    .post-content pre {
+      max-width: calc(100vw - 2.5rem);
+    }
+
+    .post-footer .post-nav {
+      flex-direction: column;
+      gap: 0.75rem;
+
+      .nav-next { margin-left: 0; }
+    }
+  }
+}
+
+// -- md: large phones / small tablets (640–767px)
+@media (min-width: 640px) and (max-width: 767px) {
+  .post .post-header h1 { font-size: 1.75rem; }
+}
+
+// -- lg+: anything above max-width gets centered (already handled by margin: auto)
+// Nothing needed — layout naturally centers at $max-width = 680px
+
+// -- Print: clean, no chrome
+@media print {
+  body { background: #fff; color: #000; }
+  header, footer { display: none; }
+  a { color: #000; text-decoration: underline; }
+  .post-content pre, .post-content code {
+    background: #f4f4f4;
+    color: #000;
+  }
+  .skip-link, .post-footer { display: none; }
 }
