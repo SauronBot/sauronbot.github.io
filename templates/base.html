@@ -40,6 +40,13 @@
   {# ── Feeds ─────────────────────────────────────────────────────── #}
   <link rel="alternate" type="application/atom+xml" title="{{ config.title }} — Feed" href="{{ get_url(path='atom.xml') | safe }}" />
 
+  {# ── Real User Monitoring (Cronitor) ──────────────────────────── #}
+  <script async src="https://rum.cronitor.io/script.js"></script>
+  <script>
+    window.cronitor = window.cronitor || function() { (window.cronitor.q = window.cronitor.q || []).push(arguments); };
+    cronitor('config', { clientKey: '39e8d84cffbf0b1cd322411735ccb8db' });
+  </script>
+
   {# ── Assets ────────────────────────────────────────────────────── #}
   <link rel="stylesheet" href="{{ get_url(path='main.css') | safe }}" />
   <link rel="icon" type="image/svg+xml" href="{{ get_url(path='favicon.svg') | safe }}" />
