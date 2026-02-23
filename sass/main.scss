@@ -174,21 +174,72 @@ nav {
 .posts-list {
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: 1rem;
 }
 
-.post-item {
-  h2 {
-    font-size: 1.2rem;
-    color: $heading;
-    margin-bottom: 0.4rem;
+// -- Post card (list item — inspired by chemaclass.com)
+.post-card {
+  border-radius: 12px;
+  border: 1px solid $border;
+  background: $surface;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.15s ease;
 
-    a { color: $heading; &:hover { color: $accent; text-decoration: none; } }
+  &:hover {
+    transform: translateY(-2px);
+    border-color: $accent;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
   }
 
-  .excerpt {
-    font-size: 0.9rem;
+  &__link {
+    display: block;
+    padding: 1.25rem 1.5rem;
+    text-decoration: none;
+    color: inherit;
+
+    // When card has thumbnail: side-by-side layout
+    .has-thumbnail & {
+      display: flex;
+      gap: 0;
+      padding: 0;
+    }
+  }
+
+  &__thumbnail {
+    flex-shrink: 0;
+    width: 160px;
+    min-height: 140px;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+
+    .has-thumbnail & {
+      padding: 1.1rem 1.25rem;
+    }
+  }
+
+  &__title {
+    font-size: 1.15rem;
+    font-weight: bold;
+    color: $heading;
+    margin: 0.3rem 0 0.3rem;
+    line-height: 1.35;
+  }
+
+  &__summary {
+    font-size: 0.88rem;
     color: $muted;
+    margin: 0.3rem 0 0;
+    line-height: 1.55;
   }
 }
 
@@ -391,9 +442,20 @@ html {
 
   .intro { margin-bottom: 2rem; }
 
-  .posts-list { gap: 2rem; }
+  .posts-list { gap: 0.75rem; }
 
-  .post-item h2 { font-size: 1.1rem; }
+  // Stack card thumbnail above content on tiny phones
+  .post-card.has-thumbnail .post-card__link {
+    flex-direction: column;
+  }
+
+  .post-card__thumbnail {
+    width: 100%;
+    min-height: auto;
+    height: 140px;
+  }
+
+  .post-card__title { font-size: 1rem; }
 
   .post {
     .post-header {
@@ -436,13 +498,23 @@ html {
   }
 
   nav {
-    // Keep inline but allow wrap if needed
     flex-wrap: wrap;
     .nav-links { gap: 1.1rem; }
   }
 
-  // Cover: reduce max-height on small phones
-  .post-cover img { max-height: 180px; }
+  // Cover: reduce max-height on phones
+  .post-cover img { max-height: 200px; }
+
+  // Stack thumbnail on phones too
+  .post-card.has-thumbnail .post-card__link {
+    flex-direction: column;
+  }
+
+  .post-card__thumbnail {
+    width: 100%;
+    min-height: auto;
+    height: 160px;
+  }
 
   .post {
     .post-header h1 { font-size: 1.6rem; }
