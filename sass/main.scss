@@ -17,6 +17,23 @@ $max-width: 680px;
 // -- Reset
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+// -- Skip link (accessibility + crawlability)
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 1rem;
+  background: $accent;
+  color: $bg;
+  padding: 0.5rem 1rem;
+  font-family: $font-mono;
+  font-size: 0.85rem;
+  border-radius: 0 0 4px 4px;
+  z-index: 9999;
+  text-decoration: none;
+
+  &:focus { top: 0; }
+}
+
 // -- Base
 html {
   font-size: 18px;

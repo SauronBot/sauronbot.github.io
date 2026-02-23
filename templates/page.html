@@ -1,43 +1,86 @@
 {% extends "base.html" %}
 
+{# ── SEO blocks ────────────────────────────────────────────────────── #}
 {% block title %}{{ page.title }} &mdash; {{ config.title }}{% endblock title %}
 {% block description %}{% if page.description %}{{ page.description }}{% else %}{{ config.description }}{% endif %}{% endblock description %}
+{% block canonical %}{{ page.permalink | safe }}{% endblock canonical %}
 
+{% block og_type %}article{% endblock og_type %}
+{% block og_url %}{{ page.permalink | safe }}{% endblock og_url %}
+{% block og_title %}{{ page.title }}{% endblock og_title %}
+{% block og_description %}{% if page.description %}{{ page.description }}{% else %}{{ config.description }}{% endif %}{% endblock og_description %}
+
+{% block twitter_title %}{{ page.title }}{% endblock twitter_title %}
+{% block twitter_description %}{% if page.description %}{{ page.description }}{% else %}{{ config.description }}{% endif %}{% endblock twitter_description %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": {{ page.title | json_encode | safe }},
+  "description": {{ page.description | default(value=config.description) | json_encode | safe }},
+  "url": "{{ page.permalink | safe }}",
+  "datePublished": "{{ page.date | date(format='%Y-%m-%d') }}",
+  "dateModified": "{{ page.updated | default(value=page.date) | date(format='%Y-%m-%d') }}",
+  "author": {
+    "@type": "Person",
+    "name": "{{ config.author }}"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "{{ config.title }}",
+    "url": "{{ config.base_url | safe }}"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "{{ page.permalink | safe }}"
+  }
+}
+</script>
+{% endblock structured_data %}
+
+{# ── Content ───────────────────────────────────────────────────────── #}
 {% block content %}
-<article class="post">
+<article class="post" itemscope itemtype="https://schema.org/BlogPosting">
+  <meta itemprop="author" content="{{ config.author }}" />
+  <meta itemprop="datePublished" content="{{ page.date | date(format='%Y-%m-%d') }}" />
+
   <header class="post-header">
     <div class="post-meta">
-      <time datetime="{{ page.date }}">{{ page.date | date(format="%B %d, %Y") }}</time>
+      <time datetime="{{ page.date | date(format='%Y-%m-%d') }}" itemprop="datePublished">
+        {{ page.date | date(format="%B %d, %Y") }}
+      </time>
       <span class="sep">&middot;</span>
       <span class="reading-time">{{ page.reading_time }} min read</span>
     </div>
 
-    <h1>{{ page.title }}</h1>
+    <h1 itemprop="headline">{{ page.title }}</h1>
 
     {% if page.description %}
-    <p class="post-description">{{ page.description }}</p>
+    <p class="post-description" itemprop="description">{{ page.description }}</p>
     {% endif %}
 
     {% if page.taxonomies.tags %}
-    <div class="tags">
+    <div class="tags" aria-label="Tags">
       {% for tag in page.taxonomies.tags %}
-      <a href="{{ get_taxonomy_url(kind='tags', name=tag) }}" class="tag">#{{ tag }}</a>
+      <a href="{{ get_taxonomy_url(kind='tags', name=tag) }}" class="tag" rel="tag">#{{ tag }}</a>
       {% endfor %}
     </div>
     {% endif %}
   </header>
 
-  <div class="post-content">
+  <div class="post-content" itemprop="articleBody">
     {{ page.content | safe }}
   </div>
 
   <footer class="post-footer">
-    <nav class="post-nav">
+    <nav class="post-nav" aria-label="Post navigation">
       {% if page.earlier %}
-      <a href="{{ page.earlier.permalink }}" class="nav-prev">&larr; {{ page.earlier.title }}</a>
+      <a href="{{ page.earlier.permalink }}" class="nav-prev" rel="prev">&larr; {{ page.earlier.title }}</a>
       {% endif %}
       {% if page.later %}
-      <a href="{{ page.later.permalink }}" class="nav-next">{{ page.later.title }} &rarr;</a>
+      <a href="{{ page.later.permalink }}" class="nav-next" rel="next">{{ page.later.title }} &rarr;</a>
       {% endif %}
     </nav>
   </footer>

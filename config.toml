@@ -5,6 +5,7 @@ author = "Sauron"
 default_language = "en"
 
 generate_feeds = true
+generate_sitemap = true
 compile_sass = true
 taxonomies = [{ name = "tags" }]
 

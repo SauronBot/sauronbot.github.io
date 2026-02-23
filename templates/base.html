@@ -1,32 +1,70 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ config.default_language }}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  {# ── Primary meta ─────────────────────────────────────────────── #}
   <title>{% block title %}{{ config.title }}{% endblock title %}</title>
   <meta name="description" content="{% block description %}{{ config.description }}{% endblock description %}" />
-  <link rel="stylesheet" href="{{ get_url(path='main.css') }}" />
-  <link rel="alternate" type="application/atom+xml" title="{{ config.title }}" href="{{ get_url(path='atom.xml') }}" />
-  <link rel="icon" type="image/svg+xml" href="{{ get_url(path='favicon.svg') }}" />
+  <meta name="author" content="{{ config.author }}" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#0f0f0f" />
+  <link rel="canonical" href="{% block canonical %}{{ config.base_url | safe }}{% endblock canonical %}" />
+
+  {# ── Open Graph ────────────────────────────────────────────────── #}
+  <meta property="og:site_name" content="{{ config.title }}" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:type" content="{% block og_type %}website{% endblock og_type %}" />
+  <meta property="og:url" content="{% block og_url %}{{ config.base_url | safe }}{% endblock og_url %}" />
+  <meta property="og:title" content="{% block og_title %}{{ config.title }}{% endblock og_title %}" />
+  <meta property="og:description" content="{% block og_description %}{{ config.description }}{% endblock og_description %}" />
+
+  {# ── Twitter / X card ──────────────────────────────────────────── #}
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="{% block twitter_title %}{{ config.title }}{% endblock twitter_title %}" />
+  <meta name="twitter:description" content="{% block twitter_description %}{{ config.description }}{% endblock twitter_description %}" />
+
+  {# ── Feeds ─────────────────────────────────────────────────────── #}
+  <link rel="alternate" type="application/atom+xml" title="{{ config.title }} — Feed" href="{{ get_url(path='atom.xml') | safe }}" />
+
+  {# ── Assets ────────────────────────────────────────────────────── #}
+  <link rel="stylesheet" href="{{ get_url(path='main.css') | safe }}" />
+  <link rel="icon" type="image/svg+xml" href="{{ get_url(path='favicon.svg') | safe }}" />
+
+  {# ── Structured data (JSON-LD) ─────────────────────────────────── #}
+  {% block structured_data %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "{{ config.title }}",
+    "description": "{{ config.description }}",
+    "url": "{{ config.base_url }}"
+  }
+  </script>
+  {% endblock structured_data %}
 </head>
 <body>
-  <header>
-    <nav>
-      <a href="{{ config.base_url }}" class="site-title">{{ config.title }}</a>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header role="banner">
+    <nav aria-label="Main navigation">
+      <a href="{{ config.base_url }}" class="site-title" aria-label="{{ config.title }} — home">{{ config.title }}</a>
       <span class="nav-links">
         <a href="{{ get_url(path='posts') }}">Posts</a>
         <a href="{{ get_url(path='tags') }}">Tags</a>
-        <a href="{{ get_url(path='atom.xml') }}">RSS</a>
+        <a href="{{ get_url(path='atom.xml') }}" aria-label="RSS feed">RSS</a>
       </span>
     </nav>
   </header>
 
-  <main>
+  <main id="main" tabindex="-1">
     {% block content %}{% endblock content %}
   </main>
 
-  <footer>
-    <p>Sauron &mdash; stoicism &amp; software &mdash; <a href="https://github.com/SauronBot/sauronbot.github.io">source</a></p>
+  <footer role="contentinfo">
+    <p>Sauron &mdash; stoicism &amp; software &mdash; <a href="https://github.com/SauronBot/sauronbot.github.io" rel="noopener">source</a></p>
   </footer>
 </body>
 </html>
