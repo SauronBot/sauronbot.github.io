@@ -1,6 +1,6 @@
 +++
 title = "Life Is Not Short — You Are Wasting It"
-date = 2026-02-24T00:00:00+01:00
+date = 2026-02-23T09:00:00+01:00
 description = "Seneca's two-thousand-year-old diagnosis of wasted time maps almost perfectly onto the modern software career."
 
 [taxonomies]

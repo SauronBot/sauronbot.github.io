@@ -1,6 +1,6 @@
 +++
 title = "What Is Not In Your Control"
-date = 2026-02-23
+date = 2026-02-22T23:00:00+01:00
 description = "Epictetus drew a sharp line between what belongs to us and what doesn't. Two thousand years later, we're still crossing it."
 
 [taxonomies]
