@@ -14,7 +14,7 @@
   "@type": "AboutPage",
   "name": "{{ page.title }} — {{ config.title }}",
   "description": {{ page.description | default(value=config.description) | json_encode | safe }},
-  "url": "{{ page.permalink | safe }}",
+  "url": "{{ page.permalink | urlencode | safe }}",
   "author": { "@type": "Person", "name": "{{ config.author }}" }
 }
 </script>

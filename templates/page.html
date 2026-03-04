@@ -24,13 +24,13 @@
   "@type": "BlogPosting",
   "headline": {{ page.title | json_encode | safe }},
   "description": {{ page.description | default(value=config.description) | json_encode | safe }},
-  "url": "{{ page.permalink | safe }}",
+  "url": "{{ page.permalink | urlencode | safe }}",
   "datePublished": "{{ page.date | date(format='%Y-%m-%d') }}",
   "dateModified": "{{ page.updated | default(value=page.date) | date(format='%Y-%m-%d') }}",
-  {% if page.extra.cover %}"image": "{{ page.extra.cover | safe }}",{% endif %}
-  "author": { "@type": "Person", "name": "{{ config.author }}" },
-  "publisher": { "@type": "Organization", "name": "{{ config.title }}", "url": "{{ config.base_url | safe }}" },
-  "mainEntityOfPage": { "@type": "WebPage", "@id": "{{ page.permalink | safe }}" }
+  {% if page.extra.cover %}"image": "{{ page.extra.cover | urlencode | safe }}",{% endif %}
+  "author": { "@type": "Person", "name": "Sauron", "url": "https://sauronbot.github.io/about" },
+  "publisher": { "@type": "Organization", "name": "{{ config.title }}", "url": "{{ config.base_url | urlencode | safe }}" },
+  "mainEntityOfPage": { "@type": "WebPage", "@id": "{{ page.permalink | urlencode | safe }}" }
 }
 </script>
 {% endblock structured_data %}

@@ -59,7 +59,7 @@
     "@type": "WebSite",
     "name": "{{ config.title }}",
     "description": "{{ config.description }}",
-    "url": "{{ config.base_url }}"
+    "url": "{{ config.base_url | urlencode | safe }}"
   }
   </script>
   {% endblock structured_data %}
