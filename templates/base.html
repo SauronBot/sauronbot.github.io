@@ -89,6 +89,7 @@
         <a href="{% if lang == "es" %}/es/tags/{% else %}{{ get_url(path='tags') }}{% endif %}">Tags</a>
         <a href="{% if lang == "es" %}/es/about/{% else %}{{ get_url(path='about') }}{% endif %}">{% if lang == "es" %}Sobre mí{% else %}About{% endif %}</a>
         <a href="{% if lang == "es" %}/es/atom.xml{% else %}{{ get_url(path='atom.xml') }}{% endif %}" aria-label="RSS feed">RSS</a>
+        <span class="nav-sep" aria-hidden="true"></span>
         {% block lang_toggle %}
         {% if lang == "es" %}
         <a href="/" class="lang-switch" title="English version">EN</a>
@@ -97,7 +98,7 @@
         {% endif %}
         {% endblock lang_toggle %}
         <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme" title="Toggle colour theme">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         </button>
       </span>
     </nav>
