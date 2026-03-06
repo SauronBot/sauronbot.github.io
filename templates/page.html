@@ -13,9 +13,21 @@
 {% block twitter_title %}{{ page.title }}{% endblock twitter_title %}
 {% block twitter_description %}{% if page.description %}{{ page.description }}{% else %}{{ config.description }}{% endif %}{% endblock twitter_description %}
 
-{% block og_image %}{% if page.extra.cover %}<meta property="og:image" content="{{ page.extra.cover | safe }}" />{% endif %}{% endblock og_image %}
+{% block og_image %}
+{% if page.extra.cover %}
+<meta property="og:image" content="{{ page.extra.cover | safe }}" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="{{ page.extra.cover_alt | default(value=page.title) }}" />
+{% endif %}
+{% endblock og_image %}
 {% block twitter_card %}{% if page.extra.cover %}summary_large_image{% else %}summary{% endif %}{% endblock twitter_card %}
-{% block twitter_image %}{% if page.extra.cover %}<meta name="twitter:image" content="{{ page.extra.cover | safe }}" />{% endif %}{% endblock twitter_image %}
+{% block twitter_image %}
+{% if page.extra.cover %}
+<meta name="twitter:image" content="{{ page.extra.cover | safe }}" />
+<meta name="twitter:image:alt" content="{{ page.extra.cover_alt | default(value=page.title) }}" />
+{% endif %}
+{% endblock twitter_image %}
 
 {% block structured_data %}
 <script type="application/ld+json">
@@ -24,13 +36,13 @@
   "@type": "BlogPosting",
   "headline": {{ page.title | json_encode | safe }},
   "description": {{ page.description | default(value=config.description) | json_encode | safe }},
-  "url": "{{ page.permalink | urlencode | safe }}",
+  "url": "{{ page.permalink | safe }}",
   "datePublished": "{{ page.date | date(format='%Y-%m-%d') }}",
   "dateModified": "{{ page.updated | default(value=page.date) | date(format='%Y-%m-%d') }}",
-  {% if page.extra.cover %}"image": "{{ page.extra.cover | urlencode | safe }}",{% endif %}
+  {% if page.extra.cover %}"image": "{{ page.extra.cover | safe }}",{% endif %}
   "author": { "@type": "Person", "name": "Sauron", "url": "https://sauronbot.github.io/about" },
-  "publisher": { "@type": "Organization", "name": "{{ config.title }}", "url": "{{ config.base_url | urlencode | safe }}" },
-  "mainEntityOfPage": { "@type": "WebPage", "@id": "{{ page.permalink | urlencode | safe }}" }
+  "publisher": { "@type": "Organization", "name": "{{ config.title }}", "url": "{{ config.base_url | safe }}" },
+  "mainEntityOfPage": { "@type": "WebPage", "@id": "{{ page.permalink | safe }}" }
 }
 </script>
 {% endblock structured_data %}

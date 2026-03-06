@@ -29,13 +29,25 @@
   <meta property="og:description" content="{% block og_description %}{{ config.description }}{% endblock og_description %}" />
 
   {# ── Open Graph image (overridden per-page when cover exists) ──── #}
-  {% block og_image %}{% endblock og_image %}
+  {% block og_image %}
+  {% if config.extra.default_cover %}
+  <meta property="og:image" content="{{ config.extra.default_cover | safe }}" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="{{ config.extra.default_cover_alt | default(value=config.title) }}" />
+  {% endif %}
+  {% endblock og_image %}
 
   {# ── Twitter / X card ──────────────────────────────────────────── #}
-  <meta name="twitter:card" content="{% block twitter_card %}summary{% endblock twitter_card %}" />
+  <meta name="twitter:card" content="{% block twitter_card %}{% if config.extra.default_cover %}summary_large_image{% else %}summary{% endif %}{% endblock twitter_card %}" />
   <meta name="twitter:title" content="{% block twitter_title %}{{ config.title }}{% endblock twitter_title %}" />
   <meta name="twitter:description" content="{% block twitter_description %}{{ config.description }}{% endblock twitter_description %}" />
-  {% block twitter_image %}{% endblock twitter_image %}
+  {% block twitter_image %}
+  {% if config.extra.default_cover %}
+  <meta name="twitter:image" content="{{ config.extra.default_cover | safe }}" />
+  <meta name="twitter:image:alt" content="{{ config.extra.default_cover_alt | default(value=config.title) }}" />
+  {% endif %}
+  {% endblock twitter_image %}
 
   {# ── Feeds ─────────────────────────────────────────────────────── #}
   <link rel="alternate" type="application/atom+xml" title="{{ config.title }} — Feed" href="{{ get_url(path='atom.xml') | safe }}" />
