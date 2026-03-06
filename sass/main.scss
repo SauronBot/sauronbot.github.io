@@ -150,10 +150,9 @@ nav {
   gap: 1rem;
 
   .site-title {
-    font-size: 1.05rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: var(--heading);
-    letter-spacing: 0.01em;
     text-decoration: none;
     &:hover { color: var(--accent); }
   }
@@ -161,55 +160,33 @@ nav {
   .nav-links {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 1.1rem;
+    font-size: 0.85rem;
 
-    // All nav items share the same base style
     a, button {
-      font-size: 0.82rem;
-      font-weight: 500;
       color: var(--muted);
       text-decoration: none;
-      padding: 0.35rem 0.6rem;
-      border-radius: 6px;
-      border: 1px solid transparent;
       background: none;
+      border: none;
       cursor: pointer;
+      padding: 0;
+      font: inherit;
+      font-size: inherit;
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      line-height: 1;
-      transition: color 0.15s, background-color 0.15s, border-color 0.15s;
-
-      &:hover {
-        color: var(--heading);
-        background-color: var(--border);
-      }
+      transition: color 0.15s;
+      &:hover { color: var(--accent); }
     }
   }
 }
 
-// Separator between text links and icon/toggle controls
-.nav-sep {
-  width: 1px;
-  height: 1rem;
-  background-color: var(--border);
-  margin: 0 0.15rem;
-  flex-shrink: 0;
-}
+.nav-sep { display: none; }
 
-// Language switch — pill style, slightly bolder than text links
-.lang-switch {
-  font-weight: 600 !important;
-  letter-spacing: 0.04em;
-  border-color: var(--border) !important;
-  &:hover { border-color: var(--accent) !important; color: var(--accent) !important; }
-}
+.lang-switch { font-weight: 600; letter-spacing: 0.03em; }
 
-// Theme toggle — icon-only, same dimensions as lang switch
 .theme-toggle {
-  svg { display: block; width: 14px; height: 14px; }
-  border-color: var(--border) !important;
-  &:hover { border-color: var(--accent) !important; color: var(--accent) !important; }
+  line-height: 1;
+  svg { display: block; width: 15px; height: 15px; }
 }
 
 // =============================================================================
@@ -507,8 +484,7 @@ html { font-size: clamp(15px, 2.5vw, 18px); }
   header { padding-top: 1.25rem; padding-bottom: 1.25rem; }
   main { padding-top: 2rem; padding-bottom: 2rem; }
 
-  nav { flex-direction: column; gap: 0.6rem; .nav-links { gap: 0.35rem; flex-wrap: wrap; justify-content: center; } }
-  .nav-sep { display: none; }
+  nav { flex-direction: column; gap: 0.6rem; .nav-links { gap: 0.85rem; flex-wrap: wrap; justify-content: center; } }
 
   .intro { margin-bottom: 2rem; }
 
@@ -531,7 +507,7 @@ html { font-size: clamp(15px, 2.5vw, 18px); }
 // sm: 400–639px
 @media (min-width: 400px) and (max-width: 639px) {
   header, main, footer { padding-left: 1.25rem; padding-right: 1.25rem; }
-  nav { flex-wrap: wrap; .nav-links { gap: 0.4rem; } }
+  nav { flex-wrap: wrap; .nav-links { gap: 1rem; } }
 
   .post-cover img { max-height: 200px; }
   .post-card__thumbnail { width: 100px; }
