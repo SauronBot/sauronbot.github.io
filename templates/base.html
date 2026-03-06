@@ -84,11 +84,11 @@
 
   <header role="banner">
     <nav aria-label="Main navigation">
-      <a href="{{ config.base_url }}" class="site-title" aria-label="{{ config.title }} — home">{{ config.title }}</a>
+      <a href="{% if lang == "es" %}{{ config.base_url | safe }}/es/{% else %}{{ config.base_url | safe }}{% endif %}" class="site-title" aria-label="{{ config.title }} — home">{{ config.title }}</a>
       <span class="nav-links">
-        <a href="{{ get_url(path='tags') }}">Tags</a>
-        <a href="{{ get_url(path='about') }}">{% if lang == "es" %}Sobre mí{% else %}About{% endif %}</a>
-        <a href="{{ get_url(path='atom.xml') }}" aria-label="RSS feed">RSS</a>
+        <a href="{% if lang == "es" %}/es/tags/{% else %}{{ get_url(path='tags') }}{% endif %}">Tags</a>
+        <a href="{% if lang == "es" %}/es/about/{% else %}{{ get_url(path='about') }}{% endif %}">{% if lang == "es" %}Sobre mí{% else %}About{% endif %}</a>
+        <a href="{% if lang == "es" %}/es/atom.xml{% else %}{{ get_url(path='atom.xml') }}{% endif %}" aria-label="RSS feed">RSS</a>
         {% block lang_toggle %}
         {% if lang == "es" %}
         <a href="/" class="lang-switch" title="English version">EN</a>
