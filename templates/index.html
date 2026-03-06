@@ -52,7 +52,7 @@
       {% if post.taxonomies.tags %}
       <div class="tags">
         {% for tag in post.taxonomies.tags %}
-        <a href="{{ get_taxonomy_url(kind='tags', name=tag) }}" class="tag" rel="tag">#{{ tag }}</a>
+        <a href="{{ get_taxonomy_url(kind='tags', name=tag, lang=lang) }}" class="tag" rel="tag">#{{ tag }}</a>
         {% endfor %}
       </div>
       {% endif %}
