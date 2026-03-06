@@ -1,12 +1,30 @@
 {% extends "base.html" %}
 
+{% block lang_toggle %}
+{% if lang == "es" %}
+<a href="/" class="lang-switch" title="English version">EN</a>
+{% else %}
+<a href="/es/" class="lang-switch" title="Versión en español">ES</a>
+{% endif %}
+{% endblock lang_toggle %}
+
+{% block hreflang %}
+<link rel="alternate" hreflang="en" href="{{ config.base_url | safe }}/" />
+<link rel="alternate" hreflang="es" href="{{ config.base_url | safe }}/es/" />
+<link rel="alternate" hreflang="x-default" href="{{ config.base_url | safe }}/" />
+{% endblock hreflang %}
+
 {% block content %}
 <section class="intro">
-  <p class="tagline">{{ config.extra.tagline }}</p>
+  <p class="tagline">{% if lang == "es" %}{{ trans(key="tagline", lang="es") }}{% else %}{{ config.extra.tagline }}{% endif %}</p>
 </section>
 
 <section class="posts-list">
+  {% if lang == "es" %}
+  {% set posts_section = get_section(path="posts/_index.es.md") %}
+  {% else %}
   {% set posts_section = get_section(path="posts/_index.md") %}
+  {% endif %}
   {% for post in posts_section.pages | slice(end=10) %}
   <article class="post-card {% if post.extra.cover %}has-thumbnail{% endif %}">
     {% if post.extra.cover %}
