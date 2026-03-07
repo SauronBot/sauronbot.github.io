@@ -192,12 +192,52 @@ nav {
 // =============================================================================
 // Homepage
 // =============================================================================
-.intro {
-  margin-bottom: 1.75rem;
-  .tagline {
-    color: var(--muted);
-    font-style: italic;
+.hero {
+  margin-bottom: 2.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+
+  &__text {
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 0.75rem;
+      color: var(--heading);
+    }
+
+    p {
+      color: var(--body-text);
+      line-height: 1.7;
+      margin-bottom: 0.6rem;
+      font-size: 0.95rem;
+    }
+  }
+
+  &__link {
+    display: inline-block;
+    margin-top: 0.75rem;
     font-size: 0.9rem;
+    color: var(--accent);
+    &:hover { text-decoration: underline; }
+  }
+}
+
+.latest-posts {
+  h2 {
+    font-size: 1.15rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+  }
+}
+
+.all-posts {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  a {
+    color: var(--accent);
+    &:hover { text-decoration: underline; }
   }
 }
 

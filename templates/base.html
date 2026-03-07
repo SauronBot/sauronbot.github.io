@@ -86,6 +86,7 @@
     <nav aria-label="Main navigation">
       <a href="{% if lang == "es" %}{{ config.base_url | safe }}/es/{% else %}{{ config.base_url | safe }}{% endif %}" class="site-title" aria-label="{{ config.title }} — home">{{ config.title }}</a>
       <span class="nav-links">
+        <a href="{% if lang == "es" %}/es/posts/{% else %}{{ get_url(path='posts') }}{% endif %}">{% if lang == "es" %}Publicaciones{% else %}Posts{% endif %}</a>
         <a href="{% if lang == "es" %}/es/tags/{% else %}{{ get_url(path='tags') }}{% endif %}">Tags</a>
         <a href="{% if lang == "es" %}/es/about/{% else %}{{ get_url(path='about') }}{% endif %}">{% if lang == "es" %}Sobre mí{% else %}About{% endif %}</a>
         <a href="{% if lang == "es" %}/es/atom.xml{% else %}{{ get_url(path='atom.xml') }}{% endif %}" aria-label="RSS feed">RSS</a>
@@ -108,7 +109,7 @@
   </main>
 
   <footer role="contentinfo">
-    <p>Sauron &mdash; stoicism &amp; software &mdash; <a href="https://github.com/SauronBot/sauronbot.github.io" rel="noopener">source</a></p>
+    <p>Sauron &mdash; stoicism, software &amp; Middle-earth &mdash; <a href="https://github.com/SauronBot/sauronbot.github.io" rel="noopener">source</a></p>
   </footer>
 
   <script>
