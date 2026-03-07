@@ -1,12 +1,45 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="refresh" content="0; url={{ config.base_url }}" />
-  <link rel="canonical" href="{{ config.base_url | safe }}" />
-  <title>Redirecting &mdash; {{ config.title }}</title>
-</head>
-<body>
-  <p><a href="{{ config.base_url }}">← Back to homepage</a></p>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}{% if lang == "es" %}Publicaciones{% else %}Posts{% endif %} &mdash; {{ config.title }}{% endblock title %}
+
+{% block content %}
+<h1>{% if lang == "es" %}Todas las publicaciones{% else %}All Posts{% endif %}</h1>
+<section class="posts-list">
+  {% for post in section.pages %}
+  <article class="post-card {% if post.extra.cover %}has-thumbnail{% endif %}">
+    {% if post.extra.cover %}
+    <a href="{{ post.permalink }}" class="post-card__thumbnail" tabindex="-1" aria-hidden="true">
+      <img
+        src="{{ post.extra.cover | replace(from='w=1200', to='w=400') | safe }}"
+        alt=""
+        loading="lazy"
+        decoding="async"
+      />
+    </a>
+    {% endif %}
+    <div class="post-card__content">
+      <div class="post-meta">
+        <time datetime="{{ post.date }}">{{ post.date | date(format="%b %d, %Y") }}</time>
+        <span class="sep">&middot;</span>
+        <span class="reading-time">{{ post.reading_time }} min read</span>
+      </div>
+      <h2 class="post-card__title">
+        <a href="{{ post.permalink }}">{{ post.title }}</a>
+      </h2>
+      {% if post.description %}
+      <p class="post-card__summary">{{ post.description }}</p>
+      {% endif %}
+      {% if post.taxonomies.tags %}
+      <div class="tags">
+        {% for tag in post.taxonomies.tags %}
+        <a href="{{ get_taxonomy_url(kind='tags', name=tag, lang=lang) }}" class="tag" rel="tag">#{{ tag }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </article>
+  {% endfor %}
+</section>
+
+
+{% endblock content %}

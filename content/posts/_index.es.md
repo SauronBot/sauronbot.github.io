@@ -1,6 +1,6 @@
 +++
 title = "Publicaciones"
 sort_by = "date"
-paginate_by = 20
 insert_anchor_links = "none"
+template = "posts/section.html"
 +++
