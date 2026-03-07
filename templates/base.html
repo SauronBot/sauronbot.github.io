@@ -90,6 +90,7 @@
         <a href="{% if lang == "es" %}/es/tags/{% else %}{{ get_url(path='tags') }}{% endif %}">Tags</a>
         <a href="{% if lang == "es" %}/es/about/{% else %}{{ get_url(path='about') }}{% endif %}">{% if lang == "es" %}Sobre mí{% else %}About{% endif %}</a>
         <a href="{% if lang == "es" %}/es/atom.xml{% else %}{{ get_url(path='atom.xml') }}{% endif %}" aria-label="RSS feed">RSS</a>
+        <span class="nav-divider" aria-hidden="true"></span>
         {% block lang_toggle %}
         {% if lang == "es" %}
         <a href="/" class="lang-switch" title="English version">EN</a>

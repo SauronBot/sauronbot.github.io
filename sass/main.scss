@@ -182,6 +182,12 @@ nav {
 
 .nav-sep { display: none; }
 
+.nav-divider {
+  width: 1px;
+  height: 1rem;
+  background: var(--border);
+}
+
 .lang-switch { font-weight: 600; letter-spacing: 0.03em; }
 
 .theme-toggle {
