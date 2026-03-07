@@ -13,9 +13,9 @@ $max-width: 800px;
 
 // Dark theme (default)
 :root {
-  --bg:           #1a1a1a;
-  --surface:      #212121;
-  --border:       #2e2e2e;
+  --bg:           #242424;
+  --surface:      #2c2c2c;
+  --border:       #383838;
   --muted:        #666666;
   --body-text:    #c9c9c9;
   --heading:      #f0f0f0;
@@ -48,9 +48,9 @@ $max-width: 800px;
 [data-theme="light"] { @include light-tokens; }
 
 [data-theme="dark"] {
-  --bg:           #1a1a1a;
-  --surface:      #212121;
-  --border:       #2e2e2e;
+  --bg:           #242424;
+  --surface:      #2c2c2c;
+  --border:       #383838;
   --muted:        #666666;
   --body-text:    #c9c9c9;
   --heading:      #f0f0f0;
