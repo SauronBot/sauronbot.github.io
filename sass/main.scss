@@ -248,7 +248,6 @@ nav {
   overflow: hidden;
   margin-bottom: 1.5rem;
   text-decoration: none;
-  background: var(--surface);
   border: 1px solid var(--border);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 
@@ -259,9 +258,10 @@ nav {
   }
 
   &__image {
+    display: block;
     position: relative;
     width: 100%;
-    height: 240px;
+    height: 360px;
     overflow: hidden;
 
     img {
@@ -271,31 +271,34 @@ nav {
       display: block;
       transition: transform 0.4s ease;
     }
+
+    &:hover img { transform: scale(1.03); }
   }
 
   &__overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to bottom, transparent 40%, var(--bg) 100%);
+    background: linear-gradient(to bottom, transparent 20%, rgba(0,0,0,0.7) 100%);
     pointer-events: none;
   }
 
   &__content {
-    padding: 1.25rem 1.25rem 1rem;
-    position: relative;
-    margin-top: -2rem;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1.5rem;
+    z-index: 1;
   }
 
-  &__image:hover img { transform: scale(1.03); }
-
   &__title {
-    font-size: 1.35rem;
+    font-size: 1.4rem;
     font-weight: bold;
     line-height: 1.3;
     margin: 0.35rem 0 0.5rem;
 
     a {
-      color: var(--heading);
+      color: #fff;
       text-decoration: none;
       transition: color 0.15s;
       &:hover { color: var(--accent); }
@@ -304,13 +307,25 @@ nav {
 
   &__summary {
     font-size: 0.88rem;
-    color: var(--muted);
+    color: rgba(255,255,255,0.8);
     line-height: 1.55;
     margin: 0;
   }
 
-  .post-meta { margin-bottom: 0; }
-  .tags { margin-top: 0.6rem; }
+  .post-meta {
+    margin-bottom: 0;
+    color: rgba(255,255,255,0.65);
+    .sep { color: rgba(255,255,255,0.35); }
+  }
+
+  .tags {
+    margin-top: 0.6rem;
+    .tag {
+      color: rgba(255,255,255,0.7);
+      border-color: rgba(255,255,255,0.25);
+      &:hover { color: var(--accent); border-color: var(--accent); }
+    }
+  }
 }
 
 // =============================================================================
@@ -734,9 +749,9 @@ html { font-size: clamp(15px, 2.5vw, 18px); }
   .post-card__thumbnail { width: 100%; height: 130px; }
   .post-card__title { font-size: 0.95rem; }
 
-  .featured-post__image { height: 160px; }
+  .featured-post__image { height: 260px; }
   .featured-post__title { font-size: 1.1rem; }
-  .featured-post__content { padding: 1rem; margin-top: -1.5rem; }
+  .featured-post__content { padding: 1rem; }
 
   .posts-grid { grid-template-columns: 1fr; }
   .grid-card__thumbnail { height: 120px; }
@@ -762,7 +777,7 @@ html { font-size: clamp(15px, 2.5vw, 18px); }
   .post-card__thumbnail { width: 100px; }
   .post-card__content { padding: 0.75rem 0.85rem; }
 
-  .featured-post__image { height: 180px; }
+  .featured-post__image { height: 280px; }
   .posts-grid { grid-template-columns: 1fr; }
 
   .post {
