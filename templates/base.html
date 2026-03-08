@@ -172,10 +172,10 @@
     var gBadges = [];
 
     var G_MAP = [
-      { key: 'h', selector: '.site-name' },
-      { key: 'p', selector: '.nav-links a[href$="/posts/"], .nav-links a[href$="/es/posts/"]' },
-      { key: 't', selector: '.nav-links a[href$="/tags/"], .nav-links a[href$="/es/tags/"]' },
-      { key: 'a', selector: '.nav-links a[href$="/about/"], .nav-links a[href$="/es/about/"]' },
+      { key: 'h', selector: '.site-title' },
+      { key: 'p', selector: '.nav-links a[href*="/posts"]' },
+      { key: 't', selector: '.nav-links a[href*="/tags"]' },
+      { key: 'a', selector: '.nav-links a[href*="/about"]' },
     ];
 
     function isVisible(el) {
