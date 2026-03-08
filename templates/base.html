@@ -123,6 +123,17 @@
     </div>
   </footer>
 
+  {# ── g-mode hint bar ───────────────────────────────────────────── #}
+  <div id="g-hint" class="g-hint" aria-hidden="true" hidden>
+    <span class="g-hint__label">go →</span>
+    <span class="g-hint__item"><kbd>h</kbd> {% if lang == "es" %}Inicio{% else %}Home{% endif %}</span>
+    <span class="g-hint__item"><kbd>p</kbd> Posts</span>
+    <span class="g-hint__item"><kbd>t</kbd> Tags</span>
+    <span class="g-hint__item"><kbd>a</kbd> {% if lang == "es" %}Sobre mí{% else %}About{% endif %}</span>
+    <span class="g-hint__item"><kbd>g</kbd> {% if lang == "es" %}Inicio{% else %}Top{% endif %}</span>
+    <span class="g-hint__dismiss">esc to cancel</span>
+  </div>
+
   {# ── Keyboard shortcuts modal ──────────────────────────────────── #}
   <dialog id="shortcuts-dialog" class="shortcuts-dialog">
     <div class="shortcuts-dialog__header">
@@ -166,9 +177,19 @@
   <script>
   (function() {
     var dialog = document.getElementById('shortcuts-dialog');
+    var gHint = document.getElementById('g-hint');
     var pending = '';
     var pendingTimer = null;
     var lang = '{{ lang }}';
+
+    function showGHint() {
+      gHint.hidden = false;
+      gHint.removeAttribute('aria-hidden');
+    }
+    function hideGHint() {
+      gHint.hidden = true;
+      gHint.setAttribute('aria-hidden', 'true');
+    }
 
     function isTyping(e) {
       var tag = e.target.tagName;
@@ -186,8 +207,9 @@
         dialog.open ? dialog.close() : dialog.showModal();
         return;
       }
-      if (key === 'Escape' && dialog.open) {
-        dialog.close();
+      if (key === 'Escape') {
+        if (dialog.open) { dialog.close(); return; }
+        if (pending === 'g') { clearTimeout(pendingTimer); pending = ''; hideGHint(); return; }
         return;
       }
       if (dialog.open) return;
@@ -196,6 +218,8 @@
       if (pending === 'g') {
         clearTimeout(pendingTimer);
         pending = '';
+        hideGHint();
+        if (key === 'Escape') { return; }
         if (key === 'g') { window.scrollTo({top:0,behavior:'smooth'}); return; }
         if (key === 'h') { window.location.href = lang === 'es' ? '/es/' : '/'; return; }
         if (key === 'p') { window.location.href = lang === 'es' ? '/es/posts/' : '/posts/'; return; }
@@ -206,7 +230,8 @@
 
       if (key === 'g') {
         pending = 'g';
-        pendingTimer = setTimeout(function() { pending = ''; }, 600);
+        showGHint();
+        pendingTimer = setTimeout(function() { pending = ''; hideGHint(); }, 2000);
         return;
       }
 

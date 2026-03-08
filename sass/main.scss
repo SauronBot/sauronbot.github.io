@@ -252,6 +252,60 @@ nav {
 }
 
 // =============================================================================
+// g-mode hint bar
+// =============================================================================
+.g-hint {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0.6rem 1.5rem;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.82rem;
+  font-family: $font-mono;
+  animation: slideDown 0.12s ease;
+
+  &__label {
+    font-weight: 700;
+    opacity: 0.85;
+    letter-spacing: 0.04em;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    opacity: 0.9;
+
+    kbd {
+      background: rgba(255,255,255,0.25);
+      border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 4px;
+      padding: 0.1em 0.4em;
+      font-size: 0.78rem;
+      font-family: $font-mono;
+      color: #fff;
+    }
+  }
+
+  &__dismiss {
+    margin-left: auto;
+    opacity: 0.55;
+    font-size: 0.75rem;
+  }
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+// =============================================================================
 // Keyboard shortcuts modal
 // =============================================================================
 .shortcuts-dialog {
