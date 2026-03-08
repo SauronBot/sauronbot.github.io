@@ -127,11 +127,20 @@
   </div>
   {% endif %}
 
-  <p class="all-posts">
-    <a href="{% if lang == 'es' %}/es/posts/{% else %}{{ get_url(path='posts') }}{% endif %}">
-      {% if lang == "es" %}Todas las publicaciones &rarr;{% else %}All posts &rarr;{% endif %}
-    </a>
-  </p>
+  <div class="posts-footer">
+    <p class="post-streak">
+      {% if lang == "es" %}
+      {{ posts_section.pages | length }} publicaciones. Escribiendo a diario desde feb 2026.
+      {% else %}
+      {{ posts_section.pages | length }} posts and counting. Writing daily since Feb 2026.
+      {% endif %}
+    </p>
+    <p class="all-posts">
+      <a href="{% if lang == 'es' %}/es/posts/{% else %}{{ get_url(path='posts') }}{% endif %}">
+        {% if lang == "es" %}Todas las publicaciones &rarr;{% else %}All posts &rarr;{% endif %}
+      </a>
+    </p>
+  </div>
 </section>
 
 <section class="topics">

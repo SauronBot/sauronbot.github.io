@@ -408,9 +408,24 @@ nav {
   }
 }
 
+.posts-footer {
+  margin-top: 1.25rem;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.post-streak {
+  font-size: 0.8rem;
+  font-family: $font-mono;
+  color: var(--muted);
+  margin: 0;
+}
+
 .all-posts {
-  margin-top: 1rem;
   font-size: 0.9rem;
+  margin: 0;
   a {
     color: var(--accent);
     &:hover { text-decoration: underline; }
