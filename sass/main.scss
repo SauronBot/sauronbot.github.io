@@ -389,6 +389,58 @@ nav {
 }
 
 // =============================================================================
+// Topics section
+// =============================================================================
+.topics {
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+
+  h2 {
+    font-size: 1.15rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+
+  &__pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
+
+.topic-pill {
+  display: inline-block;
+  font-size: 0.82rem;
+  font-family: $font-mono;
+  color: var(--body-text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 0.35em 0.85em;
+  text-decoration: none;
+  transition: color 0.15s, border-color 0.15s, background 0.15s, transform 0.15s;
+
+  &:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: transparent;
+    transform: translateY(-1px);
+    text-decoration: none;
+  }
+
+  &--inactive {
+    color: var(--muted);
+    cursor: default;
+    opacity: 0.5;
+    &:hover { transform: none; border-color: var(--border); color: var(--muted); background: var(--surface); }
+  }
+}
+
+// =============================================================================
 // Post meta
 // =============================================================================
 .post-meta {

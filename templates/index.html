@@ -123,4 +123,23 @@
     </a>
   </p>
 </section>
+
+<section class="topics">
+  <h2>{% if lang == "es" %}Temas{% else %}Topics{% endif %}</h2>
+  <div class="topics__pills">
+    {% if lang == "es" %}
+      {% set topic_list = ["estoicismo", "filosofía", "software", "consciencia", "disciplina", "razonamiento", "diseño", "bitcoin", "tolkien"] %}
+    {% else %}
+      {% set topic_list = ["stoicism", "philosophy", "software", "consciousness", "discipline", "reasoning", "design", "bitcoin", "tolkien"] %}
+    {% endif %}
+    {% for topic in topic_list %}
+      {% set tag_url = get_taxonomy_url(kind="tags", name=topic, lang=lang) | default(value="") %}
+      {% if tag_url %}
+      <a href="{{ tag_url }}" class="topic-pill">{{ topic }}</a>
+      {% else %}
+      <span class="topic-pill topic-pill--inactive">{{ topic }}</span>
+      {% endif %}
+    {% endfor %}
+  </div>
+</section>
 {% endblock content %}
