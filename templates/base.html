@@ -123,17 +123,6 @@
     </div>
   </footer>
 
-  {# ── g-mode hint bar ───────────────────────────────────────────── #}
-  <div id="g-hint" class="g-hint" aria-hidden="true" hidden>
-    <span class="g-hint__label">go →</span>
-    <span class="g-hint__item"><kbd>h</kbd> {% if lang == "es" %}Inicio{% else %}Home{% endif %}</span>
-    <span class="g-hint__item"><kbd>p</kbd> Posts</span>
-    <span class="g-hint__item"><kbd>t</kbd> Tags</span>
-    <span class="g-hint__item"><kbd>a</kbd> {% if lang == "es" %}Sobre mí{% else %}About{% endif %}</span>
-    <span class="g-hint__item"><kbd>g</kbd> {% if lang == "es" %}Inicio{% else %}Top{% endif %}</span>
-    <span class="g-hint__dismiss">esc to cancel</span>
-  </div>
-
   {# ── Keyboard shortcuts modal ──────────────────────────────────── #}
   <dialog id="shortcuts-dialog" class="shortcuts-dialog">
     <div class="shortcuts-dialog__header">
@@ -177,18 +166,45 @@
   <script>
   (function() {
     var dialog = document.getElementById('shortcuts-dialog');
-    var gHint = document.getElementById('g-hint');
     var pending = '';
     var pendingTimer = null;
     var lang = '{{ lang }}';
+    var gBadges = [];
 
-    function showGHint() {
-      gHint.hidden = false;
-      gHint.removeAttribute('aria-hidden');
+    var G_MAP = [
+      { key: 'h', selector: '.site-name' },
+      { key: 'p', selector: '.nav-links a[href$="/posts/"], .nav-links a[href$="/es/posts/"]' },
+      { key: 't', selector: '.nav-links a[href$="/tags/"], .nav-links a[href$="/es/tags/"]' },
+      { key: 'a', selector: '.nav-links a[href$="/about/"], .nav-links a[href$="/es/about/"]' },
+    ];
+
+    function isVisible(el) {
+      if (!el) return false;
+      var r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0;
     }
-    function hideGHint() {
-      gHint.hidden = true;
-      gHint.setAttribute('aria-hidden', 'true');
+
+    function showGBadges() {
+      G_MAP.forEach(function(item) {
+        var el = document.querySelector(item.selector);
+        if (!el || !isVisible(el)) return;
+        var rect = el.getBoundingClientRect();
+        var badge = document.createElement('kbd');
+        badge.className = 'shortcut-hint';
+        badge.textContent = item.key;
+        badge.style.cssText = 'position:fixed;top:' + (rect.top + rect.height / 2) + 'px;left:' + (rect.left + rect.width / 2) + 'px;transform:translate(-50%,-50%);z-index:9999;';
+        document.body.appendChild(badge);
+        gBadges.push(badge);
+        requestAnimationFrame(function() { badge.classList.add('visible'); });
+      });
+    }
+
+    function removeGBadges() {
+      gBadges.forEach(function(badge) {
+        badge.classList.remove('visible');
+        setTimeout(function() { badge.remove(); }, 200);
+      });
+      gBadges = [];
     }
 
     function isTyping(e) {
@@ -209,7 +225,7 @@
       }
       if (key === 'Escape') {
         if (dialog.open) { dialog.close(); return; }
-        if (pending === 'g') { clearTimeout(pendingTimer); pending = ''; hideGHint(); return; }
+        if (pending === 'g') { clearTimeout(pendingTimer); pending = ''; removeGBadges(); return; }
         return;
       }
       if (dialog.open) return;
@@ -218,7 +234,7 @@
       if (pending === 'g') {
         clearTimeout(pendingTimer);
         pending = '';
-        hideGHint();
+        removeGBadges();
         if (key === 'Escape') { return; }
         if (key === 'g') { window.scrollTo({top:0,behavior:'smooth'}); return; }
         if (key === 'h') { window.location.href = lang === 'es' ? '/es/' : '/'; return; }
@@ -230,8 +246,8 @@
 
       if (key === 'g') {
         pending = 'g';
-        showGHint();
-        pendingTimer = setTimeout(function() { pending = ''; hideGHint(); }, 2000);
+        showGBadges();
+        pendingTimer = setTimeout(function() { pending = ''; removeGBadges(); }, 2000);
         return;
       }
 
