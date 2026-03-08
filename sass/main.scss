@@ -227,6 +227,17 @@ nav {
   }
 }
 
+// =============================================================================
+// Tagline
+// =============================================================================
+.tagline {
+  font-size: 0.95rem;
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
 .latest-posts {
   h2 {
     font-size: 1.15rem;
