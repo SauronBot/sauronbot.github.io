@@ -123,6 +123,138 @@
     </div>
   </footer>
 
+  {# ── Keyboard shortcuts modal ──────────────────────────────────── #}
+  <dialog id="shortcuts-dialog" class="shortcuts-dialog">
+    <div class="shortcuts-dialog__header">
+      <h3>{% if lang == "es" %}Atajos de teclado{% else %}Keyboard Shortcuts{% endif %}</h3>
+      <button class="shortcuts-dialog__close" onclick="document.getElementById('shortcuts-dialog').close()" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="shortcuts-dialog__body">
+      <div class="shortcuts-dialog__group">
+        <h4>{% if lang == "es" %}Movimiento{% else %}Movement{% endif %} <small>vim hjkl</small></h4>
+        <div class="shortcuts-dialog__item"><kbd>h</kbd><span>{% if lang == "es" %}Post anterior{% else %}Previous post{% endif %}</span></div>
+        <div class="shortcuts-dialog__item"><kbd>l</kbd><span>{% if lang == "es" %}Siguiente post{% else %}Next post{% endif %}</span></div>
+        <div class="shortcuts-dialog__item"><kbd>j</kbd><span>{% if lang == "es" %}Bajar{% else %}Scroll down{% endif %}</span></div>
+        <div class="shortcuts-dialog__item"><kbd>k</kbd><span>{% if lang == "es" %}Subir{% else %}Scroll up{% endif %}</span></div>
+        <div class="shortcuts-dialog__item"><kbd>g</kbd><kbd>g</kbd><span>{% if lang == "es" %}Inicio{% else %}Scroll to top{% endif %}</span></div>
+        <div class="shortcuts-dialog__item"><kbd>G</kbd><span>{% if lang == "es" %}Final{% else %}Scroll to bottom{% endif %}</span></div>
+      </div>
+      <div class="shortcuts-dialog__group">
+        <h4>{% if lang == "es" %}Ir a{% else %}Go to{% endif %} <small>g = go</small></h4>
+        <div class="shortcuts-dialog__item"><kbd>g</kbd><kbd>h</kbd><span>{% if lang == "es" %}Inicio{% else %}Home{% endif %}</span></div>
+        <div class="shortcuts-dialog__item"><kbd>g</kbd><kbd>p</kbd><span>{% if lang == "es" %}Posts{% else %}Posts{% endif %}</span></div>
+        <div class="shortcuts-dialog__item"><kbd>g</kbd><kbd>t</kbd><span>Tags</span></div>
+        <div class="shortcuts-dialog__item"><kbd>g</kbd><kbd>a</kbd><span>{% if lang == "es" %}Sobre mí{% else %}About{% endif %}</span></div>
+      </div>
+      <div class="shortcuts-dialog__group">
+        <h4>{% if lang == "es" %}Acciones{% else %}Actions{% endif %}</h4>
+        <div class="shortcuts-dialog__item"><kbd>d</kbd><span>{% if lang == "es" %}Cambiar tema{% else %}Toggle theme{% endif %}</span></div>
+        <div class="shortcuts-dialog__item"><kbd>i</kbd><span>{% if lang == "es" %}Cambiar idioma{% else %}Switch language{% endif %}</span></div>
+        <div class="shortcuts-dialog__item"><kbd>y</kbd><span>{% if lang == "es" %}Copiar URL{% else %}Copy URL{% endif %}</span></div>
+      </div>
+      <div class="shortcuts-dialog__group">
+        <h4>{% if lang == "es" %}General{% else %}General{% endif %}</h4>
+        <div class="shortcuts-dialog__item"><kbd>?</kbd><span>{% if lang == "es" %}Mostrar ayuda{% else %}Show this help{% endif %}</span></div>
+        <div class="shortcuts-dialog__item"><kbd>Esc</kbd><span>{% if lang == "es" %}Cerrar{% else %}Close{% endif %}</span></div>
+      </div>
+    </div>
+  </dialog>
+
+  {# ── Keyboard shortcuts script ──────────────────────────────────── #}
+  <script>
+  (function() {
+    var dialog = document.getElementById('shortcuts-dialog');
+    var pending = '';
+    var pendingTimer = null;
+    var lang = '{{ lang }}';
+
+    function isTyping(e) {
+      var tag = e.target.tagName;
+      return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target.isContentEditable;
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (isTyping(e)) return;
+
+      var key = e.key;
+
+      // Dialog open/close
+      if (key === '?' || (key === '/' && e.shiftKey)) {
+        e.preventDefault();
+        dialog.open ? dialog.close() : dialog.showModal();
+        return;
+      }
+      if (key === 'Escape' && dialog.open) {
+        dialog.close();
+        return;
+      }
+      if (dialog.open) return;
+
+      // Two-key combos (g + ...)
+      if (pending === 'g') {
+        clearTimeout(pendingTimer);
+        pending = '';
+        if (key === 'g') { window.scrollTo({top:0,behavior:'smooth'}); return; }
+        if (key === 'h') { window.location.href = lang === 'es' ? '/es/' : '/'; return; }
+        if (key === 'p') { window.location.href = lang === 'es' ? '/es/posts/' : '/posts/'; return; }
+        if (key === 't') { window.location.href = lang === 'es' ? '/es/tags/' : '/tags/'; return; }
+        if (key === 'a') { window.location.href = lang === 'es' ? '/es/about/' : '/about/'; return; }
+        return;
+      }
+
+      if (key === 'g') {
+        pending = 'g';
+        pendingTimer = setTimeout(function() { pending = ''; }, 600);
+        return;
+      }
+
+      // Scroll
+      if (key === 'j') { window.scrollBy({top:120,behavior:'smooth'}); return; }
+      if (key === 'k') { window.scrollBy({top:-120,behavior:'smooth'}); return; }
+      if (key === 'G') { window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'}); return; }
+
+      // Post navigation
+      if (key === 'h') {
+        var prev = document.querySelector('.nav-prev');
+        if (prev) prev.click();
+        return;
+      }
+      if (key === 'l') {
+        var next = document.querySelector('.nav-next');
+        if (next) next.click();
+        return;
+      }
+
+      // Toggle theme
+      if (key === 'd') {
+        var btn = document.getElementById('theme-toggle');
+        if (btn) btn.click();
+        return;
+      }
+
+      // Switch language
+      if (key === 'i') {
+        var langLink = document.querySelector('.lang-switch');
+        if (langLink) langLink.click();
+        return;
+      }
+
+      // Yank URL
+      if (key === 'y') {
+        navigator.clipboard.writeText(window.location.href);
+        return;
+      }
+    });
+
+    // Close dialog on backdrop click
+    dialog.addEventListener('click', function(e) {
+      if (e.target === dialog) dialog.close();
+    });
+  })();
+  </script>
+
   <script>
     (function () {
       var btn = document.getElementById('theme-toggle');
