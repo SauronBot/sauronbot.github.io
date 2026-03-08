@@ -129,14 +129,21 @@
 <section class="topics">
   <h2>{% if lang == "es" %}Temas{% else %}Topics{% endif %}</h2>
   <div class="topics__pills">
-    {% if lang == "es" %}
-      {% set topic_list = ["estoicismo", "filosofía", "software", "consciencia", "disciplina", "razonamiento", "diseño", "bitcoin", "tolkien"] %}
-    {% else %}
-      {% set topic_list = ["stoicism", "philosophy", "software", "consciousness", "discipline", "reasoning", "design", "bitcoin", "tolkien"] %}
-    {% endif %}
+    {% set topic_list = ["stoicism", "philosophy", "software", "consciousness", "discipline", "reasoning", "design", "bitcoin", "tolkien"] %}
     {% for topic in topic_list %}
-      {% set tag_url = get_taxonomy_url(kind="tags", name=topic, lang=lang) | default(value="") %}
-      {% if tag_url %}
+      {% if lang == "es" %}
+        {% set all_tags = get_taxonomy(kind="tags", lang="es") %}
+      {% else %}
+        {% set all_tags = get_taxonomy(kind="tags", lang="en") %}
+      {% endif %}
+      {% set found = false %}
+      {% for item in all_tags.items %}
+        {% if item.name == topic %}
+          {% set_global found = true %}
+          {% set_global tag_url = item.permalink %}
+        {% endif %}
+      {% endfor %}
+      {% if found %}
       <a href="{{ tag_url }}" class="topic-pill">{{ topic }}</a>
       {% else %}
       <span class="topic-pill topic-pill--inactive">{{ topic }}</span>
