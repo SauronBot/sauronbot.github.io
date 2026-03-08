@@ -47,42 +47,75 @@
   {% set posts_section = get_section(path="posts/_index.md") %}
   {% endif %}
 
-  <div class="posts-list">
-    {% for post in posts_section.pages | slice(end=4) %}
-    <article class="post-card {% if post.extra.cover %}has-thumbnail{% endif %}">
+  {# Featured post — the latest one, hero-style #}
+  {% set featured = posts_section.pages | first %}
+  {% if featured %}
+  <a href="{{ featured.permalink }}" class="featured-post">
+    {% if featured.extra.cover %}
+    <div class="featured-post__image">
+      <img
+        src="{{ featured.extra.cover | safe }}"
+        alt=""
+        loading="eager"
+        decoding="async"
+      />
+      <div class="featured-post__overlay"></div>
+    </div>
+    {% endif %}
+    <div class="featured-post__content">
+      <div class="post-meta">
+        <time datetime="{{ featured.date }}">{{ featured.date | date(format="%b %d, %Y") }}</time>
+        <span class="sep">&middot;</span>
+        <span class="reading-time">{{ featured.reading_time }} min read</span>
+      </div>
+      <h3 class="featured-post__title">{{ featured.title }}</h3>
+      {% if featured.description %}
+      <p class="featured-post__summary">{{ featured.description }}</p>
+      {% endif %}
+      {% if featured.taxonomies.tags %}
+      <div class="tags">
+        {% for tag in featured.taxonomies.tags %}
+        <span class="tag">#{{ tag }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </a>
+  {% endif %}
+
+  {# Grid posts — next 4 in a 2×2 grid #}
+  {% set grid_posts = posts_section.pages | slice(start=1, end=5) %}
+  {% if grid_posts | length > 0 %}
+  <div class="posts-grid">
+    {% for post in grid_posts %}
+    <article class="grid-card">
       {% if post.extra.cover %}
-      <a href="{{ post.permalink }}" class="post-card__thumbnail" tabindex="-1" aria-hidden="true">
+      <a href="{{ post.permalink }}" class="grid-card__thumbnail">
         <img
-          src="{{ post.extra.cover | replace(from='w=1200', to='w=400') | safe }}"
+          src="{{ post.extra.cover | replace(from='w=1200', to='w=600') | safe }}"
           alt=""
           loading="lazy"
           decoding="async"
         />
       </a>
       {% endif %}
-      <div class="post-card__content">
+      <div class="grid-card__content">
         <div class="post-meta">
           <time datetime="{{ post.date }}">{{ post.date | date(format="%b %d, %Y") }}</time>
           <span class="sep">&middot;</span>
           <span class="reading-time">{{ post.reading_time }} min read</span>
         </div>
-        <h2 class="post-card__title">
+        <h3 class="grid-card__title">
           <a href="{{ post.permalink }}">{{ post.title }}</a>
-        </h2>
+        </h3>
         {% if post.description %}
-        <p class="post-card__summary">{{ post.description }}</p>
-        {% endif %}
-        {% if post.taxonomies.tags %}
-        <div class="tags">
-          {% for tag in post.taxonomies.tags %}
-          <a href="{{ get_taxonomy_url(kind='tags', name=tag, lang=lang) }}" class="tag" rel="tag">#{{ tag }}</a>
-          {% endfor %}
-        </div>
+        <p class="grid-card__summary">{{ post.description }}</p>
         {% endif %}
       </div>
     </article>
     {% endfor %}
   </div>
+  {% endif %}
 
   <p class="all-posts">
     <a href="{% if lang == 'es' %}/es/posts/{% else %}{{ get_url(path='posts') }}{% endif %}">

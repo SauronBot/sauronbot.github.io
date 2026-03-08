@@ -238,8 +238,149 @@ nav {
   }
 }
 
+// =============================================================================
+// Featured post (hero-style latest post)
+// =============================================================================
+.featured-post {
+  display: block;
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  text-decoration: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    border-color: var(--accent-hover);
+    box-shadow: 0 8px 24px var(--shadow-hover);
+    transform: translateY(-2px);
+    text-decoration: none;
+
+    .featured-post__title { color: var(--accent); }
+    .featured-post__image img { transform: scale(1.03); }
+  }
+
+  &__image {
+    position: relative;
+    width: 100%;
+    height: 240px;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+  }
+
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 40%, var(--bg) 100%);
+    pointer-events: none;
+  }
+
+  &__content {
+    padding: 1.25rem 1.25rem 1rem;
+    position: relative;
+    margin-top: -2rem;
+  }
+
+  &__title {
+    font-size: 1.35rem;
+    font-weight: bold;
+    color: var(--heading);
+    line-height: 1.3;
+    margin: 0.35rem 0 0.5rem;
+    transition: color 0.15s;
+  }
+
+  &__summary {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  .post-meta { margin-bottom: 0; }
+  .tags { margin-top: 0.6rem; }
+}
+
+// =============================================================================
+// Posts grid (2×2 layout)
+// =============================================================================
+.posts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.grid-card {
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    border-color: var(--accent-hover);
+    box-shadow: 0 4px 16px var(--shadow);
+    transform: translateY(-1px);
+  }
+
+  &__thumbnail {
+    display: block;
+    width: 100%;
+    height: 140px;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: opacity 0.2s, transform 0.3s ease;
+    }
+
+    &:hover img { transform: scale(1.03); opacity: 0.92; }
+  }
+
+  &__content {
+    padding: 0.75rem 0.85rem 0.85rem;
+  }
+
+  &__title {
+    font-size: 0.95rem;
+    font-weight: bold;
+    line-height: 1.35;
+    margin: 0.2rem 0 0.3rem;
+
+    a {
+      color: var(--heading);
+      text-decoration: none;
+      &:hover { color: var(--accent); text-decoration: none; }
+    }
+  }
+
+  &__summary {
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.5;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
 .all-posts {
-  margin-top: 1.5rem;
+  margin-top: 1rem;
   font-size: 0.9rem;
   a {
     color: var(--accent);
@@ -538,6 +679,13 @@ html { font-size: clamp(15px, 2.5vw, 18px); }
   .post-card__thumbnail { width: 100%; height: 130px; }
   .post-card__title { font-size: 0.95rem; }
 
+  .featured-post__image { height: 160px; }
+  .featured-post__title { font-size: 1.1rem; }
+  .featured-post__content { padding: 1rem; margin-top: -1.5rem; }
+
+  .posts-grid { grid-template-columns: 1fr; }
+  .grid-card__thumbnail { height: 120px; }
+
   .post {
     .post-header { margin-bottom: 1.75rem; padding-bottom: 1.25rem; h1 { font-size: 1.4rem; } }
     .post-content {
@@ -558,6 +706,9 @@ html { font-size: clamp(15px, 2.5vw, 18px); }
   .post-cover img { max-height: 200px; }
   .post-card__thumbnail { width: 100px; }
   .post-card__content { padding: 0.75rem 0.85rem; }
+
+  .featured-post__image { height: 180px; }
+  .posts-grid { grid-template-columns: 1fr; }
 
   .post {
     .post-header h1 { font-size: 1.6rem; }
