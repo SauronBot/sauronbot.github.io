@@ -797,15 +797,55 @@ nav {
     border-top: 1px solid var(--border);
 
     .post-nav {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.9rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 1rem;
-
-      a { color: var(--muted); &:hover { color: var(--accent); } }
-      .nav-next { margin-left: auto; }
     }
   }
+}
+
+// =============================================================================
+// Post navigation cards
+// =============================================================================
+.nav-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  text-decoration: none;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+
+  &:hover {
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px var(--shadow);
+    transform: translateY(-1px);
+    text-decoration: none;
+  }
+
+  &--next {
+    text-align: right;
+  }
+
+  &__label {
+    font-size: 0.75rem;
+    font-family: $font-mono;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &__title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--heading);
+    line-height: 1.4;
+    transition: color 0.15s;
+  }
+
+  &:hover &__title { color: var(--accent); }
 }
 
 // =============================================================================
@@ -890,7 +930,7 @@ html { font-size: clamp(15px, 2.5vw, 18px); }
       blockquote { padding-left: 0.85rem; margin: 1.25rem 0; }
       pre { padding: 0.85rem; font-size: 0.8rem; max-width: calc(100vw - 2rem); }
     }
-    .post-footer .post-nav { flex-direction: column; gap: 0.75rem; .nav-next { margin-left: 0; } }
+    .post-footer .post-nav { grid-template-columns: 1fr; }
   }
 
   .tags.tags-list .tag { font-size: 0.85rem; }
@@ -911,7 +951,7 @@ html { font-size: clamp(15px, 2.5vw, 18px); }
   .post {
     .post-header h1 { font-size: 1.6rem; }
     .post-content pre { max-width: calc(100vw - 2.5rem); }
-    .post-footer .post-nav { flex-direction: column; gap: 0.75rem; .nav-next { margin-left: 0; } }
+    .post-footer .post-nav { grid-template-columns: 1fr; }
   }
 }
 

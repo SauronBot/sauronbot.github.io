@@ -127,10 +127,18 @@
   <footer class="post-footer">
     <nav class="post-nav" aria-label="Post navigation">
       {% if page.earlier %}
-      <a href="{{ page.earlier.permalink }}" class="nav-prev" rel="prev">&larr; {{ page.earlier.title }}</a>
+      <a href="{{ page.earlier.permalink }}" class="nav-card nav-card--prev" rel="prev">
+        <span class="nav-card__label">&larr; Previous</span>
+        <span class="nav-card__title">{{ page.earlier.title }}</span>
+      </a>
+      {% else %}
+      <div></div>
       {% endif %}
       {% if page.later %}
-      <a href="{{ page.later.permalink }}" class="nav-next" rel="next">{{ page.later.title }} &rarr;</a>
+      <a href="{{ page.later.permalink }}" class="nav-card nav-card--next" rel="next">
+        <span class="nav-card__label">Next &rarr;</span>
+        <span class="nav-card__title">{{ page.later.title }}</span>
+      </a>
       {% endif %}
     </nav>
   </footer>
