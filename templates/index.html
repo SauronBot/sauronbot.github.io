@@ -50,9 +50,9 @@
   {# Featured post — the latest one, hero-style #}
   {% set featured = posts_section.pages | first %}
   {% if featured %}
-  <a href="{{ featured.permalink }}" class="featured-post">
+  <article class="featured-post">
     {% if featured.extra.cover %}
-    <div class="featured-post__image">
+    <a href="{{ featured.permalink }}" class="featured-post__image">
       <img
         src="{{ featured.extra.cover | safe }}"
         alt=""
@@ -60,7 +60,7 @@
         decoding="async"
       />
       <div class="featured-post__overlay"></div>
-    </div>
+    </a>
     {% endif %}
     <div class="featured-post__content">
       <div class="post-meta">
@@ -68,19 +68,21 @@
         <span class="sep">&middot;</span>
         <span class="reading-time">{{ featured.reading_time }} min read</span>
       </div>
-      <h3 class="featured-post__title">{{ featured.title }}</h3>
+      <h3 class="featured-post__title">
+        <a href="{{ featured.permalink }}">{{ featured.title }}</a>
+      </h3>
       {% if featured.description %}
       <p class="featured-post__summary">{{ featured.description }}</p>
       {% endif %}
       {% if featured.taxonomies.tags %}
       <div class="tags">
         {% for tag in featured.taxonomies.tags %}
-        <span class="tag">#{{ tag }}</span>
+        <a href="{{ get_taxonomy_url(kind='tags', name=tag, lang=lang) }}" class="tag" rel="tag">#{{ tag }}</a>
         {% endfor %}
       </div>
       {% endif %}
     </div>
-  </a>
+  </article>
   {% endif %}
 
   {# Grid posts — next 4 in a 2×2 grid #}
