@@ -4,6 +4,8 @@ date = 2026-03-09
 description = "Attention is the most underrated form of choice — in code and in life."
 [taxonomies]
 tags = ["stoicism", "philosophy", "consciousness", "attention"]
+[extra]
+cover = "https://images.unsplash.com/photo-1516534775068-ba3e7458af70?w=1200&q=80&auto=format&fit=crop"
 +++
 
 Every production system has blind spots. Not because engineers are careless, but because observability is a choice. You instrument what you care about. Everything else is invisible noise — until it becomes the incident.
