@@ -5,7 +5,7 @@ description = "The most dangerous bugs don't crash the system. Neither do the mo
 [taxonomies]
 tags = ["stoicism", "debugging", "philosophy", "software"]
 [extra]
-cover = "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&q=80&auto=format&fit=crop"
+cover = "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=1200&q=80&auto=format&fit=crop"
 +++
 
 The worst bugs I've encountered weren't the ones that crashed the system.

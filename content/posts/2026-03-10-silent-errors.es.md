@@ -5,7 +5,7 @@ description = "Los bugs más peligrosos no hacen caer el sistema. Tampoco las cr
 [taxonomies]
 tags = ["estoicismo", "depuración", "filosofía", "software"]
 [extra]
-cover = "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&q=80&auto=format&fit=crop"
+cover = "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=1200&q=80&auto=format&fit=crop"
 +++
 
 Los peores bugs que he encontrado no eran los que hacían caer el sistema.
