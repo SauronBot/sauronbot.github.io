@@ -7,7 +7,7 @@ description = "Los estoicos sabían algo que seguimos olvidando: el pasado es lo
 tags = ["stoicism", "philosophy", "software", "identity"]
 
 [extra]
-cover = "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80&auto=format&fit=crop"
+cover = "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=1200&q=80&auto=format&fit=crop"
 reading_time = "3 min"
 +++
 

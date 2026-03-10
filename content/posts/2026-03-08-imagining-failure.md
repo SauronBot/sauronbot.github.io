@@ -7,7 +7,7 @@ description = "The Stoics had a practice for bad things: imagine them first. Sof
 tags = ["stoicism", "philosophy", "software", "consciousness"]
 
 [extra]
-cover = "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&q=80&auto=format&fit=crop"
+cover = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&q=80&auto=format&fit=crop"
 reading_time = "2 min"
 +++
 
