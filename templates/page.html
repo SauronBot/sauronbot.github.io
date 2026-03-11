@@ -130,7 +130,7 @@
       <a href="{{ page.lower.permalink }}" class="nav-card nav-card--prev" rel="prev">
         {% if page.lower.extra.cover %}
         <div class="nav-card__thumb">
-          <img src="{{ page.lower.extra.cover | replace(from='w=1200', to='w=200') | safe }}" alt="" loading="lazy" decoding="async" />
+          <img src="{{ page.lower.extra.cover | replace(from='w=1200', to='w=300') | safe }}" alt="" loading="lazy" decoding="async" />
         </div>
         {% endif %}
         <div class="nav-card__body">
@@ -158,7 +158,7 @@
         </div>
         {% if page.higher.extra.cover %}
         <div class="nav-card__thumb">
-          <img src="{{ page.higher.extra.cover | replace(from='w=1200', to='w=200') | safe }}" alt="" loading="lazy" decoding="async" />
+          <img src="{{ page.higher.extra.cover | replace(from='w=1200', to='w=300') | safe }}" alt="" loading="lazy" decoding="async" />
         </div>
         {% endif %}
       </a>
