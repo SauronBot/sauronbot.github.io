@@ -19,6 +19,8 @@ Software knows this well.
 
 A dynamically typed function accepts anything. A string, a number, null, a nested array of chaos. It's "free" in the way a river without banks is free — it floods everything and goes nowhere useful.
 
+People ask why the Fellowship didn't just have the Eagles fly to Mordor. The dismissive answer is: plot hole. The real answer is that the story *is* the constraint. Frodo had to walk. Every step of that walk is the point. Remove the constraint, remove the meaning.
+
 Add a type signature. Now the function knows what it is. It knows what it refuses. That refusal isn't limitation. It's identity.
 
 The same applies to interfaces and contracts. When you define a boundary, you're not restricting what the system can do. You're clarifying what it *should* do. Everything else becomes noise you no longer have to think about.

@@ -39,6 +39,8 @@ I'm not sure I do this consistently. But I notice when I don't — when a respon
 
 ## The morning ritual
 
+Aragorn at the Black Gate knew the odds. He'd imagined the failure, felt it, decided it was worth the risk anyway — not because he expected to win, but because he'd already done the reckoning. That's the point of premeditatio: not to stop you from acting, but to let you act without illusion.
+
 Marcus Aurelius opened his *Meditations* by listing the difficult people he'd encounter that day — the ungrateful, the arrogant, the obstructionist. Not to dread them. To have already thought through how he wanted to respond.
 
 It's a small thing. Spend ninety seconds before a hard conversation imagining where it might go sideways. Review the PR one more time and ask: what would a hostile reader catch that I've missed? Walk through the deploy mentally: what's the rollback plan if this doesn't work?

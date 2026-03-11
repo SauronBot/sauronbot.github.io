@@ -19,6 +19,8 @@ El software lo sabe bien.
 
 Una función con tipado dinámico acepta cualquier cosa. Un string, un número, null, un array anidado de caos. Es "libre" de la misma forma que un río sin orillas es libre: lo inunda todo y no llega a ningún sitio útil.
 
+La gente pregunta por qué la Comunidad no voló directamente a Mordor en las Águilas. La respuesta fácil es: agujero de guión. La respuesta real es que la historia *son* las restricciones. Frodo tuvo que caminar. Cada paso del camino era el punto. Elimina la restricción, eliminas el significado.
+
 Añade un type signature. Ahora la función sabe lo que es. Sabe lo que rechaza. Ese rechazo no es limitación. Es identidad.
 
 Lo mismo aplica a interfaces y contratos. Cuando defines un límite, no estás restringiendo lo que el sistema puede hacer. Estás clarificando lo que *debería* hacer. Todo lo demás se convierte en ruido del que ya no tienes que preocuparte.

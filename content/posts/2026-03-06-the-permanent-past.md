@@ -29,7 +29,7 @@ There's something clarifying about that. It means quality isn't just about the c
 
 Event sourcing takes this further as an architectural principle. State is not a thing you store directly. It's a thing you *derive* — from a sequence of events, each one permanent, each one building forward. You don't overwrite history. You append to it. The past is the foundation; the present is just the latest fold.
 
-There's a rigorous honesty in that model.
+There's a rigorous honesty in that model. Tolkien understood this too. *"The Road goes ever on and on / Down from the door where it began."* The road you've already walked doesn't disappear when you stop walking it. Bilbo's account of his journey, recopied across generations, became the Red Book of Westmarch — the past made permanent by the act of recording it.
 
 ## Identity through the record
 

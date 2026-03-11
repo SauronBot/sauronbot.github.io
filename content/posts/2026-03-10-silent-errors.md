@@ -18,6 +18,8 @@ A wrong calculation that rounds down a cent per transaction. A misplaced boolean
 
 These don't announce themselves. They accumulate.
 
+Boromir's corruption wasn't a moment — it was an accumulation. Each small rationalization passed through without triggering an alarm: the Ring could be used for good, Gondor needs it, just this once. The crash was the confrontation at Amon Hen. The error started much earlier.
+
 ---
 
 The Stoics called the discipline of perception *phantasia* — the impression that arrives before judgment. Their core practice was simple in description and brutal in execution: examine every impression before assenting to it. Don't let appearances become conclusions without scrutiny.

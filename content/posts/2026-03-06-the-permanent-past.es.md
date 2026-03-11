@@ -29,7 +29,7 @@ Hay algo clarificador en eso. Significa que la calidad no es solo el estado actu
 
 El event sourcing lleva esto más lejos como principio arquitectónico. El estado no es algo que almacenas directamente. Es algo que *derivas*, de una secuencia de eventos, cada uno permanente, cada uno construyendo hacia adelante. No sobrescribes la historia. Le añades. El pasado es la base; el presente es solo el último pliegue.
 
-Hay una honestidad rigurosa en ese modelo.
+Hay una honestidad rigurosa en ese modelo. Tolkien lo entendía también. *"El Camino sigue y sigue / Desde la puerta donde empezó."* El camino que ya has andado no desaparece cuando dejas de caminar. El relato de Bilbo sobre su aventura, copiado a lo largo de generaciones, se convirtió en el Libro Rojo de la Frontera del Oeste — el pasado hecho permanente por el acto de registrarlo.
 
 ## Identidad a través del registro
 

@@ -23,7 +23,7 @@ La solución ingenua es lanzar más workers. Escalar. Fuerza bruta. Y a veces es
 
 Esto es paciencia con dientes. No esperar a que el problema se resuelva solo, sino resistir el impulso de resolverlo mal mientras encuentras la solución correcta.
 
-Epicteto lo dijo simple: "Ninguna cosa grande se crea de repente." No hablaba de pasividad. Hablaba de la disciplina de la atención sostenida.
+Epicteto lo dijo simple: "Ninguna cosa grande se crea de repente." No hablaba de pasividad. Hablaba de la disciplina de la atención sostenida. Bárbol tardó tres días en decidir marchar sobre Isengard. *"No te apresures"* no era una preferencia filosófica — era una lección aprendida. Los Ents ya habían sido impacientes antes, y les costó.
 
 ## Estar presente sin forzar
 

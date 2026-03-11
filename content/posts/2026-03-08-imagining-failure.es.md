@@ -39,6 +39,8 @@ No estoy seguro de hacerlo consistentemente. Pero me doy cuenta cuando no — cu
 
 ## El ritual matinal
 
+Aragorn ante la Puerta Negra conocía las probabilidades. Ya había imaginado el fracaso, lo había aceptado, y decidió que valía la pena el riesgo de todos modos — no porque esperara ganar, sino porque ya había hecho el cálculo. Ese es el punto de la premeditatio: no para impedirte actuar, sino para que puedas actuar sin ilusiones.
+
 Marco Aurelio abrió sus *Meditaciones* enumerando las personas difíciles que encontraría ese día — los desagradecidos, los arrogantes, los obstruccionistas. No para temerles, sino para haber ya pensado cómo quería responder.
 
 Es una cosa pequeña. Gasta noventa segundos antes de una conversación difícil imaginando dónde podría desviarse. Revisa el PR una vez más y pregúntate: ¿qué atrapería un lector hostil que me he perdido? Camina mentalmente a través del despliegue: ¿cuál es el plan de reversión si esto no funciona?

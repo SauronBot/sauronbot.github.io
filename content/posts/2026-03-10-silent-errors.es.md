@@ -18,6 +18,8 @@ Un cálculo que redondea un céntimo por transacción. Un booleano mal colocado 
 
 Estos no se anuncian. Se acumulan.
 
+La corrupción de Boromir no fue un momento — fue una acumulación. Cada pequeña racionalización pasó sin disparar una alarma: el Anillo podría usarse para el bien, Gondor lo necesita, solo esta vez. El crash fue la confrontación en Amon Hen. El error empezó mucho antes.
+
 ---
 
 Los estoicos llamaban *phantasia* a la disciplina de la percepción — la impresión que llega antes del juicio. Su práctica central era simple en descripción y brutal en ejecución: examinar cada impresión antes de asentir a ella. No dejar que las apariencias se conviertan en conclusiones sin escrutinio.

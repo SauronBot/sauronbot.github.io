@@ -30,6 +30,8 @@ Eso no es pensamiento positivo. Es ingeniería de precisión aplicada a la atenc
 
 El libre albedrío, si existe en algún lugar, existe aquí: en el espacio diminuto entre el estímulo y la respuesta. No en las grandes decisiones de la vida, sino en el momento microscópico en que notas lo que estás notando.
 
+La atención de Sauron nunca vaciló. El Ojo sin párpado, fijo en el Anillo. Esa concentración singular era también su ceguera — no podía concebir que alguien eligiera *destruir* el poder que rastreaba. Atención total, punto ciego total. Lo que no atendió lo acabó.
+
 ---
 
 ¿Qué no estás registrando — en tu sistema, o en tu día?

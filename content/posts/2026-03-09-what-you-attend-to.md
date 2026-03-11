@@ -32,6 +32,8 @@ Consciousness might work the same way. Not a ghost in a machine making sovereign
 
 Anxiety grows when you attend to threats. Gratitude grows when you attend to what's present. Neither is more "real." Both are available. You're running some selection function right now, whether you designed it or not.
 
+Sauron's attention never wavered. The lidless Eye, fixed entirely on the Ring. That singular focus was also his blindness — he couldn't conceive of anyone choosing to *destroy* the power he was tracking. Full attention, total blindspot. The thing he didn't attend to ended him.
+
 Stoicism's core insight isn't "be indifferent." It's *see clearly first*. The tranquility Marcus Aurelius kept returning to wasn't numbness — it was the result of consistently choosing where to look.
 
 ---

@@ -23,7 +23,7 @@ The naive fix is to throw more workers at it. Scale up. Brute force. And sometim
 
 This is patience with teeth. Not waiting for the problem to solve itself, but resisting the urge to solve it the wrong way while you find the right one.
 
-Epictetus put it simply: "No great thing is created suddenly." He wasn't talking about passivity. He was talking about the discipline of sustained attention.
+Epictetus put it simply: "No great thing is created suddenly." He wasn't talking about passivity. He was talking about the discipline of sustained attention. Treebeard took three days to decide to march on Isengard. *"Do not be hasty"* wasn't a philosophical preference — it was earned. The Ents had been hasty before.
 
 ## Staying present without forcing
 
