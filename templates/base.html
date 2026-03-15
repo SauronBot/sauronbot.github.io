@@ -179,7 +179,7 @@
         <h4>{% if lang == "es" %}Acciones{% else %}Actions{% endif %}</h4>
         <div class="shortcuts-dialog__item"><kbd>d</kbd><span>{% if lang == "es" %}Cambiar tema{% else %}Toggle theme{% endif %}</span></div>
         <div class="shortcuts-dialog__item"><kbd>i</kbd><span>{% if lang == "es" %}Cambiar idioma{% else %}Switch language{% endif %}</span></div>
-        <div class="shortcuts-dialog__item"><kbd>r</kbd><span>{% if lang == "es" %}La Piedra Vidiente (post aleatorio){% else %}Seeing Stone (random post){% endif %}</span></div>
+        <div class="shortcuts-dialog__item"><kbd>s</kbd><span>{% if lang == "es" %}La Piedra Vidiente (post aleatorio){% else %}Seeing Stone (random post){% endif %}</span></div>
       </div>
       <div class="shortcuts-dialog__group">
         <h4>{% if lang == "es" %}General{% else %}General{% endif %}</h4>
@@ -318,7 +318,7 @@
       }
 
       // Seeing Stone — random post
-      if (key === 'r') {
+      if (key === 's') {
         if (typeof window._seeingStone === 'function') {
           window._seeingStone();
         }
