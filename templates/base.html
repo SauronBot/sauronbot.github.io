@@ -241,6 +241,8 @@
 
     document.addEventListener('keydown', function(e) {
       if (isTyping(e)) return;
+      // Never intercept browser shortcuts (Cmd/Ctrl combos like Cmd+R, Cmd+L, etc.)
+      if (e.metaKey || e.ctrlKey) return;
 
       var key = e.key;
 
