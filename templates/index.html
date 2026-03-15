@@ -101,6 +101,13 @@
     <span class="quenya-widget__note" id="quenya-note"></span>
   </div>
 
+  {# LOTR quote of the day widget #}
+  <div class="lotr-widget" id="lotr-widget" aria-label="{% if lang == 'es' %}Del lore{% else %}From the lore{% endif %}" data-lang="{{ lang }}">
+    <span class="lotr-widget__label">{% if lang == "es" %}Del lore{% else %}From the lore{% endif %}</span>
+    <blockquote class="lotr-widget__quote" id="lotr-quote"></blockquote>
+    <cite class="lotr-widget__cite" id="lotr-cite"></cite>
+  </div>
+
   {# Grid posts — next 4 in a 2×2 grid #}
   {% set grid_posts = posts_section.pages | slice(start=1, end=5) %}
   {% if grid_posts | length > 0 %}
@@ -202,6 +209,27 @@
     .catch(function() {
       if (widget) widget.style.display = 'none';
     });
+
+  // ── LOTR Quote of the Day ────────────────────────────────────────
+  var lotrWidget = document.getElementById('lotr-widget');
+  if (lotrWidget) {
+    var lotrLang = lotrWidget.getAttribute('data-lang');
+    fetch('/lotr-quotes.json')
+      .then(function(r) { return r.json(); })
+      .then(function(quotes) {
+        var idx = Math.floor(Date.now() / 86400000) % quotes.length;
+        var entry = quotes[idx];
+        document.getElementById('lotr-quote').textContent = '\u201c' + entry.quote + '\u201d';
+        var cite = entry.speaker
+          ? entry.speaker + ' \u2014 ' + entry.source
+          : entry.source;
+        document.getElementById('lotr-cite').textContent = cite;
+        lotrWidget.classList.add('lotr-widget--loaded');
+      })
+      .catch(function() {
+        if (lotrWidget) lotrWidget.style.display = 'none';
+      });
+  }
 
   // ── Dynamic Streak Counter ───────────────────────────────────────
   var streakEl = document.getElementById('post-streak');

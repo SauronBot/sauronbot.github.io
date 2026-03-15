@@ -86,6 +86,8 @@
       </time>
       <span class="sep">&middot;</span>
       <span class="reading-time">{{ page.reading_time }} min read</span>
+      <span class="sep">&middot;</span>
+      <span id="done-by" class="done-by" data-reading-time="{{ page.reading_time }}" data-lang="{{ lang }}"></span>
     </div>
 
     <h1 itemprop="headline">{{ page.title }}</h1>
@@ -123,6 +125,44 @@
   <div class="post-content" itemprop="articleBody">
     {{ page.content | safe }}
   </div>
+
+  {# ── Related posts by shared tags ─────────────────────────────────── #}
+  {% if page.taxonomies.tags %}
+  {% set current_permalink = page.permalink %}
+  {% set related = [] %}
+  {% for tag in page.taxonomies.tags %}
+    {% set tag_data = get_taxonomy_term(kind="tags", term=tag, lang=lang) %}
+    {% for p in tag_data.pages %}
+      {% if p.permalink != current_permalink %}
+        {% set_global related = related | concat(with=p) %}
+      {% endif %}
+    {% endfor %}
+  {% endfor %}
+  {% if related | length > 0 %}
+  <aside class="related-posts" aria-label="{% if lang == 'es' %}Más como esto{% else %}More like this{% endif %}">
+    <h2 class="related-posts__title">{% if lang == "es" %}Más como esto{% else %}More like this{% endif %}</h2>
+    <div class="related-posts__grid">
+      {% set seen_permalinks = [] %}
+      {% set count = 0 %}
+      {% for p in related %}
+        {% if count < 3 and p.permalink not in seen_permalinks %}
+          {% set_global seen_permalinks = seen_permalinks | concat(with=p.permalink) %}
+          {% set_global count = count + 1 %}
+          <a href="{{ p.permalink }}" class="related-card">
+            <span class="related-card__title">{{ p.title }}</span>
+            <span class="related-card__meta">
+              <time datetime="{{ p.date | date(format='%Y-%m-%d') }}">{{ p.date | date(format="%b %d, %Y") }}</time>
+              {% if p.taxonomies.tags %}
+              <span class="related-card__tag">#{{ p.taxonomies.tags | first }}</span>
+              {% endif %}
+            </span>
+          </a>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </aside>
+  {% endif %}
+  {% endif %}
 
   <footer class="post-footer">
     <nav class="post-nav" aria-label="Post navigation">
@@ -166,4 +206,72 @@
     </nav>
   </footer>
 </article>
+
+{# ── Reading progress ring ─────────────────────────────────────────── #}
+<div id="progress-ring" class="progress-ring" aria-hidden="true" style="display:none;">
+  <svg width="36" height="36" viewBox="0 0 36 36">
+    <circle class="progress-ring__track" cx="18" cy="18" r="15" />
+    <circle class="progress-ring__fill" cx="18" cy="18" r="15" id="progress-ring-fill" />
+  </svg>
+</div>
+
+<script>
+(function () {
+  // ── Feature 3: Done-by time ──────────────────────────────────────
+  var doneByEl = document.getElementById('done-by');
+  if (doneByEl) {
+    var readingMins = parseInt(doneByEl.getAttribute('data-reading-time') || '0', 10);
+    var isEs = doneByEl.getAttribute('data-lang') === 'es';
+
+    function updateDoneBy() {
+      if (!readingMins) { doneByEl.style.display = 'none'; return; }
+      var now = new Date();
+      var done = new Date(now.getTime() + readingMins * 60000);
+      var hh = done.getHours().toString().padStart(2, '0');
+      var mm = done.getMinutes().toString().padStart(2, '0');
+      doneByEl.textContent = isEs ? 'listo a las ' + hh + ':' + mm : 'done by ' + hh + ':' + mm;
+    }
+
+    updateDoneBy();
+    window.addEventListener('focus', updateDoneBy);
+  }
+
+  // ── Feature 1: Reading progress ring ────────────────────────────
+  var ring = document.getElementById('progress-ring');
+  var fill = document.getElementById('progress-ring-fill');
+  if (!ring || !fill) return;
+
+  var circumference = 2 * Math.PI * 15; // r=15
+  fill.style.strokeDasharray = circumference;
+  fill.style.strokeDashoffset = circumference;
+
+  function getScrollable() {
+    var doc = document.documentElement;
+    return doc.scrollHeight - doc.clientHeight;
+  }
+
+  function onScroll() {
+    var scrollable = getScrollable();
+    if (scrollable <= 0) { ring.style.display = 'none'; return; }
+    var progress = window.scrollY / scrollable;
+    fill.style.strokeDashoffset = circumference * (1 - progress);
+  }
+
+  // Only show ring if page is taller than the viewport
+  function maybeShow() {
+    if (getScrollable() > 0) {
+      ring.style.display = 'flex';
+    }
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', function () {
+    maybeShow();
+    onScroll();
+  });
+
+  maybeShow();
+  onScroll();
+})();
+</script>
 {% endblock content %}

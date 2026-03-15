@@ -1163,3 +1163,171 @@ html { font-size: clamp(15px, 2.5vw, 18px); }
 
   &:hover &__orb { opacity: 1; }
 }
+
+// =============================================================================
+// Reading progress ring (Feature 1)
+// =============================================================================
+.progress-ring {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 100;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+
+  &__track {
+    fill: none;
+    stroke: var(--border);
+    stroke-width: 2.5;
+  }
+
+  &__fill {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    transform: rotate(-90deg);
+    transform-origin: 18px 18px;
+    transition: stroke-dashoffset 0.1s linear;
+  }
+}
+
+@media (max-width: 399px) {
+  .progress-ring {
+    bottom: 1rem;
+    right: 1rem;
+  }
+}
+
+// =============================================================================
+// Done-by time span (Feature 3)
+// =============================================================================
+.done-by {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-family: $font-mono;
+  font-style: italic;
+}
+
+// =============================================================================
+// Related posts (Feature 2)
+// =============================================================================
+.related-posts {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+
+  &__title {
+    font-size: 1.15rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+
+    @media (max-width: 639px) {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+.related-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  text-decoration: none;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+
+  &:hover {
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px var(--shadow);
+    transform: translateY(-1px);
+    text-decoration: none;
+  }
+
+  &__title {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--heading);
+    line-height: 1.35;
+    transition: color 0.15s;
+  }
+
+  &:hover &__title { color: var(--accent); }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.72rem;
+    font-family: $font-mono;
+    color: var(--muted);
+  }
+
+  &__tag {
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 0.05em 0.4em;
+  }
+}
+
+// =============================================================================
+// LOTR quote of the day widget (Feature 4)
+// =============================================================================
+.lotr-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1rem 1.25rem 1rem 1.25rem;
+  margin: 1.75rem 0;
+  border-left: 3px solid var(--accent);
+  background: var(--surface);
+  border-radius: 0 4px 4px 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+
+  &--loaded { opacity: 1; }
+
+  &__label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.6;
+  }
+
+  &__quote {
+    font-style: italic;
+    font-size: 0.9rem;
+    color: var(--body-text);
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    border: none;
+  }
+
+  &__cite {
+    font-size: 0.75rem;
+    font-family: $font-mono;
+    color: var(--muted);
+    font-style: normal;
+
+    &::before { content: "\2014\00a0"; }
+  }
+}
