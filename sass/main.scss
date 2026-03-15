@@ -547,20 +547,62 @@ nav {
 }
 
 .posts-footer {
-  margin-top: 1.25rem;
+  margin-top: 1.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .post-streak {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-family: $font-mono;
   color: var(--muted);
   margin: 0;
+  letter-spacing: 0.01em;
+
+  &--active { color: var(--text); }
+  &--broke  { opacity: 0.55; }
 }
 
+.posts-footer__actions {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.posts-footer__link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+  text-decoration: none;
+  transition: background 0.12s, color 0.12s;
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--surface);
+    color: var(--text);
+    text-decoration: none;
+  }
+}
+
+.posts-footer__sep {
+  width: 1px;
+  align-self: stretch;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+// .all-posts kept for any other templates that reference it
 .all-posts {
   font-size: 0.9rem;
   margin: 0;
@@ -1087,47 +1129,37 @@ html { font-size: clamp(15px, 2.5vw, 18px); }
 }
 
 // =============================================================================
-// Seeing Stone (random post button)
+// Seeing Stone (random post button) — part of the pill group
 // =============================================================================
-.posts-footer__actions {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  flex-wrap: wrap;
-  margin-top: 0.4rem;
-}
-
 .seeing-stone {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.4rem;
+  padding: 0.35rem 0.85rem;
   background: none;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 0.3rem 0.7rem;
-  font-size: 0.85rem;
+  border: none;
+  font-size: 0.82rem;
+  font-family: inherit;
   color: var(--muted);
   cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
-  font-family: inherit;
+  transition: background 0.12s, color 0.12s;
+  white-space: nowrap;
 
   &:hover {
-    border-color: var(--accent);
+    background: var(--surface);
     color: var(--accent);
 
     .seeing-stone__orb {
-      text-shadow: 0 0 8px var(--accent);
+      text-shadow: 0 0 6px var(--accent);
       color: var(--accent);
     }
   }
 
   &__orb {
-    font-size: 0.8rem;
-    color: var(--muted);
-    transition: color 0.15s, text-shadow 0.15s;
+    font-size: 0.75rem;
+    opacity: 0.7;
+    transition: color 0.12s, text-shadow 0.12s, opacity 0.12s;
   }
 
-  &__label {
-    font-size: 0.82rem;
-  }
+  &:hover &__orb { opacity: 1; }
 }

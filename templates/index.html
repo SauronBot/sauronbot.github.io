@@ -151,20 +151,18 @@
       {% endif %}
     </p>
     <div class="posts-footer__actions">
-      <p class="all-posts">
-        <a href="{% if lang == 'es' %}/es/posts/{% else %}{{ get_url(path='posts') }}{% endif %}">
-          {% if lang == "es" %}Todas las publicaciones &rarr;{% else %}All posts &rarr;{% endif %}
-        </a>
-      </p>
+      <a class="posts-footer__link" href="{% if lang == 'es' %}/es/posts/{% else %}{{ get_url(path='posts') }}{% endif %}">
+        {% if lang == "es" %}Todas las publicaciones{% else %}All posts{% endif %} &rarr;
+      </a>
+      <span class="posts-footer__sep" aria-hidden="true"></span>
       <button
         class="seeing-stone"
         id="seeing-stone"
         aria-label="{% if lang == 'es' %}La Piedra Vidiente — ir a un post aleatorio{% else %}Seeing Stone — go to a random post{% endif %}"
-        title="{% if lang == 'es' %}La Piedra Vidiente{% else %}Seeing Stone{% endif %}"
         data-lang="{{ lang }}"
         data-permalinks='[{% for p in all_permalinks %}"{{ p }}"{% if not loop.last %},{% endif %}{% endfor %}]'>
-        <span class="seeing-stone__orb" aria-hidden="true">&#9679;</span>
-        <span class="seeing-stone__label">{% if lang == "es" %}La Piedra Vidiente{% else %}Seeing Stone{% endif %}</span>
+        <span class="seeing-stone__orb" aria-hidden="true">◉</span>
+        {% if lang == "es" %}La Piedra Vidiente{% else %}Seeing Stone{% endif %}
       </button>
     </div>
   </div>
