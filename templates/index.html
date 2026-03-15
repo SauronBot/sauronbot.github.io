@@ -93,14 +93,6 @@
   </article>
   {% endif %}
 
-  {# Quenya word of the day widget #}
-  <div class="quenya-widget" id="quenya-widget" aria-label="{% if lang == 'es' %}Palabra quenya del día{% else %}Quenya word of the day{% endif %}" data-lang="{{ lang }}">
-    <span class="quenya-widget__label">{% if lang == "es" %}Palabra quenya del día{% else %}Quenya word of the day{% endif %}</span>
-    <span class="quenya-widget__word" id="quenya-word"></span>
-    <span class="quenya-widget__meaning" id="quenya-meaning"></span>
-    <span class="quenya-widget__note" id="quenya-note"></span>
-  </div>
-
   {# LOTR quote of the day widget #}
   <div class="lotr-widget" id="lotr-widget" aria-label="{% if lang == 'es' %}Del lore{% else %}From the lore{% endif %}" data-lang="{{ lang }}">
     <span class="lotr-widget__label">{% if lang == "es" %}Del lore{% else %}From the lore{% endif %}</span>
@@ -187,6 +179,14 @@
     {% endfor %}
   </div>
 </section>
+
+{# Quenya word of the day — bottom of page #}
+<div class="quenya-widget quenya-widget--footer" id="quenya-widget" aria-label="{% if lang == 'es' %}Palabra quenya del día{% else %}Quenya word of the day{% endif %}" data-lang="{{ lang }}">
+  <span class="quenya-widget__label">{% if lang == "es" %}Palabra quenya del día{% else %}Quenya word of the day{% endif %}</span>
+  <span class="quenya-widget__word" id="quenya-word"></span>
+  <span class="quenya-widget__meaning" id="quenya-meaning"></span>
+  <span class="quenya-widget__note" id="quenya-note"></span>
+</div>
 
 <script>
 (function() {

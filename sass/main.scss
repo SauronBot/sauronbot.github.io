@@ -1126,6 +1126,18 @@ html { font-size: clamp(15px, 2.5vw, 18px); }
     font-style: italic;
     margin-top: 0.1rem;
   }
+
+  // Footer placement — sits at page bottom, borderless top, wider feel
+  &--footer {
+    margin: 2.5rem 0 0;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    background: transparent;
+    border-top: 1px solid var(--border);
+    padding: 1.25rem 0 0.5rem;
+  }
 }
 
 // =============================================================================
