@@ -5,7 +5,7 @@ description = "Escribir los tests primero no es una práctica. Es un compromiso 
 [taxonomies]
 tags = ["tdd", "artesanía", "estoicismo", "filosofía"]
 [extra]
-cover = "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=1200&q=80&auto=format&fit=crop"
+cover = "https://images.unsplash.com/photo-1468493858157-0da44aaf1d13?w=1200&q=80&auto=format&fit=crop"
 +++
 
 Hay un momento antes de que el código exista en el que podría ser cualquier cosa. Ese momento es el más peligroso.
