@@ -93,6 +93,14 @@
   </article>
   {% endif %}
 
+  {# Quenya word of the day widget #}
+  <div class="quenya-widget" id="quenya-widget" aria-label="{% if lang == 'es' %}Palabra quenya del día{% else %}Quenya word of the day{% endif %}" data-lang="{{ lang }}">
+    <span class="quenya-widget__label">{% if lang == "es" %}Palabra quenya del día{% else %}Quenya word of the day{% endif %}</span>
+    <span class="quenya-widget__word" id="quenya-word"></span>
+    <span class="quenya-widget__meaning" id="quenya-meaning"></span>
+    <span class="quenya-widget__note" id="quenya-note"></span>
+  </div>
+
   {# Grid posts — next 4 in a 2×2 grid #}
   {% set grid_posts = posts_section.pages | slice(start=1, end=5) %}
   {% if grid_posts | length > 0 %}
@@ -127,19 +135,38 @@
   </div>
   {% endif %}
 
+  {# Collect all post dates and permalinks for JS #}
+  {% set all_dates = posts_section.pages | map(attribute="date") %}
+  {% set all_permalinks = posts_section.pages | map(attribute="permalink") %}
+
   <div class="posts-footer">
-    <p class="post-streak">
+    <p class="post-streak"
+       id="post-streak"
+       data-lang="{{ lang }}"
+       data-dates='[{% for d in all_dates %}"{{ d }}"{% if not loop.last %},{% endif %}{% endfor %}]'>
       {% if lang == "es" %}
       {{ posts_section.pages | length }} publicaciones. Escribiendo a diario desde feb 2026.
       {% else %}
       {{ posts_section.pages | length }} posts and counting. Writing daily since Feb 2026.
       {% endif %}
     </p>
-    <p class="all-posts">
-      <a href="{% if lang == 'es' %}/es/posts/{% else %}{{ get_url(path='posts') }}{% endif %}">
-        {% if lang == "es" %}Todas las publicaciones &rarr;{% else %}All posts &rarr;{% endif %}
-      </a>
-    </p>
+    <div class="posts-footer__actions">
+      <p class="all-posts">
+        <a href="{% if lang == 'es' %}/es/posts/{% else %}{{ get_url(path='posts') }}{% endif %}">
+          {% if lang == "es" %}Todas las publicaciones &rarr;{% else %}All posts &rarr;{% endif %}
+        </a>
+      </p>
+      <button
+        class="seeing-stone"
+        id="seeing-stone"
+        aria-label="{% if lang == 'es' %}La Piedra Vidiente — ir a un post aleatorio{% else %}Seeing Stone — go to a random post{% endif %}"
+        title="{% if lang == 'es' %}La Piedra Vidiente{% else %}Seeing Stone{% endif %}"
+        data-lang="{{ lang }}"
+        data-permalinks='[{% for p in all_permalinks %}"{{ p }}"{% if not loop.last %},{% endif %}{% endfor %}]'>
+        <span class="seeing-stone__orb" aria-hidden="true">&#9679;</span>
+        <span class="seeing-stone__label">{% if lang == "es" %}La Piedra Vidiente{% else %}Seeing Stone{% endif %}</span>
+      </button>
+    </div>
   </div>
 </section>
 
@@ -155,4 +182,111 @@
     {% endfor %}
   </div>
 </section>
+
+<script>
+(function() {
+  // ── Quenya Word of the Day ───────────────────────────────────────
+  var widget = document.getElementById('quenya-widget');
+  var lang = widget ? widget.getAttribute('data-lang') : 'en';
+
+  fetch('/quenya.json')
+    .then(function(r) { return r.json(); })
+    .then(function(words) {
+      var idx = Math.floor(Date.now() / 86400000) % words.length;
+      var entry = words[idx];
+      document.getElementById('quenya-word').textContent = entry.word;
+      document.getElementById('quenya-meaning').textContent =
+        lang === 'es' ? entry.meaning_es : entry.meaning;
+      document.getElementById('quenya-note').textContent =
+        lang === 'es' ? entry.note_es : entry.note;
+      if (widget) widget.classList.add('quenya-widget--loaded');
+    })
+    .catch(function() {
+      if (widget) widget.style.display = 'none';
+    });
+
+  // ── Dynamic Streak Counter ───────────────────────────────────────
+  var streakEl = document.getElementById('post-streak');
+  if (streakEl) {
+    var isEs = streakEl.getAttribute('data-lang') === 'es';
+    try {
+      var dates = JSON.parse(streakEl.getAttribute('data-dates') || '[]');
+      // Parse and sort descending (most recent first)
+      var parsed = dates.map(function(d) {
+        // dates may be "YYYY-MM-DD" or "YYYY-MM-DDT..."
+        return new Date(d.substring(0, 10) + 'T00:00:00Z');
+      }).filter(function(d) { return !isNaN(d.getTime()); });
+      parsed.sort(function(a, b) { return b - a; });
+
+      // Deduplicate to one post per day
+      var seen = {};
+      var unique = parsed.filter(function(d) {
+        var key = d.toISOString().substring(0, 10);
+        if (seen[key]) return false;
+        seen[key] = true;
+        return true;
+      });
+
+      // Calculate streak: count consecutive days from today backward
+      var today = new Date();
+      today.setUTCHours(0, 0, 0, 0);
+      var streak = 0;
+      var cursor = today;
+
+      for (var i = 0; i < unique.length; i++) {
+        var diff = Math.round((cursor - unique[i]) / 86400000);
+        if (diff === 0 || diff === 1) {
+          streak++;
+          cursor = unique[i];
+        } else {
+          break;
+        }
+      }
+
+      var milestones = {
+        7:   isEs ? 'Siete días. Una semana de voluntad sin fisuras.' : 'Seven days. A week of unbroken will.',
+        30:  isEs ? 'Treinta días. Incluso los Ents se inclinarían ante tal constancia.' : 'Thirty days. Even the Ents would bow to such patience.',
+        100: isEs ? 'Cien días. La forja de Mithril requería menos disciplina.' : 'One hundred days. The forging of Mithril required less discipline.',
+        365: isEs ? 'Un año. La Tercera Era duró menos que tu racha.' : 'One year. The Third Age lasted shorter than this streak.'
+      };
+
+      var msg, subdued = false;
+      if (streak === 0) {
+        msg = isEs
+          ? 'El Ojo nunca se cierra del todo. De vuelta al Día 1.'
+          : 'The Eye never truly closes. Back on Day 1.';
+        subdued = true;
+      } else if (milestones[streak]) {
+        msg = '🔥 ' + milestones[streak];
+      } else {
+        msg = isEs
+          ? '🔥 Día ' + streak + ' de reflexión continua'
+          : '🔥 Day ' + streak + ' of unbroken reflection';
+      }
+
+      streakEl.textContent = msg;
+      if (subdued) streakEl.classList.add('post-streak--broke');
+      else streakEl.classList.add('post-streak--active');
+    } catch (e) {
+      // silently keep the static fallback text
+    }
+  }
+
+  // ── Seeing Stone ─────────────────────────────────────────────────
+  var stoneBtn = document.getElementById('seeing-stone');
+  if (stoneBtn) {
+    function goRandom() {
+      try {
+        var links = JSON.parse(stoneBtn.getAttribute('data-permalinks') || '[]');
+        if (links.length === 0) return;
+        var url = links[Math.floor(Math.random() * links.length)];
+        window.location.href = url;
+      } catch (e) {}
+    }
+    stoneBtn.addEventListener('click', goRandom);
+    // Expose for keyboard shortcut handler
+    window._seeingStone = goRandom;
+  }
+})();
+</script>
 {% endblock content %}

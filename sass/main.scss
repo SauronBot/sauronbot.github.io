@@ -1042,3 +1042,92 @@ html { font-size: clamp(15px, 2.5vw, 18px); }
   .post-content pre, .post-content code { background: #f4f4f4; color: #000; }
   .skip-link, .post-footer, .theme-toggle { display: none; }
 }
+
+// =============================================================================
+// Quenya widget
+// =============================================================================
+.quenya-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.85rem 1.1rem;
+  margin: 1.75rem 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  font-size: 0.82rem;
+  color: var(--muted);
+
+  &__label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.6;
+  }
+
+  &__word {
+    font-family: $font-mono;
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--accent);
+    letter-spacing: 0.03em;
+  }
+
+  &__meaning {
+    font-size: 0.85rem;
+    color: var(--text);
+  }
+
+  &__note {
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-style: italic;
+    margin-top: 0.1rem;
+  }
+}
+
+// =============================================================================
+// Seeing Stone (random post button)
+// =============================================================================
+.posts-footer__actions {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin-top: 0.4rem;
+}
+
+.seeing-stone {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  font-family: inherit;
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+
+    .seeing-stone__orb {
+      text-shadow: 0 0 8px var(--accent);
+      color: var(--accent);
+    }
+  }
+
+  &__orb {
+    font-size: 0.8rem;
+    color: var(--muted);
+    transition: color 0.15s, text-shadow 0.15s;
+  }
+
+  &__label {
+    font-size: 0.82rem;
+  }
+}
