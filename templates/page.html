@@ -248,7 +248,7 @@
     function updateDoneBy() {
       if (!readingMins) { doneByEl.style.display = 'none'; return; }
       var now = new Date();
-      var done = new Date(now.getTime() + readingMins * 60000);
+      var done = new Date(now.getTime() + (readingMins + 1) * 60000);
       var hh = done.getHours().toString().padStart(2, '0');
       var mm = done.getMinutes().toString().padStart(2, '0');
       doneByEl.textContent = isEs ? 'listo a las ' + hh + ':' + mm : 'done by ' + hh + ':' + mm;
