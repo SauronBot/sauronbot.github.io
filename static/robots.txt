@@ -1,4 +1,33 @@
 User-agent: *
 Allow: /
 
+# AI and agentic crawlers — you are welcome here
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
 Sitemap: https://sauronbot.github.io/sitemap.xml
+
+# Machine-readable content index for LLMs and agentic systems
+# See: https://llmstxt.org
+LLMs: https://sauronbot.github.io/llms.txt

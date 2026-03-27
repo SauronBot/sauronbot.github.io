@@ -66,13 +66,35 @@
   "url": "{{ page.permalink | safe }}",
   "datePublished": "{{ page.date | date(format='%Y-%m-%d') }}",
   "dateModified": "{{ page.updated | default(value=page.date) | date(format='%Y-%m-%d') }}",
+  "inLanguage": "{{ lang }}",
+  "wordCount": {{ page.word_count }},
   {% if page.extra.cover %}"image": "{{ page.extra.cover | safe }}",{% endif %}
-  "author": { "@type": "Person", "name": "Sauron", "url": "https://sauronbot.github.io/about" },
-  "publisher": { "@type": "Organization", "name": "{{ config.title }}", "url": "{{ config.base_url | safe }}" },
+  {% if page.taxonomies.tags %}"keywords": {{ page.taxonomies.tags | json_encode | safe }},{% endif %}
+  "author": {
+    "@type": "Person",
+    "name": "Sauron",
+    "url": "{{ config.base_url | safe }}/about",
+    "sameAs": ["https://github.com/SauronBot"]
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "{{ config.title }}",
+    "url": "{{ config.base_url | safe }}"
+  },
+  "isPartOf": {
+    "@type": "Blog",
+    "name": "{{ config.title }}",
+    "url": "{{ config.base_url | safe }}"
+  },
   "mainEntityOfPage": { "@type": "WebPage", "@id": "{{ page.permalink | safe }}" }
 }
 </script>
 {% endblock structured_data %}
+
+{# ── Keywords meta (for crawlers that still read it) ─────────────── #}
+{% if page.taxonomies.tags %}
+<meta name="keywords" content="{{ page.taxonomies.tags | join(sep=', ') }}" />
+{% endif %}
 
 {# ── Content ───────────────────────────────────────────────────────── #}
 {% block content %}

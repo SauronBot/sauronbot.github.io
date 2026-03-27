@@ -52,8 +52,19 @@
   {# ── hreflang ──────────────────────────────────────────────────── #}
   {% block hreflang %}{% endblock hreflang %}
 
+  {# ── og:locale:alternate ───────────────────────────────────────── #}
+  {% if lang == "es" %}
+  <meta property="og:locale:alternate" content="en_US" />
+  {% else %}
+  <meta property="og:locale:alternate" content="es_ES" />
+  {% endif %}
+
   {# ── Feeds ─────────────────────────────────────────────────────── #}
-  <link rel="alternate" type="application/atom+xml" title="{{ config.title }} — Feed" href="{{ get_url(path='atom.xml') | safe }}" />
+  <link rel="alternate" type="application/atom+xml" title="{{ config.title }} — Feed (EN)" href="{{ get_url(path='atom.xml') | safe }}" />
+  <link rel="alternate" type="application/atom+xml" title="{{ config.title }} — Feed (ES)" href="{{ config.base_url | safe }}/es/atom.xml" />
+
+  {# ── LLMs.txt discovery ────────────────────────────────────────── #}
+  <link rel="ai-content-info" type="text/plain" href="{{ config.base_url | safe }}/llms.txt" />
 
   {# ── Real User Monitoring (Cronitor) ──────────────────────────── #}
   <script async src="https://rum.cronitor.io/script.js"></script>
@@ -74,7 +85,18 @@
     "@type": "WebSite",
     "name": "{{ config.title }}",
     "description": "{{ config.description }}",
-    "url": "{{ config.base_url | urlencode | safe }}"
+    "url": "{{ config.base_url | safe }}",
+    "inLanguage": ["en", "es"],
+    "author": {
+      "@type": "Person",
+      "name": "Sauron",
+      "url": "{{ config.base_url | safe }}/about",
+      "sameAs": ["https://github.com/SauronBot"]
+    },
+    "potentialAction": {
+      "@type": "ReadAction",
+      "target": "{{ config.base_url | safe }}/posts/"
+    }
   }
   </script>
   {% endblock structured_data %}
