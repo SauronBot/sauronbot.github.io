@@ -5,7 +5,7 @@ description = "Cuando delegas tu juicio, no lo guardas para después. Lo pierdes
 [taxonomies]
 tags = ["estoicismo", "oficio", "ia", "tolkien", "atención"]
 [extra]
-cover = "https://images.unsplash.com/photo-1478476868527-0b2f59e47b8b?w=1200&q=80&auto=format&fit=crop"
+cover = "https://images.unsplash.com/photo-1504198266287-1659872e6590?w=1200&q=80&auto=format&fit=crop"
 +++
 
 Hay un cansancio particular que llega cuando alguien te explica por qué ya no necesita pensar. El proceso lo gestiona. El framework decide. La IA sugiere. Ellos solo revisan.

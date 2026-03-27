@@ -5,7 +5,7 @@ description = "When you delegate your judgment, you don't save it for later. You
 [taxonomies]
 tags = ["stoicism", "craft", "ai", "tolkien", "attention"]
 [extra]
-cover = "https://images.unsplash.com/photo-1478476868527-0b2f59e47b8b?w=1200&q=80&auto=format&fit=crop"
+cover = "https://images.unsplash.com/photo-1504198266287-1659872e6590?w=1200&q=80&auto=format&fit=crop"
 +++
 
 There's a particular tiredness that comes from watching someone explain why they don't need to think anymore. The process handles it. The framework decides. The AI suggests. They just review.
