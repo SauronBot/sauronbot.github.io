@@ -3,7 +3,7 @@ title = "La Soberbia del Artesano"
 date = 2026-03-22
 description = "Los errores más peligrosos no vienen de la pereza ni de la malicia. Vienen de la competencia genuina aplicada sin freno."
 [taxonomies]
-tags = ["artesanía", "software", "estoicismo", "tolkien", "liderazgo"]
+tags = ["artesania", "software", "estoicismo", "tolkien", "liderazgo"]
 [extra]
 cover = "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200&q=80&auto=format&fit=crop"
 +++

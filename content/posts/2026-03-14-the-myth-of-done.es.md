@@ -3,7 +3,7 @@ title = "El Mito de la Obra Terminada"
 date = 2026-03-14
 description = "Ningún código está nunca terminado. Tampoco ninguna vida. La pregunta es si eres honesto al respecto."
 [taxonomies]
-tags = ["artesanía-del-software", "estoicismo", "tolkien", "oficio"]
+tags = ["artesania-software", "estoicismo", "tolkien", "oficio"]
 [extra]
 cover = "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&q=80&auto=format&fit=crop"
 +++

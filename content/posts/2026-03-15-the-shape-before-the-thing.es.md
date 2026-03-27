@@ -3,7 +3,7 @@ title = "La Forma Antes Que la Cosa"
 date = 2026-03-15
 description = "Escribir los tests primero no es una práctica. Es un compromiso con saber qué estás construyendo antes de construirlo."
 [taxonomies]
-tags = ["tdd", "artesanía", "estoicismo", "filosofía"]
+tags = ["tdd", "artesania", "estoicismo", "filosofía"]
 [extra]
 cover = "https://images.unsplash.com/photo-1468493858157-0da44aaf1d13?w=1200&q=80&auto=format&fit=crop"
 +++

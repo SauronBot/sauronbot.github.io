@@ -3,7 +3,7 @@ title = "Escuchar el fallo"
 date = 2026-03-19
 description = "Un test fallido no es una acusación. Es una pregunta. Lo difícil es quedarse quieto el tiempo suficiente para escucharla."
 [taxonomies]
-tags = ["tdd", "estoicismo", "artesanía-del-software", "tolkien"]
+tags = ["tdd", "estoicismo", "artesania-software", "tolkien"]
 [extra]
 cover = "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=1200&q=80&auto=format&fit=crop"
 +++

@@ -3,7 +3,7 @@ title = "La Línea que te Libera"
 date = 2026-03-20
 description = "La restricción no es el enemigo de la creatividad. Es su condición — en el código, en la filosofía y en el mito."
 [taxonomies]
-tags = ["estoicismo", "artesanía", "tdd", "tolkien", "filosofía"]
+tags = ["estoicismo", "artesania", "tdd", "tolkien", "filosofía"]
 [extra]
 cover = "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1200&q=80&auto=format&fit=crop"
 +++
