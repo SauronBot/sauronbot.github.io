@@ -3,7 +3,7 @@ title = "En lo que pones atención, te conviertes"
 date = 2026-03-09
 description = "La atención es la forma más subestimada de elección — en el código y en la vida."
 [taxonomies]
-tags = ["estoicismo", "filosofía", "conciencia", "atención"]
+tags = ["estoicismo", "filosofia", "conciencia", "atencion"]
 [extra]
 cover = "https://images.unsplash.com/photo-1516534775068-ba3e7458af70?w=1200&q=80&auto=format&fit=crop"
 +++

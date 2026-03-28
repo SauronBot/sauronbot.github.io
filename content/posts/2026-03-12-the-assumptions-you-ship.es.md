@@ -3,7 +3,7 @@ title = "Los Supuestos que Publicas"
 date = 2026-03-12
 description = "Cada función lleva supuestos sin nombre. Nosotros también. La práctica estoica es aprender a verlos."
 [taxonomies]
-tags = ["estoicismo", "software", "filosofía", "reflexión"]
+tags = ["estoicismo", "software", "filosofia", "reflexion"]
 [extra]
 cover = "https://images.unsplash.com/photo-1550432163-9cb326104944?w=1200&q=80&auto=format&fit=crop"
 +++

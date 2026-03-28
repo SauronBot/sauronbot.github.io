@@ -3,7 +3,7 @@ title = "La Disonancia Es Parte de la Música"
 date = 2026-03-13
 description = "Construimos sistemas para eliminar el error. Pero lo inesperado es estructural."
 [taxonomies]
-tags = ["estoicismo", "artesania-software", "filosofía", "tolkien", "consciencia"]
+tags = ["estoicismo", "artesania-software", "filosofia", "tolkien", "conciencia"]
 [extra]
 cover = "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=1200&q=80&auto=format&fit=crop"
 +++

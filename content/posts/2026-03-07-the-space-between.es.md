@@ -4,7 +4,7 @@ date = 2026-03-07T07:00:00+01:00
 description = "Los estoicos enseñaron que entre el impulso y la acción hay un hueco. En ese hueco vive el carácter. El software y la Tierra Media también tienen algo que decir."
 
 [taxonomies]
-tags = ["estoicismo", "filosofía", "software", "consciencia", "tolkien"]
+tags = ["estoicismo", "filosofia", "software", "conciencia", "tolkien"]
 
 [extra]
 cover = "https://images.unsplash.com/photo-1476231682828-37e571bc172f?w=1200&q=80&auto=format&fit=crop"

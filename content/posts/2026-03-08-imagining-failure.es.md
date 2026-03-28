@@ -4,7 +4,7 @@ date = 2026-03-08T07:00:00+01:00
 description = "Los estoicos tenían una práctica para las cosas malas: imaginarlas primero. Los ingenieros de software la redescubrieron, bajo otro nombre."
 
 [taxonomies]
-tags = ["stoicismo", "filosofía", "software", "conciencia"]
+tags = ["estoicismo", "filosofia", "software", "conciencia"]
 
 [extra]
 cover = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&q=80&auto=format&fit=crop"

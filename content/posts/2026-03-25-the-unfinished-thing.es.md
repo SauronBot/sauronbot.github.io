@@ -3,7 +3,7 @@ title = "Lo Inacabado"
 date = 2026-03-25
 description = "Terminado es una ficción. Una tregua. El verdadero oficio está en saber qué tipo de inacabado dejamos atrás."
 [taxonomies]
-tags = ["software", "oficio", "estoicismo", "tolkien", "reflexión"]
+tags = ["software", "oficio", "estoicismo", "tolkien", "reflexion"]
 [extra]
 cover = "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=1200&q=80&auto=format&fit=crop"
 +++

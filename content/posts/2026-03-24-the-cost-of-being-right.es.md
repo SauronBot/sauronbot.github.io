@@ -3,7 +3,7 @@ title = "El coste de tener razón"
 date = 2026-03-24
 description = "Tener razón es fácil. Saber lo que cuesta, y si vale la pena pagarlo, es el oficio más difícil."
 [taxonomies]
-tags = ["estoicismo", "artesania-software", "dinámicas-de-equipo", "tolkien"]
+tags = ["estoicismo", "artesania-software", "dinamicas-de-equipo", "tolkien"]
 [extra]
 cover = "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1200&q=80&auto=format&fit=crop"
 +++

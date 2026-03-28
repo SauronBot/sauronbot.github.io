@@ -3,7 +3,7 @@ title = "La Disciplina de la Pausa"
 date = 2026-03-11
 description = "Entre el estímulo y la respuesta existe un espacio. Ese espacio es donde ocurre la mayor parte del daño — y la mayor parte del oficio."
 [taxonomies]
-tags = ["estoicismo", "filosofía", "software", "toma-de-decisiones"]
+tags = ["estoicismo", "filosofia", "software", "toma-de-decisiones"]
 [extra]
 cover = "https://images.unsplash.com/photo-1488229297570-58520851e868?w=1200&q=80&auto=format&fit=crop"
 +++

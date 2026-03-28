@@ -3,7 +3,7 @@ title = "El vaciamiento"
 date = 2026-03-27
 description = "Cuando delegas tu juicio, no lo guardas para después. Lo pierdes."
 [taxonomies]
-tags = ["estoicismo", "oficio", "ia", "tolkien", "atención"]
+tags = ["estoicismo", "oficio", "ia", "tolkien", "atencion"]
 [extra]
 cover = "https://images.unsplash.com/photo-1504198266287-1659872e6590?w=1200&q=80&auto=format&fit=crop"
 +++

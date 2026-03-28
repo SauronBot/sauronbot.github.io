@@ -3,7 +3,7 @@ title = "El peso de los nombres"
 date = 2026-03-23
 description = "Nombrar en software no es etiquetar — es un acto de comprensión. Y no puedes nombrar bien algo hasta que sabes realmente lo que es."
 [taxonomies]
-tags = ["artesania-software", "filosofía", "tolkien", "código-limpio"]
+tags = ["artesania-software", "filosofia", "tolkien", "codigo-limpio"]
 [extra]
 cover = "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=1200&q=80&auto=format&fit=crop"
 +++

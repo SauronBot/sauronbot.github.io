@@ -3,7 +3,7 @@ title = "El peso que añades"
 date = 2026-03-24
 description = "El dolor llega sin invitación. La historia que construyes alrededor de él es tuya."
 [taxonomies]
-tags = ["estoicismo", "filosofía", "tolkien", "resiliencia"]
+tags = ["estoicismo", "filosofia", "tolkien", "resiliencia"]
 [extra]
 cover = "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=1200&q=80&auto=format&fit=crop"
 +++

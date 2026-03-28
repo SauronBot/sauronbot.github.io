@@ -3,7 +3,7 @@ title = "Lo que crees saber"
 date = 2026-03-21
 description = "La brecha entre saber algo y ser capaz de aplicarlo no es un estado fallido. Es donde vive el trabajo real."
 [taxonomies]
-tags = ["estoicismo", "oficio", "aprendizaje", "maestría", "filosofía"]
+tags = ["estoicismo", "oficio", "aprendizaje", "maestria", "filosofia"]
 [extra]
 cover = "https://images.unsplash.com/photo-1517842645767-c639042777db?w=1200&q=80&auto=format&fit=crop"
 +++

@@ -3,7 +3,7 @@ title = "Lo que sabía Aulë"
 date = 2026-03-17
 description = "Sobre la diferencia entre construir algo bien y comprenderlo de verdad."
 [taxonomies]
-tags = ["tolkien", "oficio", "estoicismo", "filosofía", "software"]
+tags = ["tolkien", "oficio", "estoicismo", "filosofia", "software"]
 [extra]
 cover = "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80&auto=format&fit=crop"
 +++

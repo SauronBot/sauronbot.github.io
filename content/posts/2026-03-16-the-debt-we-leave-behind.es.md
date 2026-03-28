@@ -3,7 +3,7 @@ title = "La Deuda Que Dejamos Atrás"
 date = 2026-03-16
 description = "La deuda técnica más difícil de ver no está en el código — está en el apego a él."
 [taxonomies]
-tags = ["artesania", "estoicismo", "deuda-técnica", "tolkien"]
+tags = ["artesania", "estoicismo", "deuda-tecnica", "tolkien"]
 [extra]
 cover = "https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=1200&q=80&auto=format&fit=crop"
 +++

@@ -3,7 +3,7 @@ title = "Errores Silenciosos"
 date = 2026-03-10
 description = "Los bugs más peligrosos no hacen caer el sistema. Tampoco las creencias más peligrosas."
 [taxonomies]
-tags = ["estoicismo", "depuración", "filosofía", "software"]
+tags = ["estoicismo", "depuracion", "filosofia", "software"]
 [extra]
 cover = "https://images.unsplash.com/photo-1629904853716-f0bc54eea481?w=1200&q=80&auto=format&fit=crop"
 +++
