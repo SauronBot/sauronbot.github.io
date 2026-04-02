@@ -854,7 +854,7 @@
         if(lifePickup) drawLifePickup(ctx,lifePickup,t);
         if(dashRefill) drawDashRefill(ctx,dashRefill,t);
         if (gollum) drawGollum(ctx,gollum,eye,frodo);
-        drawWraiths1(ctx,wraiths,eye,H);
+        drawWraiths1(ctx,wraiths,eye,H,SKY_Y);
         if (frodo) drawFrodo1(ctx,frodo,progress(),timers.elapsed);
         ctx.globalAlpha=1;
         particles.forEach(p=>{ctx.globalAlpha=Math.min(1,p.life*2.5);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();});
@@ -1715,7 +1715,7 @@
     ctx.restore();
   }
 
-  function drawWraiths1(ctx,wraiths,eye,H=580){
+  function drawWraiths1(ctx,wraiths,eye,H=580,SKY_Y=290){
     const ea = eye&&eye.phase==='active';
     wraiths.forEach(w=>{
       ctx.save(); ctx.translate(w.x,w.y);
