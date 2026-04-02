@@ -625,14 +625,30 @@
         if(eye&&eye.phase==='warning'&&Math.random()>0.65){ctx.fillStyle=`rgba(200,50,0,${Math.random()*0.09})`;ctx.fillRect(0,0,W,H);}
         if(blindFlash>0){ctx.fillStyle=`rgba(255,200,50,${blindFlash*0.92})`;ctx.fillRect(0,0,W,H);}
         drawUILevel(ctx,W,H,frodo,progress(),eye,timers.elapsed,currentLevel,def);
+        // Level intro overlay (first 3.5s)
+        if(timers.elapsed < 3.5) {
+          const fade = timers.elapsed < 0.5 ? timers.elapsed*2 : timers.elapsed > 2.8 ? (3.5-timers.elapsed)/0.7 : 1;
+          ctx.save(); ctx.globalAlpha = fade * 0.88;
+          ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.fillRect(0,H/2-70,W,130);
+          ctx.globalAlpha = fade;
+          ctx.textAlign='center'; ctx.textBaseline='middle';
+          const badge=['I','II','III'][currentLevel];
+          ctx.fillStyle='rgba(200,160,50,0.8)'; ctx.font='bold 11px serif';
+          ctx.fillText(`BOOK ${badge}`,W/2,H/2-42);
+          ctx.fillStyle='#e8d060'; ctx.font=`bold 26px "Palatino Linotype",Palatino,Georgia,serif`;
+          ctx.fillText(def.title,W/2,H/2-16);
+          ctx.fillStyle='rgba(180,140,60,0.75)'; ctx.font=`italic 12px serif`;
+          ctx.fillText(def.subtitle,W/2,H/2+16);
+          ctx.restore();
+        }
       }
 
       if(state==='title') {
         drawScreen(ctx,W,H,'Carry the Ring','"Even the smallest person can change the course of the future."','WASD / Arrows · 3 levels · 3 lives',t);
-        // Level indicators
         ctx.textAlign='center'; ctx.textBaseline='middle';
-        ctx.font='11px serif'; ctx.fillStyle='rgba(160,120,50,0.7)';
-        ctx.fillText('I: The Fellowship   ·   II: The Two Towers   ·   III: The Return of the King', W/2, H/2+90);
+        ctx.font='11px serif'; ctx.fillStyle='rgba(160,120,50,0.55)';
+        const titles=LEVEL_DEFS.map((d,i)=>`${['I','II','III'][i]}: ${d.title}`);
+        ctx.fillText(titles.join('   ·   '), W/2, H/2+90);
       }
       if(state==='levelwin') drawLevelWin(ctx,W,H,def,currentLevel,t,levelTransTimer);
       if(state==='gameover') drawScreen(ctx,W,H,'The Ring is Lost','"All hope is gone. The Dark Lord has won."','Press SPACE to try again',t,true);
@@ -877,12 +893,14 @@
     const fade=Math.min(1,(timer-0.5)*1.5);
     ctx.globalAlpha=fade;
     const badge=['I','II','III'][lvl];
-    ctx.fillStyle='#c8a838'; ctx.font=`bold 13px serif`;
-    ctx.fillText(`BOOK ${badge} COMPLETE`,W/2,H/2-85);
-    ctx.fillStyle='#e8c848'; ctx.font=`bold 32px "Palatino Linotype",Palatino,Georgia,serif`;
-    ctx.fillText(def.winMsg,W/2,H/2-50);
-    ctx.fillStyle='#a07830'; ctx.font=`italic 14px serif`;
-    ctx.fillText(def.winQuote,W/2,H/2-10);
+    ctx.fillStyle='#c8a838'; ctx.font=`bold 11px serif`;
+    ctx.fillText(`BOOK ${badge} COMPLETE`,W/2,H/2-100);
+    ctx.fillStyle='#e8d060'; ctx.font=`bold 28px "Palatino Linotype",Palatino,Georgia,serif`;
+    ctx.fillText(def.title,W/2,H/2-68);
+    ctx.fillStyle='#e8c848'; ctx.font=`italic 16px "Palatino Linotype",Palatino,Georgia,serif`;
+    ctx.fillText(def.winMsg,W/2,H/2-36);
+    ctx.fillStyle='#a07830'; ctx.font=`italic 13px serif`;
+    ctx.fillText(def.winQuote,W/2,H/2-8);
     // Stars for completed level
     for(let i=0;i<3;i++){
       const sx=W/2-44+i*44, sy=H/2+28;
