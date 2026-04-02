@@ -204,7 +204,8 @@
       if (e.key === ' ') {
         if (state === 'title')    startLevel(0);
         else if (state === 'levelwin') startLevel(currentLevel + 1);
-        else if (state === 'gameover' || state === 'win') startLevel(0);
+        else if (state === 'gameover') { if(frodo) frodo.lives=2; startLevel(0); }
+        else if (state === 'win') startLevel(0);
       }
     };
     const onKu = e => { keys[e.key] = false; };
@@ -219,6 +220,7 @@
     let currentLevel = 0;
     let frodo, wraiths=[], gollum=null, particles=[], eye=null, shake={x:0,y:0}, timers={elapsed:0};
     let blindFlash = 0, levelTransTimer = 0;
+    let lifePickup = null; // {x,y,r,pulse,spawnTimer}
 
     function startLevel(lvl) {
       currentLevel = lvl;
@@ -241,8 +243,9 @@
         px: W/2, py: 65,
       };
       shake = {x:0,y:0,dur:0,intensity:0};
-      timers = {elapsed:0,spawnCD:0};
+      timers = {elapsed:0,spawnCD:0,pickupCD:12+Math.random()*8};
       blindFlash = 0;
+      lifePickup = null;
       state = 'playing';
     }
 
@@ -400,6 +403,27 @@
         const want=def.initWraiths+Math.floor(progress()*(def.maxWraiths-def.initWraiths));
         if(wraiths.length<want&&timers.spawnCD<=0){spawnWraith(def);timers.spawnCD=def.spawnMin+Math.random()*2.5;}
 
+        // Life pickup
+        timers.pickupCD-=dt;
+        if(!lifePickup && timers.pickupCD<=0 && frodo.lives<3) {
+          // Spawn away from goal and away from start
+          const px = 180 + Math.random()*(W-360);
+          const py = H*0.2 + Math.random()*(H*0.6);
+          lifePickup = {x:px, y:py, r:12, pulse:0};
+          timers.pickupCD = 18+Math.random()*10;
+        }
+        if(lifePickup) {
+          lifePickup.pulse += dt*3;
+          if(Math.hypot(frodo.x-lifePickup.x, frodo.y-lifePickup.y) < frodo.r+lifePickup.r) {
+            frodo.lives = Math.min(3, frodo.lives+1);
+            // Burst particles
+            for(let i=0;i<12;i++){const a=(i/12)*Math.PI*2,s=2+Math.random()*2;
+              particles.push({x:lifePickup.x,y:lifePickup.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1,
+                              life:0.6+Math.random()*0.3,size:3+Math.random()*3,color:'#d4a020'});}
+            lifePickup = null;
+          }
+        }
+
         // Shake
         if(shake.dur>0){shake.dur-=dt;shake.x=(Math.random()-0.5)*shake.intensity*2;shake.y=(Math.random()-0.5)*shake.intensity*2;}
         else{shake.x=shake.y=0;}
@@ -422,6 +446,7 @@
       if(state==='playing'||state==='levelwin'){
         // Gollum (draw before Frodo so he's behind)
         drawGoal(ctx,GOAL,def,t,progress(),80,H*0.62);
+        if(lifePickup) drawLifePickup(ctx,lifePickup,t);
         if (gollum) drawGollum(ctx,gollum,eye);
         drawWraiths1(ctx,wraiths,eye);
         if (frodo) drawFrodo1(ctx,frodo,progress(),timers.elapsed);
@@ -467,6 +492,24 @@
   }
 
   // ── LEVEL BACKGROUNDS ─────────────────────────────────────────────────
+  // ── LIFE PICKUP ───────────────────────────────────────────────────
+  function drawLifePickup(ctx, p, t) {
+    const pulse = 1 + Math.sin(p.pulse)*0.2;
+    ctx.save();
+    ctx.shadowColor = '#d4a020'; ctx.shadowBlur = 18*pulse;
+    ctx.strokeStyle = `rgba(212,160,32,${0.6+Math.sin(p.pulse)*0.3})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r*pulse, 0, Math.PI*2); ctx.stroke();
+    const g = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*1.6);
+    g.addColorStop(0,'rgba(212,168,32,0.5)'); g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g; ctx.fillRect(p.x-p.r*2,p.y-p.r*2,p.r*4,p.r*4);
+    ctx.fillStyle='rgba(220,180,40,0.95)';
+    ctx.font = `bold ${Math.round(p.r*1.2)}px serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('♥', p.x, p.y);
+    ctx.restore();
+  }
+
   // ── GOAL MARKER ────────────────────────────────────────────────────
   function drawGoal(ctx, goal, def, t, prog, startX, startY) {
     const { x, y, r } = goal;
