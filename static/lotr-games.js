@@ -491,8 +491,13 @@
         else { x=Math.random()<0.5 ? baseX-450-Math.random()*100 : baseX+450+Math.random()*100; x=Math.max(-35,Math.min(WORLD_W+35,x)); y=H*0.35+Math.random()*H*0.5; }
       }
       const spd = def.wraithSpeed * diffMult() * (0.9 + Math.random()*0.3);
-      wraiths.push({x,y,r:14,wanderAngle:Math.random()*Math.PI*2,wanderTimer:0,
-                    speed:spd,capePhase:Math.random()*Math.PI*2});
+      // Fell Beast: rare variant in L2/L3, larger/faster, drawn differently
+      const isFellBeast = currentLevel >= 1 && Math.random() < 0.12;
+      const wr = isFellBeast ? 26 : 14;
+      const ws = isFellBeast ? spd * 0.75 : spd; // Fell Beast slower base but terrifying when Eye opens
+      wraiths.push({x,y,r:wr,wanderAngle:Math.random()*Math.PI*2,wanderTimer:0,
+                    speed:ws,capePhase:Math.random()*Math.PI*2,
+                    type:isFellBeast?'fellbeast':'wraith'});
     }
 
     const GOAL = { x: WORLD_W - 120, y: Math.round(H * 0.15), r: 22 };
@@ -1311,10 +1316,119 @@
     }
   }
 
+  function drawFellBeast(ctx,w,ea){
+    const r=w.r, t=w.capePhase, sense=w.sense||0;
+
+    // Fell Beast outer glow — dark red/purple
+    const glowR=r*3.5;
+    const fg=ctx.createRadialGradient(0,0,0,0,0,glowR);
+    fg.addColorStop(0,`rgba(${ea?'180,20,80':'120,10,40'},${0.3+sense*0.2})`);
+    fg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=fg; ctx.fillRect(-glowR,-glowR,glowR*2,glowR*2);
+
+    // Ground shadow
+    ctx.save(); ctx.globalAlpha=0.25;
+    const sg=ctx.createRadialGradient(0,r*0.8,0,0,r*0.8,r*2.5);
+    sg.addColorStop(0,'rgba(0,0,0,0.8)'); sg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=sg; ctx.beginPath(); ctx.ellipse(0,r*0.8,r*2.2,r*0.4,0,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+
+    // Wings — sweeping bezier curves, animated flap
+    const flapAngle = Math.sin(t*2.8)*0.18;
+    const wingCol = ea?'#1a0520':'#120318';
+    const wingEdge = ea?'rgba(180,20,80,0.25)':'rgba(100,10,40,0.2)';
+    // Left wing
+    ctx.fillStyle=wingCol;
+    ctx.beginPath();
+    ctx.moveTo(-r*0.4,-r*0.2);
+    ctx.bezierCurveTo(-r*1.8,-r*(1.2+flapAngle), -r*2.8,-r*(0.5+flapAngle), -r*2.5,r*(0.6-flapAngle));
+    ctx.bezierCurveTo(-r*2.0,r*0.9, -r*1.2,r*0.5, -r*0.4,r*0.3);
+    ctx.closePath(); ctx.fill();
+    // Left wing membrane lines
+    ctx.save(); ctx.strokeStyle=wingEdge; ctx.lineWidth=1;
+    for(let i=1;i<=3;i++){
+      const f=i/4;
+      ctx.beginPath();
+      ctx.moveTo(-r*0.4,-r*0.2);
+      ctx.bezierCurveTo(-r*(0.8+f*1.0),-r*(0.8+flapAngle*f),-r*(2.0+f*0.5),-r*(0.2+flapAngle*f),-r*(2.5-f*0.3),r*(0.6-flapAngle)*f);
+      ctx.stroke();
+    }
+    ctx.restore();
+    // Right wing
+    ctx.fillStyle=wingCol;
+    ctx.beginPath();
+    ctx.moveTo(r*0.4,-r*0.2);
+    ctx.bezierCurveTo(r*1.8,-r*(1.2+flapAngle), r*2.8,-r*(0.5+flapAngle), r*2.5,r*(0.6-flapAngle));
+    ctx.bezierCurveTo(r*2.0,r*0.9, r*1.2,r*0.5, r*0.4,r*0.3);
+    ctx.closePath(); ctx.fill();
+    ctx.save(); ctx.strokeStyle=wingEdge; ctx.lineWidth=1;
+    for(let i=1;i<=3;i++){
+      const f=i/4;
+      ctx.beginPath();
+      ctx.moveTo(r*0.4,-r*0.2);
+      ctx.bezierCurveTo(r*(0.8+f*1.0),-r*(0.8+flapAngle*f),r*(2.0+f*0.5),-r*(0.2+flapAngle*f),r*(2.5-f*0.3),r*(0.6-flapAngle)*f);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // Beast body — serpentine, dark scaled
+    const bodyG=ctx.createLinearGradient(-r*0.6,0,r*0.6,0);
+    bodyG.addColorStop(0,'#1a0810'); bodyG.addColorStop(0.5,ea?'#3a1030':'#250818'); bodyG.addColorStop(1,'#1a0810');
+    ctx.fillStyle=bodyG;
+    ctx.beginPath(); ctx.ellipse(0,-r*0.1,r*0.65,r*0.85,0,0,Math.PI*2); ctx.fill();
+
+    // Scale texture (vertical lines)
+    ctx.save(); ctx.globalAlpha=0.15; ctx.strokeStyle='#000'; ctx.lineWidth=0.8;
+    for(let i=-2;i<=2;i++){
+      ctx.beginPath(); ctx.moveTo(i*r*0.22,-r*0.9); ctx.lineTo(i*r*0.22,r*0.7); ctx.stroke();
+    }
+    ctx.restore();
+
+    // Neck stretched forward
+    ctx.fillStyle='#1e0c14';
+    ctx.beginPath();
+    ctx.moveTo(-r*0.3,-r*0.9);
+    ctx.bezierCurveTo(-r*0.4,-r*1.5, -r*0.1,-r*1.9, r*0.3,-r*2.0);
+    ctx.bezierCurveTo(r*0.5,-r*1.9, r*0.4,-r*1.3, r*0.3,-r*0.9);
+    ctx.closePath(); ctx.fill();
+
+    // Beast head — elongated, fanged
+    ctx.fillStyle='#1e0c14';
+    ctx.beginPath(); ctx.ellipse(r*0.25,-r*2.1,r*0.45,r*0.32,-0.4,0,Math.PI*2); ctx.fill();
+    // Upper jaw
+    ctx.beginPath(); ctx.ellipse(r*0.35,-r*2.0,r*0.55,r*0.18,-0.4,0,Math.PI*2); ctx.fill();
+    // Fangs
+    ctx.fillStyle=ea?'rgba(255,100,80,0.9)':'rgba(200,180,160,0.7)';
+    [[r*0.1,-r*2.15,r*0.07,r*0.2,-0.5],[r*0.4,-r*2.0,r*0.06,r*0.18,-0.3]].forEach(([fx,fy,fw,fh,fa])=>{
+      ctx.beginPath(); ctx.ellipse(fx,fy,fw,fh,fa,0,Math.PI*2); ctx.fill();
+    });
+    // Beast eye — red slit
+    ctx.save(); ctx.shadowColor=ea?'#ff0000':'#cc0000'; ctx.shadowBlur=8;
+    ctx.fillStyle=ea?'#ff2020':'#cc1010';
+    ctx.beginPath(); ctx.ellipse(r*0.15,-r*2.18,r*0.09,r*0.07,-0.3,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#000'; ctx.beginPath(); ctx.ellipse(r*0.15,-r*2.18,r*0.03,r*0.07,-0.3,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+
+    // Rider on top — small Nazgûl silhouette
+    ctx.fillStyle=ea?'#1a0430':'#100220';
+    ctx.beginPath(); ctx.moveTo(-r*0.3,-r*0.2);
+    ctx.bezierCurveTo(-r*0.5,r*0.1,-r*0.4,r*0.6,-r*0.1,r*0.7);
+    ctx.lineTo(r*0.1,r*0.7);
+    ctx.bezierCurveTo(r*0.4,r*0.6,r*0.5,r*0.1,r*0.3,-r*0.2);
+    ctx.closePath(); ctx.fill();
+    // Rider head
+    ctx.beginPath(); ctx.arc(0,-r*0.35,r*0.22,0,Math.PI*2); ctx.fill();
+    // Rider eyes
+    ctx.save(); ctx.shadowColor=ea?'#ff20a0':'#aa0060'; ctx.shadowBlur=4; ctx.fillStyle=ea?'#ff50c0':'#cc0070';
+    [-r*0.07,r*0.07].forEach(ex2=>{ ctx.beginPath(); ctx.arc(ex2,-r*0.36,r*0.05,0,Math.PI*2); ctx.fill(); });
+    ctx.restore();
+  }
+
   function drawWraiths1(ctx,wraiths,eye){
     const ea = eye&&eye.phase==='active';
     wraiths.forEach(w=>{
       ctx.save(); ctx.translate(w.x,w.y);
+      if (w.type==='fellbeast') { drawFellBeast(ctx,w,ea); ctx.restore(); return; }
       const sense = w.sense||0, t2 = w.capePhase;
       // Glow halo
       const gc = ea?[160,30,255]:sense>0.15?[120,20,200]:[60,10,120];
@@ -1350,6 +1464,18 @@
       ctx.lineWidth=1.5;
       ctx.beginPath(); ctx.ellipse(0,-w.r*0.85,w.r*0.85,w.r*0.95,0,Math.PI*0.1,Math.PI*0.9); ctx.stroke();
       ctx.restore();
+      // Armour chest plate visible under cloak
+      ctx.save(); ctx.globalAlpha=0.4+sense*0.2;
+      const armCol=ea?'#3a1060':'#1e0838';
+      ctx.fillStyle=armCol;
+      ctx.beginPath(); ctx.moveTo(-w.r*0.5,w.r*0.0); ctx.lineTo(-w.r*0.35,-w.r*0.55);
+      ctx.lineTo(0,-w.r*0.65); ctx.lineTo(w.r*0.35,-w.r*0.55); ctx.lineTo(w.r*0.5,w.r*0.0);
+      ctx.closePath(); ctx.fill();
+      // Armour trim lines
+      ctx.strokeStyle=ea?'rgba(200,100,255,0.3)':'rgba(100,50,160,0.25)'; ctx.lineWidth=0.8;
+      ctx.beginPath(); ctx.moveTo(-w.r*0.3,-w.r*0.5); ctx.lineTo(0,-w.r*0.6); ctx.lineTo(w.r*0.3,-w.r*0.5); ctx.stroke();
+      ctx.restore();
+
       // Void face
       ctx.fillStyle='#000';
       ctx.beginPath(); ctx.ellipse(0,-w.r*0.9,w.r*0.5,w.r*0.55,0,0,Math.PI*2); ctx.fill();
