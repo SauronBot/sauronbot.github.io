@@ -25,7 +25,7 @@
   });
 
   // ── LAUNCHER ──────────────────────────────────────────────────────────
-  const GAMES = [launchCarryTheRing, launchYouShallNotPass];
+  const GAMES = [launchCarryTheRing];
   function launchRandom() {
     const fn = GAMES[Math.floor(Math.random() * GAMES.length)];
     fn();
@@ -268,8 +268,16 @@
                     speed:spd,capePhase:Math.random()*Math.PI*2});
     }
 
-    const progress = () => Math.max(0,Math.min(1,(frodo.x-80)/650));
-    const frodoSpd = (def) => (3.6 - progress()*2.1) * (currentLevel===2 ? 0.85 : 1);
+    const GOAL = { x: 730, y: 80, r: 22 };
+    const progress = () => {
+      if (!frodo) return 0;
+      const dx = GOAL.x - 80, dy = GOAL.y - (H*0.62);
+      const totalDist = Math.hypot(dx, dy);
+      const fdx = frodo.x - 80, fdy = frodo.y - (H*0.62);
+      // progress = how far along the straight line to goal
+      return Math.max(0, Math.min(1, (fdx*dx + fdy*dy) / (totalDist*totalDist)));
+    };
+    const frodoSpd = (def) => (3.8 - progress()*2.4) * (currentLevel===2 ? 0.85 : 1);
     const dist = (a,b) => Math.hypot(a.x-b.x,a.y-b.y);
     const lerp  = (a,b,t) => a+(b-a)*t;
 
@@ -291,12 +299,12 @@
         if (keys['ArrowDown']||keys['s']||keys['S']) dy+=1;
         if (dx&&dy){dx*=0.707;dy*=0.707;}
         // Blind flash blocks visibility, not movement
-        frodo.x = Math.max(frodo.r,Math.min(W-frodo.r, frodo.x+dx*spd*60*dt));
-        frodo.y = Math.max(H*0.3,Math.min(H-frodo.r*2, frodo.y+dy*spd*60*dt));
+        frodo.x = Math.max(frodo.r, Math.min(W-frodo.r, frodo.x+dx*spd*60*dt));
+        frodo.y = Math.max(frodo.r, Math.min(H-frodo.r, frodo.y+dy*spd*60*dt));
         frodo.ringAngle += dt*(1.2+progress()*2.5);
 
         // Level clear
-        if (frodo.x >= 745) {
+        if (Math.hypot(frodo.x-GOAL.x, frodo.y-GOAL.y) < frodo.r + GOAL.r) {
           if (currentLevel < 2) { state='levelwin'; levelTransTimer=0; }
           else { state='win'; }
         }
@@ -413,6 +421,7 @@
 
       if(state==='playing'||state==='levelwin'){
         // Gollum (draw before Frodo so he's behind)
+        drawGoal(ctx,GOAL,def,t,progress());
         if (gollum) drawGollum(ctx,gollum,eye);
         drawWraiths1(ctx,wraiths,eye);
         if (frodo) drawFrodo1(ctx,frodo,progress(),timers.elapsed);
@@ -458,6 +467,56 @@
   }
 
   // ── LEVEL BACKGROUNDS ─────────────────────────────────────────────────
+  // ── GOAL MARKER ────────────────────────────────────────────────────
+  function drawGoal(ctx, goal, def, t, prog) {
+    const { x, y, r } = goal;
+    const lvl = LEVEL_DEFS.indexOf(def);
+    // Outer pulse ring
+    const pulse = 1 + Math.sin(t * 2.5) * 0.18;
+    ctx.save();
+    ctx.shadowColor = lvl===0 ? '#80e0ff' : lvl===1 ? '#a0c840' : '#ff6000';
+    ctx.shadowBlur  = 24 * pulse;
+    // Animated beacon ring
+    const ringAlpha = 0.5 + Math.sin(t*2.5)*0.3;
+    ctx.strokeStyle = lvl===0 ? `rgba(180,230,255,${ringAlpha})` :
+                      lvl===1 ? `rgba(160,210,80,${ringAlpha})` :
+                                `rgba(255,120,20,${ringAlpha})`;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.arc(x, y, r * pulse, 0, Math.PI*2); ctx.stroke();
+    // Second smaller ring
+    ctx.lineWidth = 1.5; ctx.globalAlpha = 0.5;
+    ctx.beginPath(); ctx.arc(x, y, r * 0.6, 0, Math.PI*2); ctx.stroke();
+    ctx.globalAlpha = 1;
+    // Core glow
+    const cg = ctx.createRadialGradient(x, y, 0, x, y, r * 1.8);
+    const [cr,cg2,cb] = lvl===0 ? [140,210,255] : lvl===1 ? [130,200,60] : [255,90,10];
+    cg.addColorStop(0, `rgba(${cr},${cg2},${cb},0.5)`);
+    cg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = cg; ctx.fillRect(x-r*2, y-r*2, r*4, r*4);
+    // Icon per level
+    ctx.fillStyle = lvl===0 ? 'rgba(200,235,255,0.9)' :
+                    lvl===1 ? 'rgba(180,220,80,0.9)' :
+                              `rgba(255,${140+Math.floor(Math.sin(t*4)*30)},0,0.9)`;
+    ctx.font = `bold ${Math.round(r*0.9)}px serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(lvl===0 ? '★' : lvl===1 ? '▲' : '🔥', x, y);
+    // Label
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = 'rgba(200,160,60,0.8)';
+    ctx.font = 'bold 9px serif';
+    ctx.fillText(def.destination.toUpperCase(), x, y + r + 10);
+    // Dotted path hint from start to goal (fades as you progress)
+    if (prog < 0.15) {
+      ctx.save(); ctx.globalAlpha = (0.15 - prog) * 5 * 0.35;
+      ctx.strokeStyle = 'rgba(200,160,60,0.6)'; ctx.lineWidth = 1;
+      ctx.setLineDash([4,8]);
+      ctx.beginPath(); ctx.moveTo(80, H*0.62); ctx.lineTo(x, y); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
   function drawBgLevel(ctx,W,H,t,def,prog) {
     const [s1,s2]=def.bgSky;
     const sky=ctx.createLinearGradient(0,0,0,H*0.55);
@@ -500,41 +559,34 @@
       .forEach(([x,o])=>ctx.lineTo(x,H*(0.5-o)));
     ctx.lineTo(W,H*0.5); ctx.closePath(); ctx.fill();
 
-    // Level-specific landmarks
+    // Level-specific atmosphere
     if (def === LEVEL_DEFS[0]) {
-      // Rivendell waterfall (right side)
+      // Shire hill (left start)
       ctx.save();
-      ctx.strokeStyle=`rgba(140,200,220,${0.3+prog*0.3})`; ctx.lineWidth=2;
-      for(let i=0;i<3;i++){
-        ctx.beginPath(); ctx.moveTo(W-30+i*8,H*0.24); ctx.lineTo(W-28+i*8,H*0.44); ctx.stroke();
-      }
-      // Shire hill (left)
       ctx.fillStyle='#1e3a12';
       ctx.beginPath(); ctx.arc(60,H*0.48,55,Math.PI,0); ctx.fill();
+      // Rivendell cliff columns mid-right (not at goal, just atmosphere)
+      ctx.strokeStyle=`rgba(140,200,220,${0.2+prog*0.25})`; ctx.lineWidth=2;
+      for(let i=0;i<3;i++){
+        ctx.beginPath(); ctx.moveTo(W*0.72+i*9,H*0.28); ctx.lineTo(W*0.72+i*9,H*0.46); ctx.stroke();
+      }
       ctx.restore();
     } else if (def === LEVEL_DEFS[1]) {
-      // Dead Marshes glow (floating faces)
+      // Dead Marshes glow (floating faces along the ground)
       for(let i=0;i<4;i++){
-        const mx=120+i*160, my=H*0.52+Math.sin(t*0.6+i)*8;
+        const mx=140+i*140, my=H*0.6+Math.sin(t*0.6+i)*6;
         const mg=ctx.createRadialGradient(mx,my,0,mx,my,18);
         mg.addColorStop(0,`rgba(100,180,80,${0.12+Math.sin(t+i)*0.06})`);
         mg.addColorStop(1,'rgba(0,0,0,0)');
         ctx.fillStyle=mg; ctx.fillRect(mx-18,my-18,36,36);
       }
     } else {
-      // Mordor lava crack
-      ctx.save(); ctx.shadowColor='#ff5000'; ctx.shadowBlur=8;
-      const lava=ctx.createLinearGradient(W-32,H*0.22,W-18,H*0.5);
-      lava.addColorStop(0,'rgba(255,100,0,0)'); lava.addColorStop(0.3,'rgba(255,80,0,0.8)'); lava.addColorStop(1,'rgba(255,160,0,0.6)');
-      ctx.strokeStyle=lava; ctx.lineWidth=2.5;
-      ctx.beginPath(); ctx.moveTo(W-28,H*0.22);
-      ctx.bezierCurveTo(W-35,H*0.31,W-22,H*0.38,W-20,H*0.5); ctx.stroke();
-      ctx.fillStyle='#0a0304'; ctx.beginPath(); ctx.moveTo(W-70,H*0.5); ctx.lineTo(W-28,H*0.18); ctx.lineTo(W,H*0.24); ctx.lineTo(W,H*0.5); ctx.closePath(); ctx.fill();
-      // Progress doom intensification
-      if(prog>0){const g2=ctx.createRadialGradient(W,H*0.5,0,W,H*0.5,200+prog*100);
-        g2.addColorStop(0,`rgba(255,60,0,${prog*0.3})`); g2.addColorStop(1,'rgba(0,0,0,0)');
-        ctx.fillStyle=g2; ctx.fillRect(0,0,W,H);}
-      ctx.restore();
+      // Mordor: progress-based doom intensification across the whole scene
+      if(prog>0){
+        const g2=ctx.createRadialGradient(W*0.9,H*0.2,0,W*0.9,H*0.2,300+prog*120);
+        g2.addColorStop(0,`rgba(255,60,0,${prog*0.28})`); g2.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=g2; ctx.fillRect(0,0,W,H);
+      }
     }
   }
 
@@ -704,207 +756,6 @@
     ctx.strokeStyle=`rgba(210,80,0,${0.85*eye.open})`; ctx.lineWidth=1.5;
     ctx.beginPath(); ctx.moveTo(ex-ew,ey); ctx.quadraticCurveTo(ex,ey-eh,ex+ew,ey); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(ex-ew,ey); ctx.quadraticCurveTo(ex,ey+eh,ex+ew,ey); ctx.stroke();
-  }
-
-  // ─────────────────────────────────────────────────────────────────────
-  // GAME 2: YOU SHALL NOT PASS
-  // ─────────────────────────────────────────────────────────────────────
-  function launchYouShallNotPass() {
-    const ov = makeOverlay('#04020a');
-    const W = 700, H = 400;
-    const canvas = makeCanvas(ov, W, H);
-    const ctx = canvas.getContext('2d');
-
-    let alive = true;
-    function close() { alive = false; ov.remove(); }
-    makeCloseBtn(ov, close);
-
-    const hint = document.createElement('p');
-    Object.assign(hint.style, { color:'rgba(150,110,40,0.55)', fontSize:'11px', letterSpacing:'2px', marginTop:'6px' });
-    hint.textContent = 'SPACE / CLICK — slam the staff';
-    ov.appendChild(hint);
-
-    let state = 'title', score = 0, combo = 0, lives = 3;
-    let enemies = [], staffSlam = 0, slamFx = 0, shakeTimer = 0;
-    let spawnTimer = 0, spawnInterval = 2.2;
-    const BRIDGE_Y = H * 0.68;
-    const GANDALF_X = W * 0.18;
-
-    function startGame() {
-      score = 0; combo = 0; lives = 3;
-      enemies = []; staffSlam = 0; slamFx = 0; shakeTimer = 0;
-      spawnTimer = 0; spawnInterval = 2.2;
-      state = 'playing';
-    }
-
-    function slam() {
-      if (state !== 'playing') { startGame(); return; }
-      staffSlam = 0.35; slamFx = 0.5;
-      // kill enemies within reach
-      let killed = false;
-      enemies = enemies.filter(e => {
-        if (e.x < W * 0.45 && e.x > W * 0.08) {
-          score += 10 * (1 + combo); combo++; shakeTimer = 0.12; killed = true; return false;
-        }
-        return true;
-      });
-      if (!killed) combo = 0;
-    }
-
-    document.addEventListener('keydown', function onK(e) {
-      if (!alive) { document.removeEventListener('keydown', onK); return; }
-      if (e.key === ' ') { e.preventDefault(); slam(); }
-    });
-    canvas.addEventListener('click', slam);
-
-    function spawnEnemy() {
-      const types = ['orc','orc','orc','balrog'];
-      const type = types[Math.floor(Math.random()*types.length)];
-      const spd = type === 'balrog' ? 38 + score * 0.015 : 55 + score * 0.02 + Math.random() * 25;
-      enemies.push({ x: W + 30, type, speed: spd, r: type==='balrog'?22:14, hp: type==='balrog'?3:1 });
-    }
-
-    let lastTs = 0;
-    function loop(ts) {
-      if (!alive) return;
-      const dt = Math.min((ts - lastTs) / 1000, 0.05); lastTs = ts;
-      const t = ts / 1000;
-
-      if (state === 'playing') {
-        staffSlam = Math.max(0, staffSlam - dt * 3);
-        slamFx    = Math.max(0, slamFx - dt * 2);
-        shakeTimer= Math.max(0, shakeTimer - dt);
-        spawnTimer += dt;
-        spawnInterval = Math.max(0.9, 2.2 - score * 0.003);
-        if (spawnTimer >= spawnInterval) { spawnEnemy(); spawnTimer = 0; }
-
-        enemies.forEach(e => { e.x -= e.speed * dt; });
-        const passed = enemies.filter(e => e.x < W * 0.08 - e.r);
-        passed.forEach(() => { lives--; combo = 0; shakeTimer = 0.3; });
-        enemies = enemies.filter(e => e.x >= W * 0.08 - e.r);
-        if (lives <= 0) state = 'gameover';
-      }
-
-      // DRAW
-      ctx.save();
-      if (shakeTimer > 0) ctx.translate((Math.random()-0.5)*6, (Math.random()-0.5)*4);
-
-      // Background
-      const sky = ctx.createLinearGradient(0,0,0,H*0.5);
-      sky.addColorStop(0,'#04020a'); sky.addColorStop(1,'#0d0810');
-      ctx.fillStyle = sky; ctx.fillRect(0,0,W,H);
-      drawStars(ctx,W,H,t);
-
-      // Abyss below bridge
-      ctx.fillStyle = '#020105'; ctx.fillRect(0, BRIDGE_Y + 28, W, H - BRIDGE_Y - 28);
-      const abyss = ctx.createLinearGradient(0, BRIDGE_Y+28, 0, H);
-      abyss.addColorStop(0,'rgba(60,0,100,0.4)'); abyss.addColorStop(1,'rgba(0,0,0,0)');
-      ctx.fillStyle = abyss; ctx.fillRect(0, BRIDGE_Y+28, W, H - BRIDGE_Y - 28);
-
-      // Lava glow from abyss
-      ctx.save();
-      ctx.shadowColor = '#ff3300'; ctx.shadowBlur = 40;
-      const lavag = ctx.createLinearGradient(0, BRIDGE_Y+20, 0, H);
-      lavag.addColorStop(0,`rgba(255,60,0,${0.2+Math.sin(t*1.5)*0.06})`);
-      lavag.addColorStop(1,'rgba(100,20,0,0.1)');
-      ctx.fillStyle = lavag; ctx.fillRect(0, BRIDGE_Y+20, W, H - BRIDGE_Y - 20);
-      ctx.restore();
-
-      // Bridge
-      ctx.fillStyle = '#1a1208';
-      ctx.fillRect(0, BRIDGE_Y, W, 28);
-      ctx.strokeStyle = 'rgba(80,60,20,0.5)'; ctx.lineWidth = 1;
-      ctx.strokeRect(0, BRIDGE_Y, W, 28);
-      // Bridge cracks
-      ctx.strokeStyle = 'rgba(0,0,0,0.7)'; ctx.lineWidth = 1.5;
-      [[W*0.55, BRIDGE_Y+4, W*0.6, BRIDGE_Y+22],[W*0.7, BRIDGE_Y+2, W*0.73, BRIDGE_Y+18]].forEach(([x1,y1,x2,y2])=>{
-        ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
-      });
-
-      // Enemies
-      enemies.forEach(e => {
-        ctx.save(); ctx.translate(e.x, BRIDGE_Y + 14);
-        if (e.type === 'balrog') {
-          // Balrog
-          ctx.save(); ctx.shadowColor='#ff4400'; ctx.shadowBlur=20;
-          ctx.fillStyle = '#1a0808';
-          ctx.beginPath(); ctx.ellipse(0,0,e.r,e.r*1.3,0,0,Math.PI*2); ctx.fill();
-          // Wings
-          ctx.fillStyle='rgba(40,0,0,0.85)';
-          ctx.beginPath(); ctx.moveTo(-e.r,0); ctx.lineTo(-e.r*2.8,-e.r*1.2); ctx.lineTo(-e.r,e.r*0.5); ctx.closePath(); ctx.fill();
-          ctx.beginPath(); ctx.moveTo(e.r,0); ctx.lineTo(e.r*2.8,-e.r*1.2); ctx.lineTo(e.r,e.r*0.5); ctx.closePath(); ctx.fill();
-          // Fire eyes
-          ctx.shadowColor='#ff8800'; ctx.shadowBlur=8; ctx.fillStyle='#ff6600';
-          ctx.beginPath(); ctx.arc(-7,-5,3,0,Math.PI*2); ctx.fill();
-          ctx.beginPath(); ctx.arc(7,-5,3,0,Math.PI*2); ctx.fill();
-          ctx.restore();
-        } else {
-          // Orc
-          ctx.fillStyle = '#2a1f10';
-          ctx.beginPath(); ctx.ellipse(0,0,e.r,e.r*1.1,0,0,Math.PI*2); ctx.fill();
-          ctx.fillStyle='#1a1208'; ctx.beginPath(); ctx.arc(0,-e.r*0.6,e.r*0.65,0,Math.PI*2); ctx.fill();
-          // spear
-          ctx.strokeStyle='#5a4020'; ctx.lineWidth=2;
-          ctx.beginPath(); ctx.moveTo(e.r*0.8,-e.r*0.3); ctx.lineTo(e.r*0.8+22,-e.r*0.3); ctx.stroke();
-          ctx.fillStyle='#8a8070'; ctx.beginPath(); ctx.moveTo(e.r*0.8+22,-e.r*0.3-4); ctx.lineTo(e.r*0.8+28,-e.r*0.3); ctx.lineTo(e.r*0.8+22,-e.r*0.3+4); ctx.closePath(); ctx.fill();
-        }
-        ctx.restore();
-      });
-
-      // Gandalf
-      ctx.save();
-      const gandalfY = BRIDGE_Y + 14;
-      ctx.translate(GANDALF_X, gandalfY);
-      // Robe
-      ctx.fillStyle = '#d4cdb8';
-      ctx.beginPath(); ctx.moveTo(-12,28); ctx.lineTo(-9,-28); ctx.lineTo(9,-28); ctx.lineTo(12,28); ctx.closePath(); ctx.fill();
-      // Head/hat
-      ctx.fillStyle = '#c8c0aa';
-      ctx.beginPath(); ctx.arc(0,-30,10,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle = '#9090a0';
-      ctx.beginPath(); ctx.moveTo(-14,-26); ctx.lineTo(0,-52); ctx.lineTo(14,-26); ctx.closePath(); ctx.fill();
-      // Staff
-      const staffTilt = staffSlam > 0 ? -0.6 : -0.1;
-      ctx.save(); ctx.rotate(staffTilt);
-      ctx.strokeStyle = '#8a6a30'; ctx.lineWidth = 3.5;
-      ctx.beginPath(); ctx.moveTo(8, 28); ctx.lineTo(18,-48); ctx.stroke();
-      // Staff glow
-      if (staffSlam > 0) {
-        ctx.save(); ctx.shadowColor='#ffffaa'; ctx.shadowBlur=30*staffSlam;
-        ctx.strokeStyle=`rgba(255,255,180,${staffSlam*0.9})`; ctx.lineWidth=2;
-        ctx.beginPath(); ctx.arc(18+2,-50,8+staffSlam*12,0,Math.PI*2); ctx.stroke();
-        ctx.restore();
-      }
-      ctx.restore();
-      ctx.restore();
-
-      // Slam shockwave
-      if (slamFx > 0) {
-        ctx.save(); ctx.globalAlpha = slamFx * 0.7;
-        ctx.strokeStyle = '#ffffaa'; ctx.lineWidth = 2;
-        const r = (1 - slamFx) * W * 0.38 + 20;
-        ctx.beginPath(); ctx.arc(GANDALF_X + 20, gandalfY - 10, r, 0, Math.PI * 2); ctx.stroke();
-        ctx.restore();
-      }
-
-      // UI
-      ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-      ctx.fillStyle = 'rgba(180,140,60,0.9)'; ctx.font = 'bold 15px serif';
-      ctx.fillText(`Score: ${score}`, 10, 10);
-      if (combo > 1) { ctx.fillStyle='#ffcc44'; ctx.font='bold 13px serif'; ctx.fillText(`×${combo} combo!`, 10, 30); }
-      for (let i = 0; i < 3; i++) {
-        ctx.fillStyle = i < lives ? 'rgba(200,160,60,0.9)' : 'rgba(60,40,20,0.4)';
-        ctx.beginPath(); ctx.arc(W - 20 - i * 24, 19, 8, 0, Math.PI * 2); ctx.fill();
-      }
-
-      ctx.textAlign='center';
-      if (state === 'title') drawScreen(ctx,W,H,'You Shall Not Pass!','"Fly, you fools!"','SPACE or click to slam your staff',t);
-      if (state === 'gameover') drawScreen(ctx,W,H,'The Bridge is Lost!',`Score: ${score}`,'Press SPACE to try again',t,true);
-
-      ctx.restore();
-      requestAnimationFrame(loop);
-    }
-    requestAnimationFrame(loop);
   }
 
 
