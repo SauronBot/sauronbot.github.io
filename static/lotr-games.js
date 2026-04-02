@@ -465,7 +465,7 @@
             gollum.x+=Math.cos(gollum.wanderAngle)*gollum.speed*0.6*60*dt;
             gollum.y+=Math.sin(gollum.wanderAngle)*gollum.speed*0.6*60*dt;
             // Keep in bounds
-            gollum.x=Math.max(-20,Math.min(W+20,gollum.x));
+            gollum.x=Math.max(-20,Math.min(WORLD_W+20,gollum.x));
             gollum.y=Math.max(H*0.25,Math.min(H,gollum.y));
             if(gollum.dartTimer<=0){
               gollum.phase='dart'; gollum.dartTimer=0.8;
@@ -525,6 +525,7 @@
       }
 
       // ── DRAW ────────────────────────────────────────────────────────
+      updateCamera(); // always sync before draw
       ctx.save();
       if(shake&&(shake.x||shake.y)) ctx.translate(shake.x,shake.y);
 
@@ -720,14 +721,14 @@
         ctx.fillStyle=mg; ctx.fillRect(mx-18,my-18,36,36);
       }
     } else {
-      // Mordor: doom glow intensifies toward goal (screen-space)
+      // Mordor: restore parallax transform first, then doom glow screen-space
       ctx.restore();
       if(prog>0){
         const g2=ctx.createRadialGradient(W,H*0.2,0,W,H*0.2,300+prog*120);
         g2.addColorStop(0,`rgba(255,60,0,${prog*0.28})`); g2.addColorStop(1,'rgba(0,0,0,0)');
         ctx.fillStyle=g2; ctx.fillRect(0,0,W,H);
       }
-      return;
+      return; // already restored
     }
     ctx.restore();
   }
