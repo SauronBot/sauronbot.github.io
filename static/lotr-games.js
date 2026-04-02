@@ -270,8 +270,8 @@
         if(state!=='playing'){
           if(state==='title') startLevel(0);
           else if(state==='levelwin') startLevel(currentLevel+1);
-          else if(state==='gameover'){ if(frodo)frodo.lives=2; startLevel(0); }
-          else if(state==='win') startLevel(0);
+          else if(state==='gameover'){ fullReset(); startLevel(0); }
+          else if(state==='win') { round++; score+=200; startLevel(0); }
         }
       };
       const stop  = (e) => { e.preventDefault(); keys[key]=false; };
@@ -292,8 +292,8 @@
       if (e.key === ' ') {
         if (state === 'title')    startLevel(0);
         else if (state === 'levelwin') startLevel(currentLevel + 1);
-        else if (state === 'gameover') { if(frodo) frodo.lives=2; startLevel(0); }
-        else if (state === 'win') startLevel(0);
+        else if (state === 'gameover') { fullReset(); startLevel(0); }
+        else if (state === 'win') { round++; score+=200; startLevel(0); }
         else if (state === 'playing') triggerDash();
       }
     };
@@ -310,13 +310,16 @@
       if (state !== 'playing') {
         if (state==='title') startLevel(0);
         else if (state==='levelwin') startLevel(currentLevel+1);
-        else if (state==='gameover') { if(frodo)frodo.lives=2; startLevel(0); }
-        else if (state==='win') startLevel(0);
+        else if (state==='gameover') { fullReset(); startLevel(0); }
+        else if (state==='win') { round++; score+=200; startLevel(0); }
       }
     }, {passive:false});
 
     let state = 'title';
     let currentLevel = 0;
+    let round = 1;    // increments after completing all 3 levels
+    let score = 0;    // accumulated points
+    let lastScore = 0, lastRound = 1, lastLevel = 0; // for gameover screen
     let frodo, wraiths=[], gollum=null, particles=[], eye=null, shake={x:0,y:0}, timers={elapsed:0};
     let blindFlash = 0, levelTransTimer = 0;
     let lifePickup = null;  // {x,y,r,pulse}
@@ -326,23 +329,27 @@
     let dashRefill = null;  // {x,y,r,pulse} — refill token near Gollum's zone
     let dash = null;        // {vx,vy,timer} — active dash state
 
+    // Difficulty multiplier per round (caps to avoid impossible)
+    function diffMult() { return 1 + (round - 1) * 0.18; }
+
     function startLevel(lvl) {
       currentLevel = lvl;
       const def = LEVEL_DEFS[lvl];
       const prevLives = frodo ? frodo.lives : 3;
       frodo = {
         x: 80, y: H*0.62, r: 11,
-        lives: (state === 'title') ? 3 : prevLives,
+        lives: (state === 'title' || round === 1 && lvl === 0) ? 3 : prevLives,
         invincible: false, invTimer: 0, hitFlash: 0, ringAngle: 0,
       };
       wraiths = [];
       // Spread initial wraiths across the world — last third near the goal
-      for (let i = 0; i < def.initWraiths; i++) spawnWraith(def, i, def.initWraiths);
+      const initCount = Math.min(def.initWraiths + Math.floor((round-1)*0.8), def.maxWraiths);
+      for (let i = 0; i < initCount; i++) spawnWraith(def, i, initCount);
       gollum = def.hasGollum ? makeGollum() : null;
       particles = [];
       eye = {
         phase: 'idle', timer: 0, open: 0,
-        idleDur: def.eyeIdleBase + 3 + Math.random()*6,
+        idleDur: Math.max(6, (def.eyeIdleBase + 3 + Math.random()*6) / diffMult()),
         activeDur: def.eyeActiveDur,
         warnDur: 2.2, closeDur: 1.5,
         px: W/2, py: 65,
@@ -398,7 +405,7 @@
         else if (edge===1) { x=Math.max(40,Math.min(WORLD_W-40,baseX+(Math.random()-0.5)*700)); y=H+35; }
         else { x=Math.random()<0.5 ? baseX-450-Math.random()*100 : baseX+450+Math.random()*100; x=Math.max(-35,Math.min(WORLD_W+35,x)); y=H*0.35+Math.random()*H*0.5; }
       }
-      const spd = def.wraithSpeed * (0.9 + Math.random()*0.3);
+      const spd = def.wraithSpeed * diffMult() * (0.9 + Math.random()*0.3);
       wraiths.push({x,y,r:14,wanderAngle:Math.random()*Math.PI*2,wanderTimer:0,
                     speed:spd,capePhase:Math.random()*Math.PI*2});
     }
@@ -428,6 +435,8 @@
       // ── UPDATE ──────────────────────────────────────────────────────
       if (state === 'playing') {
         timers.elapsed += dt;
+        // Score: points per second (scales with round + level)
+        score += dt * (1 + currentLevel * 0.5) * round;
         const spd = frodoSpd(def);
         let dx=0,dy=0;
         if (keys['ArrowLeft']||keys['a']||keys['A']) dx-=1;
@@ -496,7 +505,7 @@
           eye.open=Math.max(0,eye.open-dt*1.2);
           if(eye.timer>=eye.closeDur){
             eye.phase='idle';eye.timer=0;
-            eye.idleDur=Math.max(8,def.eyeIdleBase-progress()*8+3+Math.random()*6);
+            eye.idleDur=Math.max(6,(def.eyeIdleBase-progress()*8+3+Math.random()*6)/diffMult());
           }
         }
 
@@ -690,11 +699,17 @@
         drawTitleScreen(ctx,W,H,t);
       }
       if(state==='levelwin') drawLevelWin(ctx,W,H,def,currentLevel,t,levelTransTimer);
-      if(state==='gameover') drawScreen(ctx,W,H,'The Ring is Lost','"All hope is gone. The Dark Lord has won."','Press SPACE to try again',t,true);
-      if(state==='win')      drawFinalWin(ctx,W,H,t);
+      if(state==='gameover') drawGameOver(ctx,W,H,t,lastScore,lastRound,lastLevel);
+      if(state==='win')      drawFinalWin(ctx,W,H,t,round,score);
 
       ctx.restore();
       requestAnimationFrame(loop);
+    }
+
+    function fullReset() {
+      lastScore = score; lastRound = round; lastLevel = currentLevel;
+      round = 1; score = 0; dashCharges = 3;
+      frodo = null;
     }
 
     function triggerDash() {
@@ -1006,7 +1021,7 @@
   }
 
   // ── FINAL WIN ─────────────────────────────────────────────────────────
-  function drawFinalWin(ctx,W,H,t){
+  function drawFinalWin(ctx,W,H,t,round=1,score=0){
     ctx.fillStyle='rgba(15,4,0,0.9)'; ctx.fillRect(0,0,W,H);
     const fire=ctx.createRadialGradient(W/2,H/2+40,8,W/2,H/2+40,300);
     fire.addColorStop(0,`rgba(255,110,0,${0.6+Math.sin(t*3)*0.08})`);
@@ -1029,8 +1044,14 @@
     ctx.strokeStyle=`hsl(45,92%,${58+Math.sin(t*5)*10}%)`; ctx.lineWidth=3.5;
     ctx.beginPath(); ctx.arc(W/2,ry,22,0,Math.PI*2); ctx.stroke(); ctx.restore();
     ctx.fillStyle='#b07030'; ctx.font='14px serif';
-    ctx.fillText('The One Ring is unmade. Middle-earth is free.',W/2,H/2+90);
-    if(Math.sin(t*2.2)>0){ctx.fillStyle='#c08838';ctx.font='14px serif';ctx.fillText('Press SPACE to play again',W/2,H/2+125);}
+    ctx.fillStyle='rgba(200,160,60,0.8)'; ctx.font='13px serif';
+    ctx.fillText(`Round ${round} complete  ·  Score: ${Math.floor(score).toLocaleString()}`,W/2,H/2+80);
+    ctx.fillStyle='rgba(160,120,50,0.6)'; ctx.font='11px serif';
+    ctx.fillText('Middle-earth is free — but darkness stirs again...',W/2,H/2+102);
+    if(Math.sin(t*2.2)>0){
+      ctx.fillStyle='#c08838'; ctx.font='bold 14px serif';
+      ctx.fillText(`— Press SPACE for Round ${round+1} (harder) —`,W/2,H/2+130);
+    }
   }
 
   // ── UI (shared) ───────────────────────────────────────────────────────
@@ -1045,10 +1066,12 @@
     ctx.strokeStyle='rgba(140,95,40,0.75)'; ctx.lineWidth=1; ctx.strokeRect(10,10,210,18);
     ctx.fillStyle='rgba(200,160,70,0.85)'; ctx.font='9px serif'; ctx.textAlign='left';
     ctx.fillText(def.progressLabel,13,23);
-    // Level badge
+    // Level badge + round + score
     const badge=['I','II','III'][lvl]||'';
     ctx.fillStyle='rgba(180,140,50,0.7)'; ctx.font='bold 11px serif';
-    ctx.fillText(`BOOK ${badge}`, 10, 42);
+    ctx.fillText(`BOOK ${badge}  ·  RND ${round}`, 10, 42);
+    ctx.fillStyle='rgba(160,130,60,0.6)'; ctx.font='10px serif';
+    ctx.fillText(`⭐ ${Math.floor(score)}`, 10, 56);
     // Lives
     for(let i=0;i<3;i++){const lx=W-22-i*24,lit=i<frodo.lives;
       ctx.save(); if(lit){ctx.shadowColor='#d4a020';ctx.shadowBlur=8;}
@@ -1198,6 +1221,32 @@
     if(Math.sin(t*2.4)>0){
       ctx.fillStyle='#c89040'; ctx.font='bold 15px serif';
       ctx.fillText('— Press SPACE to begin —',W/2,H/2+160);
+    }
+  }
+
+  function drawGameOver(ctx,W,H,t,score,rnd,lvl) {
+    ctx.fillStyle='rgba(0,0,0,0.85)'; ctx.fillRect(0,0,W,H);
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle='#8c0010'; ctx.font=`bold 40px "Palatino Linotype",Palatino,Georgia,serif`;
+    ctx.fillText('The Ring is Lost',W/2,H/2-110);
+    ctx.fillStyle='rgba(160,80,40,0.8)'; ctx.font=`italic 13px serif`;
+    ctx.fillText('"All hope is gone. The Dark Lord has won."',W/2,H/2-75);
+    // Stats box
+    ctx.strokeStyle='rgba(140,60,30,0.4)'; ctx.lineWidth=1;
+    ctx.strokeRect(W/2-160,H/2-52,320,110);
+    const book=['I','II','III'][lvl]||'?';
+    const rows=[
+      [`Book ${book} — Round ${rnd}`, 'rgba(200,140,60,0.9)', 'bold 14px serif'],
+      [`Score: ${Math.floor(score).toLocaleString()}`, 'rgba(220,180,80,0.95)', 'bold 22px "Palatino Linotype",Palatino,Georgia,serif'],
+      [`Progress: ${['Fellowship','Two Towers','Return of the King'][lvl]}`, 'rgba(160,120,50,0.7)', '12px serif'],
+    ];
+    rows.forEach(([txt,col,font],i)=>{
+      ctx.fillStyle=col; ctx.font=font;
+      ctx.fillText(txt,W/2,H/2-28+i*30);
+    });
+    if(Math.sin(t*2.2)>0){
+      ctx.fillStyle='rgba(180,80,40,0.85)'; ctx.font='bold 14px serif';
+      ctx.fillText('— Press SPACE to try again from the beginning —',W/2,H/2+82);
     }
   }
 
