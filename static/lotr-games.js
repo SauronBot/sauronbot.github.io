@@ -199,6 +199,7 @@
   function launchCarryTheRing() {
     const ov = makeOverlay('#060309');
     const W = 960, H = 580;
+    const WORLD_W = W * 2; // scrolling world is 2× wider
     const canvas = makeCanvas(ov, W, H);
     const ctx = canvas.getContext('2d');
 
@@ -338,22 +339,29 @@
     }
 
     function spawnWraith(def) {
+      // Spawn near Frodo (within 600px in world space) so they're always relevant
+      const baseX = frodo ? frodo.x : W/2;
       const edge = Math.floor(Math.random()*3);
       let x, y;
-      if (edge===0) { x=40+Math.random()*(W-80); y=-35; }
-      else if (edge===1) { x=40+Math.random()*(W-80); y=H+35; }
-      else { x=-35; y=H*0.35+Math.random()*H*0.5; }
+      if (edge===0) { x=Math.max(40,Math.min(WORLD_W-40,baseX+(Math.random()-0.5)*700)); y=-35; }
+      else if (edge===1) { x=Math.max(40,Math.min(WORLD_W-40,baseX+(Math.random()-0.5)*700)); y=H+35; }
+      else { x = Math.random()<0.5 ? baseX-450-Math.random()*100 : baseX+450+Math.random()*100; x=Math.max(-35,Math.min(WORLD_W+35,x)); y=H*0.35+Math.random()*H*0.5; }
       const spd = def.wraithSpeed * (0.9 + Math.random()*0.3);
       wraiths.push({x,y,r:14,wanderAngle:Math.random()*Math.PI*2,wanderTimer:0,
                     speed:spd,capePhase:Math.random()*Math.PI*2});
     }
 
-    const GOAL = { x: 890, y: 90, r: 22 };
+    const GOAL = { x: WORLD_W - 120, y: 90, r: 22 };
     const progress = () => {
       if (!frodo) return 0;
-      // X-axis progress toward goal — simple, stable, no NaN/negative risk
       return Math.max(0, Math.min(1, (frodo.x - 80) / (GOAL.x - 80)));
     };
+    // Camera: follows Frodo horizontally, clamped to world bounds
+    let cameraX = 0;
+    function updateCamera() {
+      if (!frodo) return;
+      cameraX = Math.max(0, Math.min(WORLD_W - W, frodo.x - W * 0.4));
+    }
     const frodoSpd = (def) => (3.4 - progress()*2.2) * (currentLevel===2 ? 0.82 : 1);
     const dist = (a,b) => Math.hypot(a.x-b.x,a.y-b.y);
     const lerp  = (a,b,t) => a+(b-a)*t;
@@ -376,8 +384,9 @@
         if (keys['ArrowDown']||keys['s']||keys['S']) dy+=1;
         if (dx&&dy){dx*=0.707;dy*=0.707;}
         // Blind flash blocks visibility, not movement
-        frodo.x = Math.max(frodo.r, Math.min(W-frodo.r, frodo.x+dx*spd*60*dt));
+        frodo.x = Math.max(frodo.r, Math.min(WORLD_W-frodo.r, frodo.x+dx*spd*60*dt));
         frodo.y = Math.max(frodo.r, Math.min(H-frodo.r, frodo.y+dy*spd*60*dt));
+        updateCamera();
         frodo.ringAngle += dt*(1.2+progress()*2.5);
 
         // Level clear
@@ -432,8 +441,9 @@
             w.x+=Math.cos(w.wanderAngle)*w.speed*0.85*60*dt;
             w.y+=Math.sin(w.wanderAngle)*w.speed*0.85*60*dt;
           }
-          if(w.x<-80||w.x>W+80||w.y<-80||w.y>H+80){
-            w.wanderAngle=Math.atan2(H*0.55-w.y,W*0.5-w.x)+(Math.random()-0.5)*0.6;
+          if(w.x<-80||w.x>WORLD_W+80||w.y<-80||w.y>H+80){
+            const tx=frodo?frodo.x:W/2;
+            w.wanderAngle=Math.atan2(H*0.55-w.y,tx-w.x)+(Math.random()-0.5)*0.6;
             w.wanderTimer=2;
           }
           if(!frodo.invincible&&dist(frodo,w)<frodo.r+w.r){
@@ -481,7 +491,10 @@
         timers.pickupCD-=dt;
         if(!lifePickup && timers.pickupCD<=0 && frodo.lives<3) {
           // Spawn away from goal and away from start
-          const px = 180 + Math.random()*(W-360);
+          // Spawn pickup somewhere ahead of Frodo in world space
+          const spawnMin2 = frodo ? frodo.x + 150 : 300;
+          const spawnMax2 = Math.min(WORLD_W - 300, (frodo ? frodo.x : 0) + 700);
+          const px = spawnMin2 + Math.random() * Math.max(50, spawnMax2 - spawnMin2);
           const py = H*0.2 + Math.random()*(H*0.6);
           lifePickup = {x:px, y:py, r:12, pulse:0};
           timers.pickupCD = 20+Math.random()*10;
@@ -515,10 +528,13 @@
       ctx.save();
       if(shake&&(shake.x||shake.y)) ctx.translate(shake.x,shake.y);
 
-      drawBgLevel(ctx,W,H,t,def,state==='playing'?progress():0);
+      // Background: drawn with parallax (handles its own cameraX offset)
+      drawBgLevel(ctx,W,H,t,def,state==='playing'?progress():0,cameraX);
 
       if(state==='playing'||state==='levelwin'){
-        // Gollum (draw before Frodo so he's behind)
+        // Apply camera transform for all world-space objects
+        ctx.save();
+        ctx.translate(-cameraX, 0);
         drawGoal(ctx,GOAL,def,t,progress(),80,H*0.62);
         if(lifePickup) drawLifePickup(ctx,lifePickup,t);
         if (gollum) drawGollum(ctx,gollum,eye);
@@ -527,10 +543,11 @@
         ctx.globalAlpha=1;
         particles.forEach(p=>{ctx.globalAlpha=Math.min(1,p.life*2.5);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();});
         ctx.globalAlpha=1;
+        ctx.restore(); // end world-space
+        // Screen-space overlays (no camera offset)
         if(eye&&eye.open>0.02) drawEye1(ctx,W,eye);
         if(eye&&eye.phase==='active'){ctx.fillStyle=`rgba(160,0,0,${eye.open*0.16})`;ctx.fillRect(0,0,W,H);}
         if(eye&&eye.phase==='warning'&&Math.random()>0.65){ctx.fillStyle=`rgba(200,50,0,${Math.random()*0.09})`;ctx.fillRect(0,0,W,H);}
-        // Blind flash (level 3)
         if(blindFlash>0){ctx.fillStyle=`rgba(255,200,50,${blindFlash*0.92})`;ctx.fillRect(0,0,W,H);}
         drawUILevel(ctx,W,H,frodo,progress(),eye,timers.elapsed,currentLevel,def);
       }
@@ -634,21 +651,22 @@
     ctx.restore();
   }
 
-  function drawBgLevel(ctx,W,H,t,def,prog) {
+  function drawBgLevel(ctx,W,H,t,def,prog,cameraX=0) {
     const [s1,s2]=def.bgSky;
     const sky=ctx.createLinearGradient(0,0,0,H*0.55);
     sky.addColorStop(0,s1); sky.addColorStop(1,s2);
     ctx.fillStyle=sky; ctx.fillRect(0,0,W,H*0.55);
 
-    // Stars (dimmer in L1 because it's daytime-ish)
+    // Stars: parallax 0.08x (nearly fixed, like distant sky)
     STARS.forEach(s=>{
       const base = def===LEVEL_DEFS[0] ? 0.15 : 0.4;
       const alpha = base + Math.sin(t*0.8+s.twinkle)*0.2;
       ctx.fillStyle=`rgba(255,250,220,${alpha})`;
-      ctx.beginPath(); ctx.arc(s.x*W,s.y*H,s.r,0,Math.PI*2); ctx.fill();
+      const sx = ((s.x*W - cameraX*0.08) % W + W) % W;
+      ctx.beginPath(); ctx.arc(sx, s.y*H, s.r, 0, Math.PI*2); ctx.fill();
     });
 
-    // Destination glow (right)
+    // Destination glow: screen-space (always right side, intensifies near goal)
     const [dr,dg,db]=def.destGlow;
     const dgl=ctx.createRadialGradient(W,H*0.5,0,W,H*0.5,340);
     dgl.addColorStop(0,`rgba(${dr},${dg},${db},${def.glowAlpha+prog*0.25})`);
@@ -656,55 +674,62 @@
     dgl.addColorStop(1,'rgba(0,0,0,0)');
     ctx.fillStyle=dgl; ctx.fillRect(0,0,W,H);
 
-    // Ground
+    // Mountains: parallax 0.25x — tile across 3 screens
+    ctx.save(); ctx.translate(-cameraX*0.25, 0);
+    ctx.fillStyle=def.horizon;
+    for(let tile=0; tile<4; tile++) {
+      const ox = tile * W;
+      ctx.beginPath(); ctx.moveTo(ox,H*0.5);
+      [[180,0],[240,0.08],[310,-0.02],[400,0.06],[480,0],[560,0.07],[640,0.01],[720,0.05],[W,0]]
+        .forEach(([x,o])=>ctx.lineTo(ox+x,H*(0.5-o)));
+      ctx.lineTo(ox+W,H*0.5); ctx.closePath(); ctx.fill();
+    }
+    ctx.restore();
+
+    // Ground: screen-space (always fills bottom)
     const [g1,g2]=def.bgGnd;
     const ground=ctx.createLinearGradient(0,H*0.5,0,H);
     ground.addColorStop(0,g1); ground.addColorStop(1,g2);
     ctx.fillStyle=ground; ctx.fillRect(0,H*0.5,W,H*0.5);
 
-    // Road
+    // Road: screen-space infinite strip
     const road=ctx.createLinearGradient(0,H*0.48,0,H*0.62);
     road.addColorStop(0,def.roadCol); road.addColorStop(1,'rgba(0,0,0,0.2)');
     ctx.fillStyle=road; ctx.beginPath();
     ctx.moveTo(0,H*0.46); ctx.lineTo(W,H*0.44); ctx.lineTo(W,H*0.60); ctx.lineTo(0,H*0.62);
     ctx.closePath(); ctx.fill();
 
-    // Mountains silhouette
-    ctx.fillStyle=def.horizon;
-    ctx.beginPath(); ctx.moveTo(0,H*0.5);
-    [[180,0],[240,0.08],[310,-0.02],[400,0.06],[480,0],[560,0.07],[640,0.01],[720,0.05],[W,0]]
-      .forEach(([x,o])=>ctx.lineTo(x,H*(0.5-o)));
-    ctx.lineTo(W,H*0.5); ctx.closePath(); ctx.fill();
-
-    // Level-specific atmosphere
+    // Level atmosphere: parallax 0.45x mid-ground
+    ctx.save(); ctx.translate(-cameraX*0.45, 0);
     if (def === LEVEL_DEFS[0]) {
-      // Shire hill (left start)
-      ctx.save();
+      // Shire: rolling green hills and scattered trees
       ctx.fillStyle='#1e3a12';
       ctx.beginPath(); ctx.arc(60,H*0.48,55,Math.PI,0); ctx.fill();
-      // Rivendell cliff columns mid-right (not at goal, just atmosphere)
-      ctx.strokeStyle=`rgba(140,200,220,${0.2+prog*0.25})`; ctx.lineWidth=2;
-      for(let i=0;i<3;i++){
-        ctx.beginPath(); ctx.moveTo(W*0.72+i*9,H*0.28); ctx.lineTo(W*0.72+i*9,H*0.46); ctx.stroke();
-      }
-      ctx.restore();
+      [W*0.28,W*0.52,W*0.78,W*1.05,W*1.35,W*1.6,W*1.85].forEach(tx=>{
+        ctx.fillStyle='#1a3010';
+        ctx.beginPath(); ctx.arc(tx,H*0.46,22+Math.sin(tx)*4,Math.PI,0); ctx.fill();
+        ctx.fillStyle='#162808'; ctx.fillRect(tx-3,H*0.46,6,14);
+      });
     } else if (def === LEVEL_DEFS[1]) {
-      // Dead Marshes glow (floating faces along the ground)
-      for(let i=0;i<4;i++){
-        const mx=140+i*140, my=H*0.6+Math.sin(t*0.6+i)*6;
+      // Dead Marshes: eerie lights spread across world
+      for(let i=0;i<10;i++){
+        const mx=80+i*185, my=H*0.6+Math.sin(t*0.6+i)*6;
         const mg=ctx.createRadialGradient(mx,my,0,mx,my,18);
         mg.addColorStop(0,`rgba(100,180,80,${0.12+Math.sin(t+i)*0.06})`);
         mg.addColorStop(1,'rgba(0,0,0,0)');
         ctx.fillStyle=mg; ctx.fillRect(mx-18,my-18,36,36);
       }
     } else {
-      // Mordor: progress-based doom intensification across the whole scene
+      // Mordor: doom glow intensifies toward goal (screen-space)
+      ctx.restore();
       if(prog>0){
-        const g2=ctx.createRadialGradient(W*0.9,H*0.2,0,W*0.9,H*0.2,300+prog*120);
+        const g2=ctx.createRadialGradient(W,H*0.2,0,W,H*0.2,300+prog*120);
         g2.addColorStop(0,`rgba(255,60,0,${prog*0.28})`); g2.addColorStop(1,'rgba(0,0,0,0)');
         ctx.fillStyle=g2; ctx.fillRect(0,0,W,H);
       }
+      return;
     }
+    ctx.restore();
   }
 
   // ── GOLLUM ────────────────────────────────────────────────────────────
