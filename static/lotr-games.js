@@ -64,7 +64,7 @@
     function applyScale() {
       // Leave 80px for close button + d-pad on mobile
       const vw = window.innerWidth, vh = window.innerHeight - 140;
-      const scale = Math.min(1, vw / w, vh / h);
+      const scale = Math.min(vw / w, vh / h);
       c.style.width  = (w * scale) + 'px';
       c.style.height = (h * scale) + 'px';
     }
