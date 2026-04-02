@@ -1017,6 +1017,82 @@
     const lvl = currentLvl;
     const pulse = unlocked ? 1 + Math.sin(t * 3) * 0.22 : 1;
 
+    // Level 1: Rivendell — elven forest, waterfall, archways around the goal
+    if (lvl === 0) {
+      ctx.save();
+      // Soft elven light glow behind goal
+      const eg=ctx.createRadialGradient(x,y,0,x,y,r*5);
+      eg.addColorStop(0,`rgba(180,240,200,${0.3+Math.sin(t*1.2)*0.08})`);
+      eg.addColorStop(0.5,`rgba(100,200,140,0.12)`);
+      eg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=eg; ctx.fillRect(x-r*6,y-r*4,r*12,H-y+r*4);
+
+      // Tall elven trees flanking the gate — slender trunks, layered canopy
+      const treePositions=[-r*4.5,-r*2.8,r*2.8,r*4.5];
+      treePositions.forEach((ox,i)=>{
+        const tx=x+ox, th=H-y+r*1.5, ty=y+r*0.5;
+        // Trunk
+        ctx.fillStyle=`hsl(${28+i*4},${45}%,${18}%)`;
+        ctx.fillRect(tx-r*0.12,ty,r*0.24,th);
+        // Layered canopy (3 tiers, each slightly offset)
+        [0,1,2].forEach(tier=>{
+          const cr2=r*(1.4-tier*0.3), cy=ty-r*(0.6+tier*0.9);
+          const canopyG=ctx.createRadialGradient(tx,cy,0,tx,cy,cr2);
+          canopyG.addColorStop(0,`hsl(${125+tier*8},${60}%,${22+tier*3}%)`);
+          canopyG.addColorStop(0.7,`hsl(${120+tier*6},${50}%,${16+tier*2}%)`);
+          canopyG.addColorStop(1,'rgba(0,0,0,0)');
+          ctx.fillStyle=canopyG;
+          ctx.beginPath(); ctx.arc(tx,cy,cr2,0,Math.PI*2); ctx.fill();
+          // Leaf shimmer
+          ctx.save(); ctx.globalAlpha=0.12+Math.sin(t*0.8+i+tier)*0.06;
+          ctx.fillStyle='rgba(160,255,160,1)';
+          ctx.beginPath(); ctx.arc(tx+cr2*0.3,cy-cr2*0.2,cr2*0.25,0,Math.PI*2); ctx.fill();
+          ctx.restore();
+        });
+      });
+
+      // Stone archway over the goal
+      const aw=r*2.2, ah=r*2.0;
+      ctx.strokeStyle='rgba(200,220,200,0.55)'; ctx.lineWidth=r*0.22;
+      ctx.beginPath();
+      ctx.moveTo(x-aw,y+ah); ctx.lineTo(x-aw,y);
+      ctx.quadraticCurveTo(x,y-ah*0.5,x+aw,y);
+      ctx.lineTo(x+aw,y+ah); ctx.stroke();
+      // Arch detail — elven rune glow
+      ctx.save(); ctx.shadowColor='rgba(150,255,200,0.6)'; ctx.shadowBlur=8;
+      ctx.strokeStyle=`rgba(180,255,210,${0.25+Math.sin(t*1.8)*0.1})`; ctx.lineWidth=r*0.08;
+      ctx.beginPath();
+      ctx.moveTo(x-aw*0.8,y+ah); ctx.lineTo(x-aw*0.8,y+r*0.2);
+      ctx.quadraticCurveTo(x,y-ah*0.35,x+aw*0.8,y+r*0.2);
+      ctx.lineTo(x+aw*0.8,y+ah); ctx.stroke();
+      ctx.restore();
+
+      // Waterfall on right side — thin luminous streams
+      ctx.save(); ctx.shadowColor='rgba(160,220,255,0.5)'; ctx.shadowBlur=6;
+      [r*3.5,r*4.0,r*4.5].forEach((ox,i)=>{
+        const wg=ctx.createLinearGradient(x+ox,y-r,x+ox,H);
+        wg.addColorStop(0,`rgba(180,230,255,${0.4+Math.sin(t*1.5+i)*0.1})`);
+        wg.addColorStop(1,'rgba(120,180,220,0.1)');
+        ctx.strokeStyle=wg; ctx.lineWidth=r*0.08+i*r*0.03;
+        ctx.beginPath(); ctx.moveTo(x+ox,y-r);
+        ctx.bezierCurveTo(x+ox+r*0.1,y+r*1.5,x+ox-r*0.1,y+r*3,x+ox+r*0.05,H);
+        ctx.stroke();
+      });
+      ctx.restore();
+
+      // Fireflies / motes of light
+      ctx.save();
+      for(let i=0;i<8;i++){
+        const mx2=x+(Math.sin(t*0.7+i*1.2)*r*4),my2=y+r*0.5+(Math.cos(t*0.5+i)*r*3);
+        const mg2=ctx.createRadialGradient(mx2,my2,0,mx2,my2,r*0.4);
+        mg2.addColorStop(0,`rgba(200,255,200,${0.5+Math.sin(t*2+i)*0.3})`);
+        mg2.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=mg2; ctx.fillRect(mx2-r*0.4,my2-r*0.4,r*0.8,r*0.8);
+      }
+      ctx.restore();
+      ctx.restore();
+    }
+
     // Level 2: Emyn Muil — jagged rock columns flanking the goal
     if (lvl === 1) {
       ctx.save();
