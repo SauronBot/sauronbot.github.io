@@ -512,9 +512,9 @@
     }
 
     // Goal Y varies by level: L1=ground-ish, L2=mid-high, L3=near-top (climb the mountain)
-    // Sky/ground boundary — ground colour starts at H*0.5, road at H*0.44
-    // Set boundary at H*0.5 so anything above the horizon line is sky
-    const SKY_Y = H * 0.50;
+    // Sky/ground boundary — road top edge is at H*0.44, mountains at H*0.5
+    // Use H*0.46 so Fell Beast appears as soon as Nazgûl clears the road
+    const SKY_Y = H * 0.46;
 
     const GOAL_Y_BY_LEVEL = [
       Math.round(H * 0.58), // L1: ground level — enter Rivendell's gates
