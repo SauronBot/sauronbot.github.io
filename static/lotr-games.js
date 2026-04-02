@@ -467,11 +467,22 @@
         const eyeActive = eye.phase==='active';
 
         // Wraiths
+        const SENSE_RADIUS = 220; // px — Nazgûl sense the Ring within this range
         wraiths.forEach(w=>{
           w.capePhase+=dt*1.8; w.wanderTimer-=dt;
-          if(eyeActive){
+          const d2frodo = dist(frodo, w);
+          const sensing = d2frodo < SENSE_RADIUS;
+          // sense intensity 0→1 as they close in
+          w.sense = Math.max(0, Math.min(1, 1 - d2frodo / SENSE_RADIUS));
+
+          if(eyeActive || sensing){
+            // Lock on to Frodo — Eye-active gives full speed, sensing gives partial
             const a=Math.atan2(frodo.y-w.y,frodo.x-w.x);
-            w.x+=Math.cos(a)*w.speed*1.9*60*dt; w.y+=Math.sin(a)*w.speed*1.9*60*dt;
+            const huntMult = eyeActive ? 1.9 : 0.9 + w.sense * 0.7;
+            // When very close, cap speed so Frodo can always escape by moving
+            const closePenalty = d2frodo < 120 ? Math.max(0.5, d2frodo/120) : 1;
+            w.x+=Math.cos(a)*w.speed*huntMult*closePenalty*60*dt;
+            w.y+=Math.sin(a)*w.speed*huntMult*closePenalty*60*dt;
           } else {
             if(w.wanderTimer<=0){
               w.wanderAngle=Math.atan2(frodo.y-w.y,frodo.x-w.x)+(Math.random()-0.5)*Math.PI*1.6;
@@ -977,16 +988,25 @@
     const ea=eye&&eye.phase==='active';
     wraiths.forEach(w=>{
       ctx.save(); ctx.translate(w.x,w.y);
-      const gc=ea?[130,20,200]:[55,10,100];
-      const wg=ctx.createRadialGradient(0,0,0,0,0,w.r*3);
-      wg.addColorStop(0,`rgba(${gc},0.45)`); wg.addColorStop(1,'rgba(0,0,0,0)');
-      ctx.fillStyle=wg; ctx.fillRect(-w.r*3,-w.r*3,w.r*6,w.r*6);
+      const sense = w.sense || 0;
+      const alert = ea || sense > 0.15; // visually alert when sensing OR eye active
+      const gc = ea ? [130,20,200] : sense>0.15 ? [100,15,160] : [55,10,100];
+      const glowR = w.r*(3 + sense*1.5);
+      const wg=ctx.createRadialGradient(0,0,0,0,0,glowR);
+      wg.addColorStop(0,`rgba(${gc},${0.35+sense*0.35})`); wg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=wg; ctx.fillRect(-glowR,-glowR,glowR*2,glowR*2);
       const wave=Math.sin(w.capePhase)*5;
-      ctx.fillStyle=ea?'#1c0535':'#0e0220'; ctx.beginPath();
+      ctx.fillStyle=ea?'#1c0535':sense>0.15?'#130430':'#0e0220'; ctx.beginPath();
       ctx.moveTo(0,-w.r*1.1); ctx.lineTo(-w.r*1.3,w.r*0.4+wave); ctx.lineTo(0,w.r*2.1); ctx.lineTo(w.r*1.3,w.r*0.4-wave); ctx.closePath(); ctx.fill();
-      ctx.fillStyle=ea?'#250842':'#130128'; ctx.beginPath(); ctx.ellipse(0,-w.r*0.9,w.r*0.82,w.r*0.92,0,0,Math.PI*2); ctx.fill();
-      ctx.save(); ctx.shadowColor=ea?'#ff20a0':'#600030'; ctx.shadowBlur=4; ctx.fillStyle=ea?'#ff50c0':'#900060';
-      [-3.5,3.5].forEach(ex=>{ctx.beginPath();ctx.arc(ex,-w.r*0.9,1.5,0,Math.PI*2);ctx.fill();}); ctx.restore();
+      ctx.fillStyle=ea?'#250842':sense>0.15?'#1a0535':'#130128'; ctx.beginPath(); ctx.ellipse(0,-w.r*0.9,w.r*0.82,w.r*0.92,0,0,Math.PI*2); ctx.fill();
+      // Eyes: grow with sense intensity
+      const eyeR = 1.5 + sense * 2.5;
+      const eyeCol = ea ? '#ff50c0' : sense>0.6 ? '#ff3090' : sense>0.15 ? '#cc2060' : '#900060';
+      const eyeGlow = ea ? '#ff20a0' : sense>0.15 ? '#aa1060' : '#600030';
+      ctx.save(); ctx.shadowColor=eyeGlow; ctx.shadowBlur=4+sense*10; ctx.fillStyle=eyeCol;
+      [-3.5,3.5].forEach(ex=>{
+        ctx.beginPath(); ctx.arc(ex,-w.r*0.9,eyeR,0,Math.PI*2); ctx.fill();
+      }); ctx.restore();
       ctx.restore();
     });
   }
