@@ -35,6 +35,7 @@
 
   // ── OVERLAY HELPERS ───────────────────────────────────────────────────
   function makeOverlay(bgColor) {
+    window.__lotrActive = true;
     const ov = document.createElement('div');
     Object.assign(ov.style, {
       position: 'fixed',
@@ -49,6 +50,11 @@
       overflow: 'hidden',
     });
     document.body.appendChild(ov);
+    // Clean up flag when overlay is removed
+    const mo = new MutationObserver(() => {
+      if (!document.body.contains(ov)) { window.__lotrActive = false; mo.disconnect(); }
+    });
+    mo.observe(document.body, { childList: true });
     return ov;
   }
 
