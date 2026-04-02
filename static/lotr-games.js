@@ -421,7 +421,7 @@
 
       if(state==='playing'||state==='levelwin'){
         // Gollum (draw before Frodo so he's behind)
-        drawGoal(ctx,GOAL,def,t,progress());
+        drawGoal(ctx,GOAL,def,t,progress(),80,H*0.62);
         if (gollum) drawGollum(ctx,gollum,eye);
         drawWraiths1(ctx,wraiths,eye);
         if (frodo) drawFrodo1(ctx,frodo,progress(),timers.elapsed);
@@ -468,7 +468,7 @@
 
   // ── LEVEL BACKGROUNDS ─────────────────────────────────────────────────
   // ── GOAL MARKER ────────────────────────────────────────────────────
-  function drawGoal(ctx, goal, def, t, prog) {
+  function drawGoal(ctx, goal, def, t, prog, startX, startY) {
     const { x, y, r } = goal;
     const lvl = LEVEL_DEFS.indexOf(def);
     // Outer pulse ring
@@ -510,8 +510,8 @@
       ctx.save(); ctx.globalAlpha = (0.15 - prog) * 5 * 0.35;
       ctx.strokeStyle = 'rgba(200,160,60,0.6)'; ctx.lineWidth = 1;
       ctx.setLineDash([4,8]);
-      ctx.beginPath(); ctx.moveTo(80, H*0.62); ctx.lineTo(x, y); ctx.stroke();
-      ctx.setLineDash([]);
+      ctx.beginPath(); ctx.moveTo(startX, startY); ctx.lineTo(x, y); ctx.stroke();
+      ctx.setLineDash([]); // always reset before restore
       ctx.restore();
     }
     ctx.restore();
