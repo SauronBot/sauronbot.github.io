@@ -1,8 +1,27 @@
 /**
- * LOTR Easter-Egg Games
- * Triggered by: ↑↑↓↓←→←→BA
- * Games: 1 = Carry the Ring, 2 = You Shall Not Pass, 3 = The Eye
- *        (random on each trigger)
+ * LOTR Easter-Egg — Carry the Ring
+ * Triggered by: ↑↑↓↓←→←→BA (Konami code)
+ *
+ * A 3-level dodge game across a scrolling 2× world with parallax backgrounds.
+ *
+ * Level 1 — The Fellowship of the Ring
+ *   Shire → Rivendell. 3–5 Nazgûl. Gentle Eye. Green palette.
+ *
+ * Level 2 — The Two Towers
+ *   Emyn Muil / Dead Marshes. 4–7 Nazgûl + Gollum. Eye wakes often.
+ *
+ * Level 3 — The Return of the King
+ *   Full Mordor. 6–10 Nazgûl + Gollum. Eye barely rests.
+ *   Ring corruption causes random blind flashes at high progress.
+ *
+ * Mechanics:
+ *   - WASD / Arrow keys to move Frodo
+ *   - 🔑 Key spawns 1s in — collect it to unlock the 🔒 goal
+ *   - ♥ Life pickup appears mid-field when below max lives
+ *   - Speed slows as you approach the goal (Ring grows heavier)
+ *   - Eye of Sauron opens periodically — Nazgûl home in when active
+ *   - Lives carry between levels; gameover restarts with 2 lives
+ *   - Canvas scales to viewport (responsive); touch D-pad on mobile
  */
 (function () {
   'use strict';
