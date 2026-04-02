@@ -121,12 +121,20 @@
 
   function makeCloseBtn(ov, closeFn) {
     const btn = document.createElement('button');
-    btn.textContent = '✕  Close (Esc)';
+    btn.textContent = '✕';
+    btn.title = 'Close (Esc)';
     Object.assign(btn.style, {
-      marginTop: '12px', background: 'transparent',
-      border: '1px solid rgba(180,130,50,0.4)', color: 'rgba(180,130,50,0.7)',
-      padding: '5px 18px', cursor: 'pointer',
-      fontFamily: 'inherit', fontSize: '11px', letterSpacing: '1px',
+      position: 'absolute',
+      top: '10px', left: '10px',
+      background: 'rgba(0,0,0,0.4)',
+      border: '1px solid rgba(180,130,50,0.35)',
+      color: 'rgba(180,130,50,0.65)',
+      width: '32px', height: '32px',
+      borderRadius: '6px',
+      cursor: 'pointer',
+      fontFamily: 'inherit', fontSize: '14px',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      zIndex: '10',
     });
     btn.onclick = closeFn;
     ov.appendChild(btn);
