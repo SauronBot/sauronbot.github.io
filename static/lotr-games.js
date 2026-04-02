@@ -637,7 +637,7 @@
         const eyeActive = eye.phase==='active';
 
         // Wraiths
-        const SENSE_RADIUS = Math.round(220 * areaScale); // scales with canvas size
+        const SENSE_RADIUS = Math.round(120 * areaScale); // scales with canvas size
         wraiths.forEach(w=>{
           w.capePhase+=dt*1.8; w.wanderTimer-=dt;
           const d2frodo = dist(frodo, w);
