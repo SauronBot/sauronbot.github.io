@@ -50,6 +50,12 @@
   // ── OVERLAY HELPERS ───────────────────────────────────────────────────
   function makeOverlay(bgColor) {
     window.__lotrActive = true;
+    // Prevent text selection + scroll while game is open
+    const _bodySelect   = document.body.style.userSelect;
+    const _bodyOverflow = document.body.style.overflow;
+    document.body.style.userSelect      = 'none';
+    document.body.style.webkitUserSelect= 'none';
+    document.body.style.overflow        = 'hidden';
     const ov = document.createElement('div');
     Object.assign(ov.style, {
       position: 'fixed',
@@ -66,7 +72,13 @@
     document.body.appendChild(ov);
     // Clean up flag when overlay is removed
     const mo = new MutationObserver(() => {
-      if (!document.body.contains(ov)) { window.__lotrActive = false; mo.disconnect(); }
+      if (!document.body.contains(ov)) {
+        window.__lotrActive = false;
+        document.body.style.userSelect       = _bodySelect;
+        document.body.style.webkitUserSelect  = _bodySelect;
+        document.body.style.overflow          = _bodyOverflow;
+        mo.disconnect();
+      }
     });
     mo.observe(document.body, { childList: true });
     return ov;
@@ -79,10 +91,13 @@
     c.width  = Math.round(w * dpr);
     c.height = Math.round(h * dpr);
     function applyScale() {
-      // On touch screens reserve extra space for the dash button
-      const touchOffset = ('ontouchstart' in window) ? 160 : 100;
+      // On touch: maximise canvas, only reserve space for dash button + close btn
+      const isTouch = 'ontouchstart' in window;
+      const touchOffset = isTouch ? 130 : 100;
       const vw = window.innerWidth, vh = window.innerHeight - touchOffset;
-      const scale = Math.min(vw / w, vh / h);
+      // On portrait mobile, allow slight upscale beyond logical size for fill
+      const maxScale = isTouch ? 2 : 1;
+      const scale = Math.min(vw / w, vh / h); // maxScale unused — natural fit fills screen
       c.style.width  = (w * scale) + 'px';
       c.style.height = (h * scale) + 'px';
     }
