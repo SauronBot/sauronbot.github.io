@@ -286,6 +286,44 @@
     // D-pad hidden — pointer/touch follow replaces it
     dpad.style.display = 'none';
 
+    // ── Mobile dash button (touch devices only) ───────────────────────
+    const dashBtn = document.createElement('button');
+    dashBtn.textContent = '⚡';
+    Object.assign(dashBtn.style, {
+      position: 'absolute',
+      bottom: '72px',     // above close button
+      left: '50%',
+      transform: 'translateX(-50%)',
+      width: '64px', height: '64px',
+      borderRadius: '50%',
+      background: 'rgba(60,100,200,0.25)',
+      border: '2px solid rgba(100,160,255,0.5)',
+      color: 'rgba(160,210,255,0.95)',
+      fontSize: '28px',
+      cursor: 'pointer',
+      display: 'none',         // shown only on touch
+      alignItems: 'center',
+      justifyContent: 'center',
+      touchAction: 'none',
+      zIndex: '1',
+      userSelect: 'none',
+      WebkitUserSelect: 'none',
+      transition: 'background 0.1s',
+    });
+    dashBtn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      dashBtn.style.background = 'rgba(60,100,200,0.55)';
+      triggerDash();
+    }, {passive:false});
+    dashBtn.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      dashBtn.style.background = 'rgba(60,100,200,0.25)';
+    }, {passive:false});
+    ov.style.position = 'relative'; // ensure absolute positioning works
+    ov.appendChild(dashBtn);
+    // Show only on touch screens
+    if ('ontouchstart' in window) dashBtn.style.display = 'flex';
+
     const onKd = e => {
       keys[e.key] = true;
       if ([' ','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
@@ -1228,7 +1266,7 @@
     const rowH=22, rowStart=H/2-82;
     const rows=[
       ['🔸 Move',      'WASD or Arrow keys'],
-      ['🔸 Dash',      'SPACE — burst of speed + invincibility'],
+      ['🔸 Dash',      'SPACE / ⚡ button — burst of speed + invincibility'],
       ['🔑 Key',       'Collect within 1s to unlock the goal'],
       ['🔒 Goal',      'Reach it to complete the level'],
       ['♥  Life',      'Pickup restores 1 life (max 3)'],
