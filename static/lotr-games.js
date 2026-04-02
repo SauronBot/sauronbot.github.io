@@ -231,16 +231,21 @@
 
   function launchCarryTheRing() {
     const ov = makeOverlay('#060309');
-    // Logical game size: fills the screen on mobile, capped on desktop
-    const isTouch   = 'ontouchstart' in window;
-    const ctrlSpace = isTouch ? 90 : 50;  // dash btn + close btn reserve
-    const rawW = Math.min(window.innerWidth,  1200);
-    const rawH = Math.min(window.innerHeight - ctrlSpace, 700);
-    // Maintain 5:3 aspect ratio (game designed for it)
-    const W = rawW, H = Math.round(W * 3 / 5) <= rawH ? Math.round(W * 3 / 5) : rawH;
-    const WORLD_W = W * 2; // scrolling world is 2× wider
+    const isTouch = 'ontouchstart' in window;
+
+    // ── Size: maximise canvas, reserve just what controls need ──────────────
+    // On mobile: full width, full height minus close btn (36px) and dash btn (80px)
+    // On desktop: up to 1200×700
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const reserveH = isTouch ? 36 + 80 : 36 + 16; // close + (dash or margin)
+    const maxW = isTouch ? vw         : Math.min(vw, 1200);
+    const maxH = isTouch ? vh - reserveH : Math.min(vh - reserveH, 700);
+    // Pick largest size that fits both width and 5:3 aspect ratio
+    const W = maxW, H = Math.min(maxH, Math.round(maxW * 3 / 5));
+    const WORLD_W = W * 2;
     const canvas = makeCanvas(ov, W, H);
-    const ctx = canvas.getContext('2d'); // already scaled by makeCanvas (dpr applied)
+    const ctx = canvas.getContext('2d');
 
     let alive = true;
     function close() { alive = false; ov.remove(); }
