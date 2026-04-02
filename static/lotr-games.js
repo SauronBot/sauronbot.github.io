@@ -298,7 +298,9 @@
     let currentLevel = 0;
     let frodo, wraiths=[], gollum=null, particles=[], eye=null, shake={x:0,y:0}, timers={elapsed:0};
     let blindFlash = 0, levelTransTimer = 0;
-    let lifePickup = null; // {x,y,r,pulse,spawnTimer}
+    let lifePickup = null; // {x,y,r,pulse}
+    let keyPickup = null;  // {x,y,r,pulse} — must collect before goal unlocks
+    let goalUnlocked = false;
 
     function startLevel(lvl) {
       currentLevel = lvl;
@@ -324,6 +326,11 @@
       timers = {elapsed:0,spawnCD:0,pickupCD:3};
       blindFlash = 0;
       lifePickup = null;
+      goalUnlocked = false;
+      // Key spawns at a random mid-field position, away from start and goal
+      const kx = 300 + Math.random() * (WORLD_W - 700);
+      const ky = H * 0.2 + Math.random() * (H * 0.6);
+      keyPickup = { x: kx, y: ky, r: 14, pulse: 0, spawned: false, spawnTimer: 1 };
       state = 'playing';
     }
 
@@ -487,6 +494,35 @@
         const want=def.initWraiths+Math.floor(progress()*(def.maxWraiths-def.initWraiths));
         if(wraiths.length<want&&timers.spawnCD<=0){spawnWraith(def);timers.spawnCD=def.spawnMin+Math.random()*2.5;}
 
+        // Key pickup (unlocks goal)
+        if(keyPickup) {
+          if(!keyPickup.spawned) {
+            keyPickup.spawnTimer -= dt;
+            if(keyPickup.spawnTimer <= 0) keyPickup.spawned = true;
+          } else {
+            keyPickup.pulse += dt*2.8;
+            if(Math.hypot(frodo.x-keyPickup.x, frodo.y-keyPickup.y) < frodo.r+keyPickup.r) {
+              goalUnlocked = true;
+              keyPickup = null;
+              shake = {x:0,y:0,dur:0.3,intensity:5};
+              // Golden unlock burst
+              for(let i=0;i<18;i++){const a=(i/18)*Math.PI*2,s=2+Math.random()*3;
+                particles.push({x:frodo.x,y:frodo.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1.5,
+                                life:0.7+Math.random()*0.4,size:4+Math.random()*3,color:'#ffd030'});}
+            }
+          }
+        }
+
+        // Prevent reaching goal unless unlocked
+        if(!goalUnlocked) {
+          const d=Math.hypot(frodo.x-GOAL.x, frodo.y-GOAL.y);
+          if(d < frodo.r + GOAL.r + 20) {
+            // Push Frodo away from locked goal
+            const a=Math.atan2(frodo.y-GOAL.y, frodo.x-GOAL.x);
+            frodo.x += Math.cos(a)*3; frodo.y += Math.sin(a)*3;
+          }
+        }
+
         // Life pickup
         timers.pickupCD-=dt;
         if(!lifePickup && timers.pickupCD<=0 && frodo.lives<3) {
@@ -536,7 +572,8 @@
         // Apply camera transform for all world-space objects
         ctx.save();
         ctx.translate(-cameraX, 0);
-        drawGoal(ctx,GOAL,def,t,progress(),80,H*0.62);
+        drawGoal(ctx,GOAL,def,t,progress(),80,H*0.62,goalUnlocked);
+        if(keyPickup&&keyPickup.spawned) drawKeyPickup(ctx,keyPickup,t,currentLevel);
         if(lifePickup) drawLifePickup(ctx,lifePickup,t);
         if (gollum) drawGollum(ctx,gollum,eye);
         drawWraiths1(ctx,wraiths,eye);
@@ -603,52 +640,91 @@
   }
 
   // ── GOAL MARKER ────────────────────────────────────────────────────
-  function drawGoal(ctx, goal, def, t, prog, startX, startY) {
+  function drawGoal(ctx, goal, def, t, prog, startX, startY, unlocked) {
     const { x, y, r } = goal;
     const lvl = LEVEL_DEFS.indexOf(def);
-    // Outer pulse ring
-    const pulse = 1 + Math.sin(t * 2.5) * 0.18;
+    const pulse = unlocked ? 1 + Math.sin(t * 3) * 0.22 : 1;
     ctx.save();
-    ctx.shadowColor = lvl===0 ? '#80e0ff' : lvl===1 ? '#a0c840' : '#ff6000';
-    ctx.shadowBlur  = 24 * pulse;
-    // Animated beacon ring
-    const ringAlpha = 0.5 + Math.sin(t*2.5)*0.3;
-    ctx.strokeStyle = lvl===0 ? `rgba(180,230,255,${ringAlpha})` :
-                      lvl===1 ? `rgba(160,210,80,${ringAlpha})` :
-                                `rgba(255,120,20,${ringAlpha})`;
-    ctx.lineWidth = 2.5;
-    ctx.beginPath(); ctx.arc(x, y, r * pulse, 0, Math.PI*2); ctx.stroke();
-    // Second smaller ring
-    ctx.lineWidth = 1.5; ctx.globalAlpha = 0.5;
-    ctx.beginPath(); ctx.arc(x, y, r * 0.6, 0, Math.PI*2); ctx.stroke();
-    ctx.globalAlpha = 1;
-    // Core glow
-    const cg = ctx.createRadialGradient(x, y, 0, x, y, r * 1.8);
-    const [cr,cg2,cb] = lvl===0 ? [140,210,255] : lvl===1 ? [130,200,60] : [255,90,10];
-    cg.addColorStop(0, `rgba(${cr},${cg2},${cb},0.5)`);
-    cg.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = cg; ctx.fillRect(x-r*2, y-r*2, r*4, r*4);
-    // Icon per level
-    ctx.fillStyle = lvl===0 ? 'rgba(200,235,255,0.9)' :
-                    lvl===1 ? 'rgba(180,220,80,0.9)' :
-                              `rgba(255,${140+Math.floor(Math.sin(t*4)*30)},0,0.9)`;
-    ctx.font = `bold ${Math.round(r*0.9)}px serif`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(lvl===0 ? '★' : lvl===1 ? '▲' : '🔥', x, y);
-    // Label
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = 'rgba(200,160,60,0.8)';
-    ctx.font = 'bold 9px serif';
-    ctx.fillText(def.destination.toUpperCase(), x, y + r + 10);
-    // Dotted path hint from start to goal (fades as you progress)
+    if (!unlocked) {
+      // Locked: dim grey with padlock
+      ctx.globalAlpha = 0.35;
+      ctx.shadowColor = '#888'; ctx.shadowBlur = 10;
+      ctx.strokeStyle = 'rgba(150,150,150,0.5)'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.stroke();
+      ctx.fillStyle = 'rgba(160,160,160,0.7)';
+      ctx.font = `bold ${Math.round(r*1.1)}px serif`;
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('🔒', x, y);
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = 'rgba(140,140,140,0.5)';
+      ctx.font = 'bold 9px serif';
+      ctx.fillText('LOCKED', x, y + r + 10);
+    } else {
+      // Unlocked: full bright beacon
+      ctx.shadowColor = lvl===0 ? '#80e0ff' : lvl===1 ? '#a0c840' : '#ff6000';
+      ctx.shadowBlur  = 28 * pulse;
+      const ringAlpha = 0.6 + Math.sin(t*3)*0.3;
+      ctx.strokeStyle = lvl===0 ? `rgba(180,230,255,${ringAlpha})` :
+                        lvl===1 ? `rgba(160,210,80,${ringAlpha})` :
+                                  `rgba(255,120,20,${ringAlpha})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(x, y, r * pulse, 0, Math.PI*2); ctx.stroke();
+      ctx.lineWidth = 1.5; ctx.globalAlpha = 0.5;
+      ctx.beginPath(); ctx.arc(x, y, r * 0.6, 0, Math.PI*2); ctx.stroke();
+      ctx.globalAlpha = 1;
+      const cg = ctx.createRadialGradient(x, y, 0, x, y, r * 2);
+      const [cr,cg2,cb] = lvl===0 ? [140,210,255] : lvl===1 ? [130,200,60] : [255,90,10];
+      cg.addColorStop(0, `rgba(${cr},${cg2},${cb},0.6)`);
+      cg.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = cg; ctx.fillRect(x-r*2.5, y-r*2.5, r*5, r*5);
+      ctx.fillStyle = lvl===0 ? 'rgba(200,235,255,0.95)' :
+                      lvl===1 ? 'rgba(180,220,80,0.95)' :
+                                `rgba(255,${140+Math.floor(Math.sin(t*4)*30)},0,0.95)`;
+      ctx.font = `bold ${Math.round(r*0.9)}px serif`;
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(lvl===0 ? '★' : lvl===1 ? '▲' : '🔥', x, y);
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = 'rgba(200,160,60,0.85)';
+      ctx.font = 'bold 9px serif';
+      ctx.fillText(def.destination.toUpperCase(), x, y + r + 10);
+    }
+    // Dotted path hint
     if (prog < 0.15) {
-      ctx.save(); ctx.globalAlpha = (0.15 - prog) * 5 * 0.35;
-      ctx.strokeStyle = 'rgba(200,160,60,0.6)'; ctx.lineWidth = 1;
+      ctx.save(); ctx.globalAlpha = (0.15 - prog) * 5 * 0.3;
+      ctx.strokeStyle = 'rgba(200,160,60,0.5)'; ctx.lineWidth = 1;
       ctx.setLineDash([4,8]);
       ctx.beginPath(); ctx.moveTo(startX, startY); ctx.lineTo(x, y); ctx.stroke();
-      ctx.setLineDash([]); // always reset before restore
+      ctx.setLineDash([]);
       ctx.restore();
     }
+    ctx.restore();
+  }
+
+  function drawKeyPickup(ctx, k, t, lvl) {
+    const pulse = 1 + Math.sin(k.pulse) * 0.25;
+    const colors = ['#80d0ff','#90e040','#ff8020'];
+    const col = colors[lvl] || '#ffd030';
+    ctx.save();
+    ctx.shadowColor = col; ctx.shadowBlur = 20 * pulse;
+    // Outer ring
+    ctx.strokeStyle = col.replace(')',`,${0.7+Math.sin(k.pulse)*0.2})`).replace('rgb','rgba');
+    ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.arc(k.x, k.y, k.r * pulse, 0, Math.PI*2); ctx.stroke();
+    // Glow
+    const g = ctx.createRadialGradient(k.x,k.y,0,k.x,k.y,k.r*2);
+    g.addColorStop(0,`rgba(255,220,80,0.45)`); g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g; ctx.fillRect(k.x-k.r*2,k.y-k.r*2,k.r*4,k.y-k.y+k.r*4);
+    // Key symbol
+    ctx.fillStyle = '#ffd030';
+    ctx.font = `bold ${Math.round(k.r*1.3)}px serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('🔑', k.x, k.y);
+    // Label
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = 'rgba(255,200,60,0.8)';
+    ctx.font = 'bold 9px serif';
+    ctx.fillText('COLLECT ME', k.x, k.y + k.r + 10);
     ctx.restore();
   }
 
