@@ -74,9 +74,11 @@
 
   function makeCanvas(ov, w, h) {
     const c = document.createElement('canvas');
-    c.width = w; c.height = h;
+    const dpr = window.devicePixelRatio || 1;
+    // Buffer at device resolution for crisp text/graphics on HiDPI screens
+    c.width  = Math.round(w * dpr);
+    c.height = Math.round(h * dpr);
     function applyScale() {
-      // Leave 80px for close button + d-pad on mobile
       const vw = window.innerWidth, vh = window.innerHeight - 140;
       const scale = Math.min(vw / w, vh / h);
       c.style.width  = (w * scale) + 'px';
@@ -84,15 +86,19 @@
     }
     c.style.display = 'block';
     applyScale();
-    // Re-scale on resize (rotation, window resize)
     const onResize = () => applyScale();
     window.addEventListener('resize', onResize);
-    // Clean up on overlay removal
     const mo = new MutationObserver(() => {
       if (!document.body.contains(ov)) window.removeEventListener('resize', onResize);
     });
     mo.observe(document.body, { childList: true });
     ov.appendChild(c);
+    // Pre-scale ctx so all game coords use logical (w×h) space
+    const ctx = c.getContext('2d');
+    ctx.scale(dpr, dpr);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    c._dpr = dpr;
     return c;
   }
 
@@ -215,7 +221,7 @@
     const W = 960, H = 580;
     const WORLD_W = W * 2; // scrolling world is 2× wider
     const canvas = makeCanvas(ov, W, H);
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d'); // already scaled by makeCanvas (dpr applied)
 
     let alive = true;
     function close() { alive = false; ov.remove(); }
