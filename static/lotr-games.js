@@ -107,28 +107,67 @@
     return c;
   }
 
-  function makeCloseBtn(ov, closeFn) {
-    const btn = document.createElement('button');
-    btn.textContent = '✕';
-    btn.title = 'Close (Esc)';
-    Object.assign(btn.style, {
-      position: 'absolute',
-      top: '10px', left: '10px',
-      background: 'rgba(0,0,0,0.4)',
-      border: '1px solid rgba(180,130,50,0.35)',
-      color: 'rgba(180,130,50,0.65)',
-      width: '32px', height: '32px',
-      borderRadius: '6px',
-      cursor: 'pointer',
-      fontFamily: 'inherit', fontSize: '14px',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      zIndex: '10',
+  function makeCloseBtn(ov, closeFn, getState) {
+    // Pause modal
+    const modal = document.createElement('div');
+    Object.assign(modal.style, {
+      display: 'none', position: 'absolute', inset: '0',
+      background: 'rgba(0,0,0,0.82)',
+      alignItems: 'center', justifyContent: 'center',
+      flexDirection: 'column', gap: '16px',
+      zIndex: '20', fontFamily: '"Palatino Linotype",Palatino,Georgia,serif',
     });
-    btn.onclick = closeFn;
-    ov.appendChild(btn);
-    const onKey = e => { if (e.key === 'Escape') { closeFn(); document.removeEventListener('keydown', onKey); } };
+    const title = document.createElement('p');
+    title.textContent = '— Paused —';
+    Object.assign(title.style, { color: '#d4a020', fontSize: '22px', fontWeight: 'bold', margin: '0' });
+    const sub = document.createElement('p');
+    sub.textContent = 'The Ring waits...';
+    Object.assign(sub.style, { color: 'rgba(180,140,60,0.7)', fontSize: '13px', fontStyle: 'italic', margin: '0' });
+    function makeModalBtn(label, col, fn) {
+      const b = document.createElement('button');
+      b.textContent = label;
+      Object.assign(b.style, {
+        background: 'transparent', border: `1px solid ${col}`, color: col,
+        padding: '8px 28px', cursor: 'pointer', borderRadius: '6px',
+        fontFamily: 'inherit', fontSize: '14px', letterSpacing: '1px',
+      });
+      b.onclick = fn;
+      return b;
+    }
+    let paused = false;
+    function showModal() {
+      paused = true;
+      modal.style.display = 'flex';
+    }
+    function hideModal() {
+      paused = false;
+      modal.style.display = 'none';
+    }
+    const continueBtn = makeModalBtn('Continue', 'rgba(180,140,60,0.8)', hideModal);
+    const exitBtn     = makeModalBtn('Exit game', 'rgba(180,60,60,0.8)', closeFn);
+    modal.append(title, sub, continueBtn, exitBtn);
+    ov.appendChild(modal);
+
+    // Expose pause state so game loop can check it
+    ov._isPaused = () => paused;
+
+    // Esc: if playing → show modal; if modal open → hide modal
+    const onKey = e => {
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      const st = typeof getState === 'function' ? getState() : 'playing';
+      if (paused) { hideModal(); }
+      else if (st === 'playing') { showModal(); }
+      else { closeFn(); }
+    };
     document.addEventListener('keydown', onKey);
-    return btn;
+    // Cleanup
+    const mo = new MutationObserver(() => {
+      if (!document.body.contains(ov)) { document.removeEventListener('keydown', onKey); mo.disconnect(); }
+    });
+    mo.observe(document.body, { childList: true });
+    // No visible X button — close only via modal
+    return { showModal, hideModal, isPaused: () => paused };
   }
 
   // ── SHARED STAR FIELD ─────────────────────────────────────────────────
@@ -241,7 +280,7 @@
 
     let alive = true;
     function close() { alive = false; ov.remove(); }
-    makeCloseBtn(ov, close);
+    const pauseCtrl = makeCloseBtn(ov, close, () => state);
 
     // ── Mobile dash button ─────────────────────────────────────────────────────────
     const dashBtn = document.createElement('button');
@@ -320,9 +359,9 @@
     // ── Keyboard input ──────────────────────────────────────────────────────
     const MOVE_KEYS = new Set(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','a','A','d','D','w','W','s','S']);
     const onKd = e => {
+      if (pauseCtrl.isPaused()) return; // block input while paused
       keys[e.key] = true;
       if ([' ','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
-      // Keyboard movement clears pointer target so both inputs don't fight
       if (MOVE_KEYS.has(e.key)) pointerTarget = null;
       if (e.key === ' ') {
         if (state === 'title')    startLevel(0);
@@ -466,7 +505,7 @@
       const def = LEVEL_DEFS[currentLevel] || LEVEL_DEFS[0];
 
       // ── UPDATE ──────────────────────────────────────────────────────
-      if (state === 'playing') {
+      if (state === 'playing' && !pauseCtrl.isPaused()) {
         timers.elapsed += dt;
         // Score: points per second (scales with round + level)
         score += dt * (1 + currentLevel * 0.5) * round;
