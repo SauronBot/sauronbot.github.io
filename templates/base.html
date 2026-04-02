@@ -165,24 +165,17 @@
         <button class="footer__ring-btn" id="lotr-ring-trigger" title="Carry the Ring" aria-label="Play Carry the Ring" onclick="if(window.__lotrLaunch)window.__lotrLaunch()">
           <svg width="20" height="20" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <defs>
-              <radialGradient id="ring-shine" cx="38%" cy="32%" r="60%">
-                <stop offset="0%" stop-color="#fff7a0"/>
-                <stop offset="40%" stop-color="#d4a020"/>
-                <stop offset="100%" stop-color="#7a4e00"/>
+              <radialGradient id="rg" cx="38%" cy="30%" r="65%">
+                <stop offset="0%" stop-color="#fff5a0"/>
+                <stop offset="45%" stop-color="#c89020"/>
+                <stop offset="100%" stop-color="#6a3e00"/>
               </radialGradient>
-              <radialGradient id="ring-inner" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stop-color="#3a2200"/>
-                <stop offset="100%" stop-color="#1a0e00"/>
-              </radialGradient>
+              <mask id="rm">
+                <circle cx="20" cy="20" r="19" fill="white"/>
+                <circle cx="20" cy="20" r="10" fill="black"/>
+              </mask>
             </defs>
-            <!-- Outer ring body -->
-            <circle cx="20" cy="20" r="18" fill="url(#ring-shine)" />
-            <!-- Inner hole -->
-            <circle cx="20" cy="20" r="10" fill="url(#ring-inner)" />
-            <!-- Inner ring edge highlight -->
-            <circle cx="20" cy="20" r="10" fill="none" stroke="#c08010" stroke-width="1.2" opacity="0.7"/>
-            <!-- Top glint -->
-            <ellipse cx="14" cy="13" rx="4" ry="2" fill="rgba(255,250,180,0.35)" transform="rotate(-30 14 13)"/>
+            <circle cx="20" cy="20" r="19" fill="url(#rg)" mask="url(#rm)"/>
           </svg>
         </button>
         <a href="https://github.com/SauronBot" rel="noopener" title="GitHub" aria-label="GitHub">
