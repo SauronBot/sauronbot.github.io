@@ -85,48 +85,18 @@
   }
 
   function makeCanvas(ov, w, h) {
-    const c = document.createElement('canvas');
     const dpr = window.devicePixelRatio || 1;
+    const c = document.createElement('canvas');
+    // Buffer at device pixels for crisp rendering
     c.width  = Math.round(w * dpr);
     c.height = Math.round(h * dpr);
-    Object.assign(c.style, {
-      display: 'block',
-      // Fill available space inside the flex column, maintaining aspect ratio
-      maxWidth: '100%',
-      maxHeight: '100%',
-      width: 'auto',
-      height: 'auto',
-      flex: '1 1 auto',
-      objectFit: 'contain',
-    });
-    // Override overlay to use a proper flex column that fits the screen
-    Object.assign(ov.style, {
-      flexDirection: 'column',
-      padding: '36px 0 0 0', // top pad for close button
-      boxSizing: 'border-box',
-    });
-    function applyScale() {
-      // Force canvas to fill available flex space respecting aspect ratio
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const ctrlH = 'ontouchstart' in window ? 90 : 50; // dash btn + close
-      const avail = vh - ctrlH - 36; // subtract controls + top padding
-      const scale = Math.min(vw / w, avail / h);
-      const cw = Math.round(w * scale);
-      const ch = Math.round(h * scale);
-      c.style.width  = cw + 'px';
-      c.style.height = ch + 'px';
-      c.style.flex   = 'none';
-    }
-    applyScale();
-    const onResize = () => applyScale();
-    window.addEventListener('resize', onResize);
-    window.addEventListener('orientationchange', () => setTimeout(applyScale, 200));
+    // CSS size = logical game size (already viewport-fitted by caller)
+    c.style.display = 'block';
+    c.style.width   = w + 'px';
+    c.style.height  = h + 'px';
+    // Clean up resize listener on close
     const mo = new MutationObserver(() => {
-      if (!document.body.contains(ov)) {
-        window.removeEventListener('resize', onResize);
-        window.removeEventListener('orientationchange', onResize);
-      }
+      if (!document.body.contains(ov)) mo.disconnect();
     });
     mo.observe(document.body, { childList: true });
     ov.appendChild(c);
@@ -134,7 +104,6 @@
     ctx.scale(dpr, dpr);
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
-    c._dpr = dpr;
     return c;
   }
 
@@ -262,7 +231,13 @@
 
   function launchCarryTheRing() {
     const ov = makeOverlay('#060309');
-    const W = 960, H = 580;
+    // Logical game size: fills the screen on mobile, capped on desktop
+    const isTouch   = 'ontouchstart' in window;
+    const ctrlSpace = isTouch ? 90 : 50;  // dash btn + close btn reserve
+    const rawW = Math.min(window.innerWidth,  1200);
+    const rawH = Math.min(window.innerHeight - ctrlSpace, 700);
+    // Maintain 5:3 aspect ratio (game designed for it)
+    const W = rawW, H = Math.round(W * 3 / 5) <= rawH ? Math.round(W * 3 / 5) : rawH;
     const WORLD_W = W * 2; // scrolling world is 2× wider
     const canvas = makeCanvas(ov, W, H);
     const ctx = canvas.getContext('2d'); // already scaled by makeCanvas (dpr applied)
@@ -466,7 +441,7 @@
                     speed:spd,capePhase:Math.random()*Math.PI*2});
     }
 
-    const GOAL = { x: WORLD_W - 120, y: 90, r: 22 };
+    const GOAL = { x: WORLD_W - 120, y: Math.round(H * 0.15), r: 22 };
     const progress = () => {
       if (!frodo) return 0;
       return Math.max(0, Math.min(1, (frodo.x - 80) / (GOAL.x - 80)));
