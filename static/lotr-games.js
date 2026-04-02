@@ -138,6 +138,7 @@
     function showModal() {
       paused = true;
       modal.style.display = 'flex';
+      continueBtn.focus();
     }
     function hideModal() {
       paused = false;
@@ -151,6 +152,17 @@
     // Expose pause state so game loop can check it
     ov._isPaused = () => paused;
 
+    // Focus trap: Tab cycles only between Continue and Exit while modal is open
+    const onTab = e => {
+      if (!paused || e.key !== 'Tab') return;
+      e.preventDefault();
+      const btns = [continueBtn, exitBtn];
+      const cur = document.activeElement;
+      const idx = btns.indexOf(cur);
+      btns[(idx + (e.shiftKey ? -1 : 1) + btns.length) % btns.length].focus();
+    };
+    document.addEventListener('keydown', onTab);
+
     // Esc: if playing → show modal; if modal open → hide modal
     const onKey = e => {
       if (e.key !== 'Escape') return;
@@ -163,7 +175,11 @@
     document.addEventListener('keydown', onKey);
     // Cleanup
     const mo = new MutationObserver(() => {
-      if (!document.body.contains(ov)) { document.removeEventListener('keydown', onKey); mo.disconnect(); }
+      if (!document.body.contains(ov)) {
+        document.removeEventListener('keydown', onKey);
+        document.removeEventListener('keydown', onTab);
+        mo.disconnect();
+      }
     });
     mo.observe(document.body, { childList: true });
     // No visible X button — close only via modal
@@ -1241,9 +1257,17 @@
         ctx.beginPath(); ctx.arc(ex2-eyeR*0.2,-w.r*0.9-eyeR*0.2,eyeR*0.3,0,Math.PI*2); ctx.fill();
         ctx.fillStyle=eyeCol;
       }); ctx.restore();
-      // Sword hint
-      if(!ea){ ctx.save(); ctx.globalAlpha=0.18+sense*0.15; ctx.strokeStyle='#a0a0c0'; ctx.lineWidth=1.5;
-        ctx.beginPath(); ctx.moveTo(w.r*0.9,-w.r*0.2); ctx.lineTo(w.r*1.7,w.r*0.6); ctx.stroke(); ctx.restore(); }
+      // Sword (larger, more visible)
+      ctx.save(); ctx.globalAlpha=0.35+sense*0.2;
+      ctx.shadowColor='#c0c8ff'; ctx.shadowBlur=ea?8:4;
+      ctx.strokeStyle=ea?'#d0d8ff':'#b0b8e0'; ctx.lineWidth=2.5;
+      // Blade
+      ctx.beginPath(); ctx.moveTo(w.r*0.85,-w.r*0.4); ctx.lineTo(w.r*2.1,w.r*1.1); ctx.stroke();
+      // Crossguard
+      ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(w.r*1.0,-w.r*0.15); ctx.lineTo(w.r*1.35,w.r*0.3); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(w.r*1.45,w.r*0.05); ctx.lineTo(w.r*1.65,w.r*0.55); ctx.stroke();
+      ctx.restore();
       ctx.restore();
     });
   }
