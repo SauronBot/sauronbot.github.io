@@ -648,7 +648,7 @@
 
           if(eyeActive || sensing){
             const a=Math.atan2(targetY-w.y,frodo.x-w.x);
-            const huntMult = eyeActive ? 1.9 : 0.9 + w.sense * 0.7;
+            const huntMult = eyeActive ? 1.35 : 0.9 + w.sense * 0.5;
             const closePenalty = d2frodo < 120 ? Math.max(0.5, d2frodo/120) : 1;
             w.x+=Math.cos(a)*w.speed*huntMult*closePenalty*skyBoost*60*dt;
             w.y+=Math.sin(a)*w.speed*huntMult*closePenalty*skyBoost*60*dt;
