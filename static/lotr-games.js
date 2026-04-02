@@ -87,35 +87,67 @@
   function makeCanvas(ov, w, h) {
     const c = document.createElement('canvas');
     const dpr = window.devicePixelRatio || 1;
-    // Buffer at device resolution for crisp text/graphics on HiDPI screens
     c.width  = Math.round(w * dpr);
     c.height = Math.round(h * dpr);
-    function applyScale() {
-      // On touch: maximise canvas, only reserve space for dash button + close btn
-      const isTouch = 'ontouchstart' in window;
-      const touchOffset = isTouch ? 130 : 100;
-      const vw = window.innerWidth, vh = window.innerHeight - touchOffset;
-      // On portrait mobile, allow slight upscale beyond logical size for fill
-      const maxScale = isTouch ? 2 : 1;
-      const scale = Math.min(vw / w, vh / h); // maxScale unused — natural fit fills screen
-      c.style.width  = (w * scale) + 'px';
-      c.style.height = (h * scale) + 'px';
+
+    function isPortrait() {
+      return window.innerWidth < window.innerHeight;
     }
+
+    function applyScale() {
+      const portrait  = isPortrait();
+      const isTouch   = 'ontouchstart' in window;
+      const ctrlSpace = isTouch ? 130 : 80; // space for dash btn + close
+      const vw = window.innerWidth;
+      const vh = window.innerHeight - ctrlSpace;
+
+      let scale, displayW, displayH;
+
+      if (portrait && isTouch) {
+        // Portrait phone: rotate canvas −90° so landscape game fills the tall screen
+        // After rotation, game width maps to screen height, game height maps to screen width
+        scale    = Math.min(vh / w, vw / h);
+        displayW = w * scale; // will become screen height after rotation
+        displayH = h * scale; // will become screen width after rotation
+        c.style.width     = displayW + 'px';
+        c.style.height    = displayH + 'px';
+        c.style.transform = `rotate(-90deg) translateX(-${displayW}px)`;
+        c.style.transformOrigin = 'top left';
+        // Wrapper must be sized to the rotated footprint
+        c.style.marginTop  = (displayW - displayH) / 2 + 'px';
+        c.style.marginLeft = '0';
+      } else {
+        // Landscape or desktop: normal scaling
+        scale    = Math.min(vw / w, vh / h);
+        displayW = w * scale;
+        displayH = h * scale;
+        c.style.width       = displayW + 'px';
+        c.style.height      = displayH + 'px';
+        c.style.transform   = '';
+        c.style.transformOrigin = '';
+        c.style.marginTop   = '';
+        c.style.marginLeft  = '';
+      }
+    }
+
     c.style.display = 'block';
     applyScale();
     const onResize = () => applyScale();
     window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', () => setTimeout(applyScale, 150));
     const mo = new MutationObserver(() => {
-      if (!document.body.contains(ov)) window.removeEventListener('resize', onResize);
+      if (!document.body.contains(ov)) {
+        window.removeEventListener('resize', onResize);
+      }
     });
     mo.observe(document.body, { childList: true });
     ov.appendChild(c);
-    // Pre-scale ctx so all game coords use logical (w×h) space
     const ctx = c.getContext('2d');
     ctx.scale(dpr, dpr);
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
     c._dpr = dpr;
+    c._isPortraitTouch = () => isPortrait() && 'ontouchstart' in window;
     return c;
   }
 
@@ -292,12 +324,18 @@
 
     function pointerToWorld(clientX, clientY) {
       const rect = canvas.getBoundingClientRect();
-      // CSS display size vs logical canvas size
+      if (canvas._isPortraitTouch && canvas._isPortraitTouch()) {
+        // Canvas is rotated -90°: screen Y maps to game X, screen X maps to game Y (inverted)
+        const scaleX = W / rect.height; // rotated: height is game width
+        const scaleY = H / rect.width;  // rotated: width is game height
+        const lx = (clientY - rect.top)  * scaleX;  // screen Y → game X
+        const ly = (1 - (clientX - rect.left) / rect.width) * H; // screen X → game Y (flipped)
+        return { x: lx + cameraX, y: Math.max(0, Math.min(H, ly)) };
+      }
       const scaleX = W / rect.width;
       const scaleY = H / rect.height;
       const lx = (clientX - rect.left) * scaleX;
       const ly = (clientY - rect.top)  * scaleY;
-      // Add camera offset to get world coords
       return { x: lx + cameraX, y: ly };
     }
 
