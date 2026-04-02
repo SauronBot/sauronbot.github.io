@@ -288,6 +288,7 @@
         else if (state === 'levelwin') startLevel(currentLevel + 1);
         else if (state === 'gameover') { if(frodo) frodo.lives=2; startLevel(0); }
         else if (state === 'win') startLevel(0);
+        else if (state === 'playing') triggerDash();
       }
     };
     const onKu = e => { keys[e.key] = false; };
@@ -312,9 +313,12 @@
     let currentLevel = 0;
     let frodo, wraiths=[], gollum=null, particles=[], eye=null, shake={x:0,y:0}, timers={elapsed:0};
     let blindFlash = 0, levelTransTimer = 0;
-    let lifePickup = null; // {x,y,r,pulse}
-    let keyPickup = null;  // {x,y,r,pulse} — must collect before goal unlocks
+    let lifePickup = null;  // {x,y,r,pulse}
+    let keyPickup = null;   // {x,y,r,pulse} — must collect before goal unlocks
     let goalUnlocked = false;
+    let dashCharges = 3;    // shared across all levels
+    let dashRefill = null;  // {x,y,r,pulse} — refill token near Gollum's zone
+    let dash = null;        // {vx,vy,timer} — active dash state
 
     function startLevel(lvl) {
       currentLevel = lvl;
@@ -342,6 +346,9 @@
       blindFlash = 0;
       lifePickup = null;
       goalUnlocked = false;
+      dash = null;
+      dashRefill = null;
+      if (state === 'title') dashCharges = 3; // only reset on fresh game
       // Key spawns at a random mid-field position, away from start and goal
       const kx = 300 + Math.random() * (WORLD_W - 700);
       const ky = H * 0.2 + Math.random() * (H * 0.6);
@@ -437,6 +444,29 @@
         if (frodo.invincible){frodo.invTimer-=dt;if(frodo.invTimer<=0)frodo.invincible=false;}
         frodo.hitFlash = Math.max(0,frodo.hitFlash-dt*4);
         blindFlash = Math.max(0, blindFlash-dt*1.2);
+
+        // Active dash: override movement with burst velocity
+        if (dash) {
+          dash.timer -= dt;
+          frodo.x = Math.max(frodo.r, Math.min(WORLD_W-frodo.r, frodo.x + dash.vx*60*dt));
+          frodo.y = Math.max(frodo.r, Math.min(H-frodo.r, frodo.y + dash.vy*60*dt));
+          // Blue trail particles
+          if (Math.random()<0.4) particles.push({x:frodo.x,y:frodo.y,vx:(Math.random()-0.5),vy:(Math.random()-0.5),
+            life:0.18,size:4+Math.random()*3,color:'#60a0ff'});
+          if (dash.timer <= 0) dash = null;
+        }
+
+        // Dash refill pickup
+        if (dashRefill) {
+          dashRefill.pulse += dt*2.5;
+          if (Math.hypot(frodo.x-dashRefill.x, frodo.y-dashRefill.y) < frodo.r+dashRefill.r) {
+            dashCharges = Math.min(3, dashCharges+1);
+            for(let i=0;i<12;i++){const a=(i/12)*Math.PI*2,s=2+Math.random()*2;
+              particles.push({x:dashRefill.x,y:dashRefill.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1,
+                              life:0.5,size:3+Math.random()*3,color:'#60a0ff'});}
+            dashRefill = null;
+          }
+        }
 
         // Ring corruption blind flash (level 3 only)
         if (def.hasBlindFlash && progress() > 0.3 && Math.random()<0.006) {
@@ -618,6 +648,7 @@
         drawGoal(ctx,GOAL,def,t,progress(),80,H*0.62,goalUnlocked);
         if(keyPickup&&keyPickup.spawned) drawKeyPickup(ctx,keyPickup,t,currentLevel);
         if(lifePickup) drawLifePickup(ctx,lifePickup,t);
+        if(dashRefill) drawDashRefill(ctx,dashRefill,t);
         if (gollum) drawGollum(ctx,gollum,eye);
         drawWraiths1(ctx,wraiths,eye);
         if (frodo) drawFrodo1(ctx,frodo,progress(),timers.elapsed);
@@ -630,7 +661,7 @@
         if(eye&&eye.phase==='active'){ctx.fillStyle=`rgba(160,0,0,${eye.open*0.16})`;ctx.fillRect(0,0,W,H);}
         if(eye&&eye.phase==='warning'&&Math.random()>0.65){ctx.fillStyle=`rgba(200,50,0,${Math.random()*0.09})`;ctx.fillRect(0,0,W,H);}
         if(blindFlash>0){ctx.fillStyle=`rgba(255,200,50,${blindFlash*0.92})`;ctx.fillRect(0,0,W,H);}
-        drawUILevel(ctx,W,H,frodo,progress(),eye,timers.elapsed,currentLevel,def);
+        drawUILevel(ctx,W,H,frodo,progress(),eye,timers.elapsed,currentLevel,def,dashCharges);
         // Level intro overlay (first 3.5s)
         if(timers.elapsed < 3.5) {
           const fade = timers.elapsed < 0.5 ? timers.elapsed*2 : timers.elapsed > 2.8 ? (3.5-timers.elapsed)/0.7 : 1;
@@ -662,6 +693,38 @@
 
       ctx.restore();
       requestAnimationFrame(loop);
+    }
+
+    function triggerDash() {
+      if (dashCharges <= 0 || dash) return;
+      dashCharges--;
+      // Dash direction: current keys, else away from nearest Nazgûl
+      let dx=0, dy=0;
+      if (keys['ArrowLeft']||keys['a']||keys['A']) dx-=1;
+      if (keys['ArrowRight']||keys['d']||keys['D']) dx+=1;
+      if (keys['ArrowUp']||keys['w']||keys['W']) dy-=1;
+      if (keys['ArrowDown']||keys['s']||keys['S']) dy+=1;
+      if (!dx && !dy && wraiths.length) {
+        // Flee from nearest Nazgûl
+        const nearest = wraiths.reduce((a,b)=>dist(frodo,a)<dist(frodo,b)?a:b);
+        const a = Math.atan2(frodo.y-nearest.y, frodo.x-nearest.x);
+        dx=Math.cos(a); dy=Math.sin(a);
+      }
+      const len = Math.hypot(dx,dy)||1;
+      dash = { vx:(dx/len)*18, vy:(dy/len)*18, timer:0.32 };
+      frodo.invincible=true; frodo.invTimer=0.35;
+      // Trail burst
+      for(let i=0;i<10;i++){
+        const a=Math.random()*Math.PI*2, s=1+Math.random()*2;
+        particles.push({x:frodo.x,y:frodo.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,
+                        life:0.3+Math.random()*0.2,size:2+Math.random()*3,color:'#80c0ff'});
+      }
+      // Spawn refill token in left/mid world if charges now < 3
+      if (dashCharges < 3 && !dashRefill) {
+        const rx = 100 + Math.random() * (WORLD_W * 0.4); // left half
+        const ry = H*0.2 + Math.random()*(H*0.6);
+        dashRefill = {x:rx, y:ry, r:13, pulse:0};
+      }
     }
 
     function hitFrodo() {
@@ -699,6 +762,26 @@
   }
 
   // ── GOAL MARKER ────────────────────────────────────────────────────
+  function drawDashRefill(ctx, p, t) {
+    const pulse = 1 + Math.sin(p.pulse)*0.22;
+    ctx.save();
+    ctx.shadowColor='#60a0ff'; ctx.shadowBlur=18*pulse;
+    ctx.strokeStyle=`rgba(100,160,255,${0.7+Math.sin(p.pulse)*0.25})`;
+    ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.r*pulse,0,Math.PI*2); ctx.stroke();
+    const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*2);
+    g.addColorStop(0,'rgba(80,140,255,0.4)'); g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g; ctx.fillRect(p.x-p.r*2,p.y-p.r*2,p.r*4,p.r*4);
+    ctx.fillStyle='rgba(160,210,255,0.95)';
+    ctx.font=`bold ${Math.round(p.r*1.2)}px serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('⚡',p.x,p.y);
+    ctx.shadowBlur=0;
+    ctx.fillStyle='rgba(120,180,255,0.8)'; ctx.font='bold 9px serif';
+    ctx.fillText('DASH +1',p.x,p.y+p.r+10);
+    ctx.restore();
+  }
+
   function drawGoal(ctx, goal, def, t, prog, startX, startY, unlocked) {
     const { x, y, r } = goal;
     const lvl = LEVEL_DEFS.indexOf(def);
@@ -949,7 +1032,7 @@
   }
 
   // ── UI (shared) ───────────────────────────────────────────────────────
-  function drawUILevel(ctx,W,H,frodo,prog,eye,elapsed,lvl,def){
+  function drawUILevel(ctx,W,H,frodo,prog,eye,elapsed,lvl,def,dashCharges=0){
     // Progress bar
     ctx.fillStyle='rgba(0,0,0,0.65)'; ctx.fillRect(10,10,210,18);
     const [dr,dg,db]=def.destGlow;
@@ -971,6 +1054,20 @@
       ctx.beginPath(); ctx.arc(lx,19,8,0,Math.PI*2); ctx.stroke();
       if(lit){ctx.fillStyle='rgba(212,168,32,0.18)';ctx.beginPath();ctx.arc(lx,19,8,0,Math.PI*2);ctx.fill();}
       ctx.restore();}
+    // Dash charges (⚡ pips below lives)
+    ctx.font='bold 11px serif'; ctx.textAlign='right';
+    for(let i=0;i<3;i++){const lx=W-16-i*22,lit=i<dashCharges;
+      ctx.save();
+      if(lit){ctx.shadowColor='#60a0ff';ctx.shadowBlur=6;}
+      ctx.fillStyle=lit?'rgba(100,160,255,0.95)':'rgba(40,60,120,0.3)';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.font=`${lit?'bold ':' '}12px serif`;
+      ctx.fillText('⚡',lx,40);
+      ctx.restore();
+    }
+    ctx.fillStyle='rgba(100,160,255,0.5)'; ctx.font='8px serif'; ctx.textAlign='right';
+    ctx.textBaseline='alphabetic';
+    ctx.fillText('DASH',W-8,52);
     // Eye warning
     if(eye&&eye.phase==='warning'&&Math.sin(elapsed*11)>0){
       ctx.fillStyle='#ff6010';ctx.font='bold 11px serif';ctx.textAlign='center';
