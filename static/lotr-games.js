@@ -494,13 +494,12 @@
       const spd = def.wraithSpeed * diffMult() * (0.9 + Math.random()*0.3);
       // Max 7 Nazgûl on screen (lore-accurate). Beyond that: orcs.
       // Fell Beast: rare variant in L2/L3 replacing one Nazgûl slot.
-      const nazgulCount = wraiths.filter(e=>e.type==='wraith'||e.type==='fellbeast').length;
-      const isFellBeast = nazgulCount < 7 && currentLevel >= 1 && Math.random() < 0.12;
+      // Nazgûl (max 7) or orc. Fell Beast form is determined at draw-time by Y position.
+      const nazgulCount = wraiths.filter(e=>e.type==='wraith').length;
       const isNazgul    = nazgulCount < 7;
-      const eType = isFellBeast ? 'fellbeast' : isNazgul ? 'wraith' : 'orc';
-      const wr = isFellBeast ? 26 : eType==='orc' ? 10 : 14;
-      const ws = isFellBeast ? spd * 0.75 : eType==='orc' ? spd * 1.15 : spd;
-      // Orcs spawn only on ground
+      const eType = isNazgul ? 'wraith' : 'orc';
+      const wr = eType==='orc' ? 10 : 14;
+      const ws = eType==='orc' ? spd * 1.15 : spd;
       if (eType==='orc') y = Math.max(H*0.42, Math.min(H-wr*2, y));
       wraiths.push({x,y,r:wr,wanderAngle:Math.random()*Math.PI*2,wanderTimer:0,
                     speed:ws,capePhase:Math.random()*Math.PI*2,type:eType});
@@ -633,22 +632,23 @@
 
           // Orcs stay on the ground (lower 60% of screen)
           const orcMinY = w.type==='orc' ? H*0.4 : 0;
-          // For orcs, clamp Frodo target Y so they don't try to go up
           const targetY = w.type==='orc' ? Math.max(frodo.y, H*0.42) : frodo.y;
+          // Nazgûl on Fell Beast (sky) get +10% speed
+          const skyBoost = (w.type==='wraith' && w.y < H*0.4) ? 1.1 : 1.0;
 
           if(eyeActive || sensing){
             const a=Math.atan2(targetY-w.y,frodo.x-w.x);
             const huntMult = eyeActive ? 1.9 : 0.9 + w.sense * 0.7;
             const closePenalty = d2frodo < 120 ? Math.max(0.5, d2frodo/120) : 1;
-            w.x+=Math.cos(a)*w.speed*huntMult*closePenalty*60*dt;
-            w.y+=Math.sin(a)*w.speed*huntMult*closePenalty*60*dt;
+            w.x+=Math.cos(a)*w.speed*huntMult*closePenalty*skyBoost*60*dt;
+            w.y+=Math.sin(a)*w.speed*huntMult*closePenalty*skyBoost*60*dt;
           } else {
             if(w.wanderTimer<=0){
               w.wanderAngle=Math.atan2(targetY-w.y,frodo.x-w.x)+(Math.random()-0.5)*Math.PI*1.6;
               w.wanderTimer=1.2+Math.random()*2;
             }
-            w.x+=Math.cos(w.wanderAngle)*w.speed*0.85*60*dt;
-            w.y+=Math.sin(w.wanderAngle)*w.speed*0.85*60*dt;
+            w.x+=Math.cos(w.wanderAngle)*w.speed*0.85*skyBoost*60*dt;
+            w.y+=Math.sin(w.wanderAngle)*w.speed*0.85*skyBoost*60*dt;
           }
           // Clamp orc Y to ground zone
           if(w.type==='orc') w.y = Math.max(orcMinY, Math.min(H-w.r, w.y));
@@ -1502,7 +1502,7 @@
   }
 
   function drawFellBeast(ctx,w,ea){
-    const r=w.r, t=w.capePhase, sense=w.sense||0;
+    const r=w.r*1.8, t=w.capePhase, sense=w.sense||0; // Fell Beast drawn larger than base radius
 
     // Fell Beast outer glow — dark red/purple
     const glowR=r*3.5;
@@ -1519,7 +1519,8 @@
     ctx.restore();
 
     // Wings — sweeping bezier curves, animated flap
-    const flapAngle = Math.sin(t*2.8)*0.18;
+    // Slow soaring flap — gentle continuous motion like a large predator gliding
+    const flapAngle = Math.sin(t*1.4)*0.14 + Math.sin(t*2.1)*0.06;
     const wingCol = ea?'#1a0520':'#120318';
     const wingEdge = ea?'rgba(180,20,80,0.25)':'rgba(100,10,40,0.2)';
     // Left wing
@@ -1613,8 +1614,10 @@
     const ea = eye&&eye.phase==='active';
     wraiths.forEach(w=>{
       ctx.save(); ctx.translate(w.x,w.y);
-      if (w.type==='fellbeast') { drawFellBeast(ctx,w,ea); ctx.restore(); return; }
-      if (w.type==='orc')       { drawOrc(ctx,w,ea);       ctx.restore(); return; }
+      // Nazgûl mounts Fell Beast when in the sky (upper 40% of screen)
+      const inSky = w.type==='wraith' && w.y < H*0.4;
+      if (inSky)           { drawFellBeast(ctx,w,ea); ctx.restore(); return; }
+      if (w.type==='orc')  { drawOrc(ctx,w,ea);       ctx.restore(); return; }
       const sense = w.sense||0, t2 = w.capePhase;
       // Glow halo
       const gc = ea?[160,30,255]:sense>0.15?[120,20,200]:[60,10,120];
