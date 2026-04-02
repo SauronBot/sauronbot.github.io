@@ -61,14 +61,23 @@
   function makeCanvas(ov, w, h) {
     const c = document.createElement('canvas');
     c.width = w; c.height = h;
-    // Scale canvas to fit viewport while preserving aspect ratio
-    const vw = window.innerWidth, vh = window.innerHeight - 80;
-    const scale = Math.min(1, vw / w, vh / h);
-    Object.assign(c.style, {
-      display: 'block',
-      width: (w * scale) + 'px',
-      height: (h * scale) + 'px',
+    function applyScale() {
+      // Leave 80px for close button + d-pad on mobile
+      const vw = window.innerWidth, vh = window.innerHeight - 140;
+      const scale = Math.min(1, vw / w, vh / h);
+      c.style.width  = (w * scale) + 'px';
+      c.style.height = (h * scale) + 'px';
+    }
+    c.style.display = 'block';
+    applyScale();
+    // Re-scale on resize (rotation, window resize)
+    const onResize = () => applyScale();
+    window.addEventListener('resize', onResize);
+    // Clean up on overlay removal
+    const mo = new MutationObserver(() => {
+      if (!document.body.contains(ov)) window.removeEventListener('resize', onResize);
     });
+    mo.observe(document.body, { childList: true });
     ov.appendChild(c);
     return c;
   }
@@ -198,6 +207,64 @@
     makeCloseBtn(ov, close);
 
     const keys = {};
+
+    // ── Touch D-pad (mobile) ─────────────────────────────────────────
+    const dpad = document.createElement('div');
+    Object.assign(dpad.style, {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(3, 52px)',
+      gridTemplateRows: 'repeat(3, 52px)',
+      gap: '4px',
+      marginTop: '10px',
+      userSelect: 'none',
+    });
+    const DPAD_BTNS = [
+      [null,       'ArrowUp',    null      ],
+      ['ArrowLeft','ArrowDown',  'ArrowRight'],
+      [null,       'ArrowDown',  null      ],
+    ];
+    // 3×3 grid: top-center=up, mid-left=left, mid-center=down, mid-right=right
+    const dpadMap = [
+      {col:2,row:1,key:'ArrowUp',   label:'▲'},
+      {col:1,row:2,key:'ArrowLeft', label:'◀'},
+      {col:2,row:2,key:'ArrowDown', label:'▼'},
+      {col:3,row:2,key:'ArrowRight',label:'▶'},
+    ];
+    // Fill 3×3 with empty cells first
+    for (let i=0;i<9;i++) {
+      const cell = document.createElement('div');
+      dpad.appendChild(cell);
+    }
+    dpadMap.forEach(({col,row,key,label}) => {
+      const idx = (row-1)*3 + (col-1);
+      const btn = document.createElement('button');
+      btn.textContent = label;
+      Object.assign(btn.style, {
+        width:'52px', height:'52px', background:'rgba(120,90,30,0.25)',
+        border:'1px solid rgba(180,130,50,0.4)', borderRadius:'8px',
+        color:'rgba(200,160,60,0.9)', fontSize:'18px', cursor:'pointer',
+        touchAction:'none',
+      });
+      const start = (e) => { e.preventDefault(); keys[key]=true;
+        if(state!=='playing'){
+          if(state==='title') startLevel(0);
+          else if(state==='levelwin') startLevel(currentLevel+1);
+          else if(state==='gameover'){ if(frodo)frodo.lives=2; startLevel(0); }
+          else if(state==='win') startLevel(0);
+        }
+      };
+      const stop  = (e) => { e.preventDefault(); keys[key]=false; };
+      btn.addEventListener('touchstart', start, {passive:false});
+      btn.addEventListener('touchend',   stop,  {passive:false});
+      btn.addEventListener('mousedown',  start);
+      btn.addEventListener('mouseup',    stop);
+      btn.addEventListener('mouseleave', stop);
+      dpad.replaceChild(btn, dpad.children[idx]);
+    });
+    ov.appendChild(dpad);
+    // Hide D-pad on non-touch devices
+    if (!('ontouchstart' in window)) dpad.style.display = 'none';
+
     const onKd = e => {
       keys[e.key] = true;
       if ([' ','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
@@ -215,6 +282,16 @@
       document.removeEventListener('keydown', onKd);
       document.removeEventListener('keyup',  onKu);
     });
+    // Tap canvas to start on mobile
+    canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      if (state !== 'playing') {
+        if (state==='title') startLevel(0);
+        else if (state==='levelwin') startLevel(currentLevel+1);
+        else if (state==='gameover') { if(frodo)frodo.lives=2; startLevel(0); }
+        else if (state==='win') startLevel(0);
+      }
+    }, {passive:false});
 
     let state = 'title';
     let currentLevel = 0;
