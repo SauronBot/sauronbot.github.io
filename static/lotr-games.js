@@ -283,8 +283,8 @@
       dpad.replaceChild(btn, dpad.children[idx]);
     });
     ov.appendChild(dpad);
-    // Hide D-pad on non-touch devices
-    if (!('ontouchstart' in window)) dpad.style.display = 'none';
+    // D-pad hidden — pointer/touch follow replaces it
+    dpad.style.display = 'none';
 
     const onKd = e => {
       keys[e.key] = true;
@@ -304,16 +304,46 @@
       document.removeEventListener('keydown', onKd);
       document.removeEventListener('keyup',  onKu);
     });
-    // Tap canvas to start on mobile
-    canvas.addEventListener('touchstart', (e) => {
+    // ── Pointer follow (touch/mouse — Frodo follows finger/cursor) ───────────────
+    let pointerTarget = null; // {x,y} in world space
+
+    function pointerToWorld(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+      // CSS display size vs logical canvas size
+      const scaleX = W / rect.width;
+      const scaleY = H / rect.height;
+      const lx = (clientX - rect.left) * scaleX;
+      const ly = (clientY - rect.top)  * scaleY;
+      // Add camera offset to get world coords
+      return { x: lx + cameraX, y: ly };
+    }
+
+    function handlePointerDown(e) {
       e.preventDefault();
       if (state !== 'playing') {
         if (state==='title') startLevel(0);
         else if (state==='levelwin') startLevel(currentLevel+1);
         else if (state==='gameover') { fullReset(); startLevel(0); }
         else if (state==='win') { round++; score+=200; startLevel(0); }
+        return;
       }
-    }, {passive:false});
+      const pt = e.touches ? e.touches[0] : e;
+      pointerTarget = pointerToWorld(pt.clientX, pt.clientY);
+    }
+    function handlePointerMove(e) {
+      if (state !== 'playing' || !pointerTarget) return;
+      e.preventDefault();
+      const pt = e.touches ? e.touches[0] : e;
+      pointerTarget = pointerToWorld(pt.clientX, pt.clientY);
+    }
+    function handlePointerUp(e) { pointerTarget = null; }
+
+    canvas.addEventListener('touchstart', handlePointerDown, {passive:false});
+    canvas.addEventListener('touchmove',  handlePointerMove, {passive:false});
+    canvas.addEventListener('touchend',   handlePointerUp,   {passive:false});
+    canvas.addEventListener('mousedown',  handlePointerDown);
+    canvas.addEventListener('mousemove',  (e) => { if(e.buttons) handlePointerMove(e); });
+    canvas.addEventListener('mouseup',    handlePointerUp);
 
     let state = 'title';
     let currentLevel = 0;
@@ -444,7 +474,13 @@
         if (keys['ArrowUp']||keys['w']||keys['W']) dy-=1;
         if (keys['ArrowDown']||keys['s']||keys['S']) dy+=1;
         if (dx&&dy){dx*=0.707;dy*=0.707;}
-        // Blind flash blocks visibility, not movement
+        // Pointer follow: steer toward finger/cursor (overrides keyboard direction)
+        if (pointerTarget && !dash) {
+          const pdx = pointerTarget.x - frodo.x;
+          const pdy = pointerTarget.y - frodo.y;
+          const pd  = Math.hypot(pdx, pdy);
+          if (pd > 6) { dx = pdx/pd; dy = pdy/pd; } else { dx=0; dy=0; }
+        }
         frodo.x = Math.max(frodo.r, Math.min(WORLD_W-frodo.r, frodo.x+dx*spd*60*dt));
         frodo.y = Math.max(frodo.r, Math.min(H-frodo.r, frodo.y+dy*spd*60*dt));
         updateCamera();
