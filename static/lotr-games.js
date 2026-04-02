@@ -508,10 +508,9 @@
     }
 
     // Goal Y varies by level: L1=ground-ish, L2=mid-high, L3=near-top (climb the mountain)
-    // Sky/ground boundary — aligned with where the road/horizon appears in the art
-    // Sky gradient fills 0→H*0.55, ground starts H*0.5, road at H*0.44
-    // Boundary just above the road so entities on the road are "ground"
-    const SKY_Y = H * 0.44;
+    // Sky/ground boundary — ground colour starts at H*0.5, road at H*0.44
+    // Set boundary at H*0.5 so anything above the horizon line is sky
+    const SKY_Y = H * 0.50;
 
     const GOAL_Y_BY_LEVEL = [
       Math.round(H * 0.58), // L1: ground level — enter Rivendell's gates
@@ -1191,11 +1190,11 @@
     ctx.fillStyle=ground; ctx.fillRect(0,H*0.5,W,H*0.5);
 
     // Horizon haze — subtle atmospheric gradient at sky/ground boundary
-    const hazeG = ctx.createLinearGradient(0, H*0.38, 0, H*0.52);
+    const hazeG = ctx.createLinearGradient(0, H*0.44, 0, H*0.58);
     hazeG.addColorStop(0, 'rgba(0,0,0,0)');
     hazeG.addColorStop(0.4, `rgba(${def.glow.join(',')},0.06)`);
     hazeG.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = hazeG; ctx.fillRect(0, H*0.38, W, H*0.14);
+    ctx.fillStyle = hazeG; ctx.fillRect(0, H*0.44, W, H*0.14);
 
     // Road: screen-space infinite strip
     const road=ctx.createLinearGradient(0,H*0.48,0,H*0.62);
