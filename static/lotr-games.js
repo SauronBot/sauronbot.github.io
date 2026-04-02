@@ -244,6 +244,39 @@
     function close() { alive = false; ov.remove(); }
     makeCloseBtn(ov, close);
 
+    // ── Mobile dash button ─────────────────────────────────────────────────────────
+    const dashBtn = document.createElement('button');
+    dashBtn.textContent = '⚡';
+    Object.assign(dashBtn.style, {
+      width: '72px', height: '72px',
+      borderRadius: '50%',
+      background: 'rgba(60,100,200,0.25)',
+      border: '2px solid rgba(100,160,255,0.55)',
+      color: 'rgba(160,210,255,0.95)',
+      fontSize: '30px',
+      cursor: 'pointer',
+      touchAction: 'none',
+      userSelect: 'none',
+      WebkitUserSelect: 'none',
+      marginTop: '10px',
+      flexShrink: '0',
+      display: 'none',   // shown only on touch
+      alignItems: 'center',
+      justifyContent: 'center',
+      transition: 'background 0.12s',
+    });
+    dashBtn.addEventListener('touchstart', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      dashBtn.style.background = 'rgba(60,100,200,0.6)';
+      triggerDash();
+    }, {passive:false});
+    dashBtn.addEventListener('touchend', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      dashBtn.style.background = 'rgba(60,100,200,0.25)';
+    }, {passive:false});
+    ov.appendChild(dashBtn);
+    if ('ontouchstart' in window) dashBtn.style.display = 'flex';
+
     const keys = {};
 
     // ── Pointer follow (touch/mouse — Frodo follows finger/cursor) ───────────────
