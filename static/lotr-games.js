@@ -687,7 +687,7 @@
             // Parabolic leap from SKY_Y boundary
             gollum.jumpTimer += dt;
             const frac = Math.min(1, gollum.jumpTimer / gollum.jumpDuration);
-            gollum.x = gollum.jumpStartX + (frodo.x - gollum.jumpStartX) * frac;
+            // Purely vertical — X stays fixed at launch position
             gollum.y = gollum.jumpGroundY - Math.sin(frac * Math.PI) * (gollum.jumpGroundY - gollum.jumpPeakY);
             if (frac >= 1) {
               // Land back at boundary
