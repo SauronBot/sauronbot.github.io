@@ -444,8 +444,8 @@
         blindFlash = Math.max(0, blindFlash-dt*1.2);
 
         // Ring corruption blind flash (level 3 only)
-        if (def.hasBlindFlash && progress() > 0.5 && Math.random()<0.002) {
-          blindFlash = Math.min(0.85, blindFlash + 0.35);
+        if (def.hasBlindFlash && progress() > 0.3 && Math.random()<0.006) {
+          blindFlash = Math.min(0.9, blindFlash + 0.45 + progress()*0.2);
         }
 
         // Eye
