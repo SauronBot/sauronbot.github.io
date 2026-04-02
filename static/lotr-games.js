@@ -697,27 +697,40 @@
             gollum.y = gollum.jumpGroundY - Math.sin(frac * Math.PI) * (gollum.jumpGroundY - gollum.jumpPeakY);
             if (frac >= 1) {
               gollum.phase = 'lurk';
-              gollum.y = gollum.jumpGroundY;
+              gollum.y = SKY_Y; // lands back at the boundary
               gollum.jumpCD = 4.5 + Math.random()*3;
             }
           } else if (gollum.phase === 'lurk') {
             // Trigger leap when Frodo is in sky and cooldown elapsed
             if (frodoInSky && gollum.jumpCD <= 0) {
+              // Only leap from the sky boundary — rush there first if not close
+              const atBoundary = Math.abs(gollum.y - SKY_Y) < gollum.r * 3;
+              if (!atBoundary) {
+                // Snap Gollum to boundary Y and run toward Frodo X at ground level
+                gollum.y = SKY_Y;
+              }
               gollum.phase = 'jump';
               gollum.jumpTimer = 0;
-              gollum.jumpDuration = 0.7 + Math.random()*0.3;
-              gollum.jumpGroundY = Math.min(H*0.85, gollum.y);
+              gollum.jumpDuration = 0.65 + Math.random()*0.25;
+              gollum.jumpGroundY = SKY_Y; // always launches from boundary
               gollum.jumpStartX = gollum.x;
-              // Peak: try to reach Frodo Y, capped at SKY_Y
-              gollum.jumpPeakY = Math.max(SKY_Y - 10, frodo.y - gollum.r*2);
+              // Peak: reach Frodo Y
+              gollum.jumpPeakY = Math.max(20, frodo.y - gollum.r);
             } else {
               gollum.wanderTimer -= dt;
-              if (gollum.wanderTimer <= 0) {
-                gollum.wanderAngle = Math.atan2(gollumTargetY-gollum.y, gollumTargetX-gollum.x) + (Math.random()-0.5)*1.8;
-                gollum.wanderTimer = 1.5 + Math.random()*2.5;
+              if (frodoInSky) {
+                // Scurry toward Frodo X and climb to SKY_Y boundary to prepare leap
+                const dx2 = gollum.x < frodo.x ? 1 : -1;
+                gollum.x += dx2 * gollum.speed * gollumSpeedMult * 60 * dt;
+                gollum.y = Math.max(SKY_Y, gollum.y - gollum.speed * 1.5 * 60 * dt);
+              } else {
+                if (gollum.wanderTimer <= 0) {
+                  gollum.wanderAngle = Math.atan2(gollumTargetY-gollum.y, gollumTargetX-gollum.x) + (Math.random()-0.5)*1.8;
+                  gollum.wanderTimer = 1.5 + Math.random()*2.5;
+                }
+                gollum.x += Math.cos(gollum.wanderAngle)*gollum.speed*0.6*60*dt;
+                gollum.y += Math.sin(gollum.wanderAngle)*gollum.speed*0.6*60*dt;
               }
-              gollum.x += Math.cos(gollum.wanderAngle)*gollum.speed*0.6*gollumSpeedMult*60*dt;
-              gollum.y += Math.sin(gollum.wanderAngle)*gollum.speed*0.6*gollumSpeedMult*60*dt;
               gollum.x = Math.max(-20, Math.min(WORLD_W+20, gollum.x));
               gollum.y = Math.max(SKY_Y, Math.min(H, gollum.y));
               if (gollum.dartTimer <= 0) { gollum.phase='dart'; gollum.dartTimer=0.8; }
