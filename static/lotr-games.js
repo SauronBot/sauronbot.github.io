@@ -652,12 +652,26 @@
           const skyBoost = (w.type==='wraith' && w.y < SKY_Y) ? 1.1 : 1.0;
 
           if(eyeActive || sensing){
+            // Eye active or sensing: hunt
             const a=Math.atan2(targetY-w.y,frodo.x-w.x);
             const huntMult = eyeActive ? 1.35 : 0.9 + w.sense * 0.5;
             const closePenalty = d2frodo < 120 ? Math.max(0.5, d2frodo/120) : 1;
             w.x+=Math.cos(a)*w.speed*huntMult*closePenalty*skyBoost*60*dt;
             w.y+=Math.sin(a)*w.speed*huntMult*closePenalty*skyBoost*60*dt;
+          } else if (w.type==='orc') {
+            // Orcs: free wander with loose bias, occasional random direction change
+            if(w.wanderTimer<=0){
+              const toFrodo=Math.atan2(frodo.y-w.y,frodo.x-w.x);
+              // 30% chance to head vaguely toward Frodo, 70% fully random
+              w.wanderAngle=Math.random()<0.3
+                ? toFrodo+(Math.random()-0.5)*Math.PI*0.8
+                : Math.random()*Math.PI*2;
+              w.wanderTimer=2+Math.random()*4;
+            }
+            w.x+=Math.cos(w.wanderAngle)*w.speed*0.7*60*dt;
+            w.y+=Math.sin(w.wanderAngle)*w.speed*0.7*60*dt;
           } else {
+            // Nazgûl: loosely wander toward Frodo
             if(w.wanderTimer<=0){
               w.wanderAngle=Math.atan2(targetY-w.y,frodo.x-w.x)+(Math.random()-0.5)*Math.PI*1.6;
               w.wanderTimer=1.2+Math.random()*2;
