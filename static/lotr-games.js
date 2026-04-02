@@ -676,7 +676,7 @@
         if(eye&&eye.phase==='active'){ctx.fillStyle=`rgba(160,0,0,${eye.open*0.16})`;ctx.fillRect(0,0,W,H);}
         if(eye&&eye.phase==='warning'&&Math.random()>0.65){ctx.fillStyle=`rgba(200,50,0,${Math.random()*0.09})`;ctx.fillRect(0,0,W,H);}
         if(blindFlash>0){ctx.fillStyle=`rgba(255,200,50,${blindFlash*0.92})`;ctx.fillRect(0,0,W,H);}
-        drawUILevel(ctx,W,H,frodo,progress(),eye,timers.elapsed,currentLevel,def,dashCharges,score);
+        drawUILevel(ctx,W,H,frodo,progress(),eye,timers.elapsed,currentLevel,def,dashCharges,score,round);
         // Level intro overlay (first 3.5s)
         if(timers.elapsed < 3.5) {
           const fade = timers.elapsed < 0.5 ? timers.elapsed*2 : timers.elapsed > 2.8 ? (3.5-timers.elapsed)/0.7 : 1;
@@ -1055,7 +1055,7 @@
   }
 
   // ── UI (shared) ───────────────────────────────────────────────────────
-  function drawUILevel(ctx,W,H,frodo,prog,eye,elapsed,lvl,def,dashCharges=0,score=0){
+  function drawUILevel(ctx,W,H,frodo,prog,eye,elapsed,lvl,def,dashCharges=0,score=0,round=1){
     // Progress bar
     ctx.fillStyle='rgba(0,0,0,0.65)'; ctx.fillRect(10,10,210,18);
     const [dr,dg,db]=def.destGlow;
