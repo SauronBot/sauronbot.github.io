@@ -928,6 +928,65 @@
     const lvl = currentLvl;
     const pulse = unlocked ? 1 + Math.sin(t * 3) * 0.22 : 1;
 
+    // Level 2: Emyn Muil — jagged rock columns flanking the goal
+    if (lvl === 1) {
+      ctx.save();
+      const rockBase = H; // columns rise from bottom toward goal
+      const rockTop  = y + r * 2;
+      const colH     = rockBase - rockTop;
+      // Stone colour — grey-brown
+      const rockG = ctx.createLinearGradient(x, rockTop, x, rockBase);
+      rockG.addColorStop(0, '#2a2420');
+      rockG.addColorStop(0.5, '#1e1a16');
+      rockG.addColorStop(1, '#141210');
+      ctx.fillStyle = rockG;
+      // Five jagged columns of varying width and height
+      const cols = [
+        { ox: -r*3.2, w: r*0.9,  topFrac: 0.22 },
+        { ox: -r*1.8, w: r*1.1,  topFrac: 0.08 },
+        { ox: -r*0.4, w: r*0.8,  topFrac: 0.0  }, // tallest — directly below goal
+        { ox:  r*1.1, w: r*1.0,  topFrac: 0.12 },
+        { ox:  r*2.5, w: r*0.85, topFrac: 0.28 },
+      ];
+      cols.forEach(({ ox, w: cw, topFrac }) => {
+        const ct = rockTop + colH * topFrac;
+        const jagged = r * 0.18;
+        ctx.beginPath();
+        ctx.moveTo(x + ox,           rockBase);
+        ctx.lineTo(x + ox,           ct + jagged);
+        ctx.lineTo(x + ox + cw*0.2,  ct);
+        ctx.lineTo(x + ox + cw*0.45, ct + jagged*0.7);
+        ctx.lineTo(x + ox + cw*0.65, ct - jagged*0.4);
+        ctx.lineTo(x + ox + cw*0.85, ct + jagged*0.5);
+        ctx.lineTo(x + ox + cw,      ct + jagged*0.2);
+        ctx.lineTo(x + ox + cw,      rockBase);
+        ctx.closePath();
+        ctx.fill();
+        // Column face crack
+        ctx.save(); ctx.strokeStyle='rgba(0,0,0,0.35)'; ctx.lineWidth=1;
+        ctx.beginPath();
+        ctx.moveTo(x + ox + cw*0.4, ct + jagged*0.5);
+        ctx.lineTo(x + ox + cw*0.45, ct + colH*(0.3+topFrac));
+        ctx.stroke();
+        ctx.restore();
+      });
+      // Cliff edge highlight
+      ctx.save(); ctx.strokeStyle='rgba(100,80,60,0.25)'; ctx.lineWidth=1.5;
+      cols.forEach(({ ox, w: cw, topFrac }) => {
+        const ct = rockTop + colH * topFrac;
+        ctx.beginPath(); ctx.moveTo(x+ox, ct+r*0.18); ctx.lineTo(x+ox+cw, ct+r*0.18+r*0.2); ctx.stroke();
+      });
+      ctx.restore();
+      // Moss/lichen patches (dark green tint)
+      ctx.save(); ctx.globalAlpha=0.12; ctx.fillStyle='#304020';
+      cols.forEach(({ ox, w: cw, topFrac }) => {
+        const ct = rockTop + colH * topFrac;
+        ctx.fillRect(x+ox, ct+r*0.3, cw*0.6, colH*0.1);
+      });
+      ctx.restore();
+      ctx.restore();
+    }
+
     // Level 3: Mount Doom mountain below the goal
     if (lvl === 2) {
       ctx.save();
