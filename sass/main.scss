@@ -338,6 +338,27 @@ nav {
 
       small { font-weight: normal; opacity: 0.7; }
     }
+
+    &--easter {
+      grid-column: 1 / -1; // full width across both columns
+      border-top: 1px solid var(--border);
+      padding-top: 0.75rem;
+      margin-top: 0.25rem;
+
+      h4 { color: #a07828; }
+
+      kbd {
+        background: rgba(160, 120, 30, 0.12);
+        border-color: rgba(160, 120, 30, 0.35);
+        border-bottom-color: rgba(160, 120, 30, 0.55);
+        color: #c8a040;
+      }
+
+      span {
+        color: #a07828;
+        font-style: italic;
+      }
+    }
   }
 
   &__item {
