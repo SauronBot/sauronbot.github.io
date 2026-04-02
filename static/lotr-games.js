@@ -371,7 +371,9 @@
       };
       wraiths = [];
       // Spread initial wraiths across the world — last third near the goal
-      const initCount = Math.min(def.initWraiths + Math.floor((round-1)*0.8), def.maxWraiths);
+      const scaledInit = Math.round(def.initWraiths * areaScale);
+      const scaledMax  = Math.round(def.maxWraiths  * areaScale);
+      const initCount  = Math.min(scaledInit + Math.floor((round-1)*0.8), scaledMax);
       for (let i = 0; i < initCount; i++) spawnWraith(def, i, initCount);
       gollum = def.hasGollum ? makeGollum() : null;
       particles = [];
@@ -439,6 +441,9 @@
     }
 
     const GOAL = { x: WORLD_W - 120, y: Math.round(H * 0.15), r: 22 };
+    // Scale enemy counts with canvas area (square root — linear spread, not quadratic)
+    const REF_AREA = 960 * 580;
+    const areaScale = Math.min(2.5, Math.max(0.5, Math.sqrt(W * H / REF_AREA)));
     const progress = () => {
       if (!frodo) return 0;
       return Math.max(0, Math.min(1, (frodo.x - 80) / (GOAL.x - 80)));
@@ -546,7 +551,7 @@
         const eyeActive = eye.phase==='active';
 
         // Wraiths
-        const SENSE_RADIUS = 220; // px — Nazgûl sense the Ring within this range
+        const SENSE_RADIUS = Math.round(220 * areaScale); // scales with canvas size
         wraiths.forEach(w=>{
           w.capePhase+=dt*1.8; w.wanderTimer-=dt;
           const d2frodo = dist(frodo, w);
@@ -613,7 +618,9 @@
 
         // Spawn more wraiths
         timers.spawnCD-=dt;
-        const want=def.initWraiths+Math.floor(progress()*(def.maxWraiths-def.initWraiths));
+        const scaledInit2 = Math.round(def.initWraiths * areaScale);
+        const scaledMax2  = Math.round(def.maxWraiths  * areaScale);
+        const want = scaledInit2 + Math.floor(progress()*(scaledMax2-scaledInit2));
         if(wraiths.length<want&&timers.spawnCD<=0){spawnWraith(def);timers.spawnCD=def.spawnMin+Math.random()*2.5;}
 
         // Key pickup (unlocks goal)
