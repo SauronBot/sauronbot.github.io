@@ -274,11 +274,8 @@
     const GOAL = { x: 890, y: 90, r: 22 };
     const progress = () => {
       if (!frodo) return 0;
-      const dx = GOAL.x - 80, dy = GOAL.y - (H*0.62);
-      const totalDist = Math.hypot(dx, dy);
-      const fdx = frodo.x - 80, fdy = frodo.y - (H*0.62);
-      // progress = how far along the straight line to goal
-      return Math.max(0, Math.min(1, (fdx*dx + fdy*dy) / (totalDist*totalDist)));
+      // X-axis progress toward goal — simple, stable, no NaN/negative risk
+      return Math.max(0, Math.min(1, (frodo.x - 80) / (GOAL.x - 80)));
     };
     const frodoSpd = (def) => (3.4 - progress()*2.2) * (currentLevel===2 ? 0.82 : 1);
     const dist = (a,b) => Math.hypot(a.x-b.x,a.y-b.y);
