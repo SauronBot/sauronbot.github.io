@@ -21,7 +21,7 @@
  *   - Speed slows as you approach the goal (Ring grows heavier)
  *   - Eye of Sauron opens periodically — Nazgûl home in when active
  *   - Lives carry between levels; gameover restarts with 2 lives
- *   - Canvas scales to viewport (responsive); touch D-pad on mobile
+ *   - Canvas scales to viewport (responsive); touch/pointer follow on mobile
  */
 (function () {
   'use strict';
@@ -246,121 +246,6 @@
 
     const keys = {};
 
-    // ── Touch D-pad (mobile) ─────────────────────────────────────────
-    const dpad = document.createElement('div');
-    Object.assign(dpad.style, {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(3, 52px)',
-      gridTemplateRows: 'repeat(3, 52px)',
-      gap: '4px',
-      marginTop: '10px',
-      userSelect: 'none',
-    });
-    const DPAD_BTNS = [
-      [null,       'ArrowUp',    null      ],
-      ['ArrowLeft','ArrowDown',  'ArrowRight'],
-      [null,       'ArrowDown',  null      ],
-    ];
-    // 3×3 grid: top-center=up, mid-left=left, mid-center=down, mid-right=right
-    const dpadMap = [
-      {col:2,row:1,key:'ArrowUp',   label:'▲'},
-      {col:1,row:2,key:'ArrowLeft', label:'◀'},
-      {col:2,row:2,key:'ArrowDown', label:'▼'},
-      {col:3,row:2,key:'ArrowRight',label:'▶'},
-    ];
-    // Fill 3×3 with empty cells first
-    for (let i=0;i<9;i++) {
-      const cell = document.createElement('div');
-      dpad.appendChild(cell);
-    }
-    dpadMap.forEach(({col,row,key,label}) => {
-      const idx = (row-1)*3 + (col-1);
-      const btn = document.createElement('button');
-      btn.textContent = label;
-      Object.assign(btn.style, {
-        width:'52px', height:'52px', background:'rgba(120,90,30,0.25)',
-        border:'1px solid rgba(180,130,50,0.4)', borderRadius:'8px',
-        color:'rgba(200,160,60,0.9)', fontSize:'18px', cursor:'pointer',
-        touchAction:'none',
-      });
-      const start = (e) => { e.preventDefault(); keys[key]=true;
-        if(state!=='playing'){
-          if(state==='title') startLevel(0);
-          else if(state==='levelwin') startLevel(currentLevel+1);
-          else if(state==='gameover'){ fullReset(); startLevel(0); }
-          else if(state==='win') { round++; score+=200; startLevel(0); }
-        }
-      };
-      const stop  = (e) => { e.preventDefault(); keys[key]=false; };
-      btn.addEventListener('touchstart', start, {passive:false});
-      btn.addEventListener('touchend',   stop,  {passive:false});
-      btn.addEventListener('mousedown',  start);
-      btn.addEventListener('mouseup',    stop);
-      btn.addEventListener('mouseleave', stop);
-      dpad.replaceChild(btn, dpad.children[idx]);
-    });
-    ov.appendChild(dpad);
-    // D-pad hidden — pointer/touch follow replaces it
-    dpad.style.display = 'none';
-
-    // ── Mobile dash button (touch devices only) ───────────────────────
-    const dashBtn = document.createElement('button');
-    dashBtn.textContent = '⚡';
-    Object.assign(dashBtn.style, {
-      position: 'absolute',
-      bottom: '80px',     // above close button, leaves thumb reach zone
-      left: '50%',
-      transform: 'translateX(-50%)',
-      width: '64px', height: '64px',
-      borderRadius: '50%',
-      background: 'rgba(60,100,200,0.25)',
-      border: '2px solid rgba(100,160,255,0.5)',
-      color: 'rgba(160,210,255,0.95)',
-      fontSize: '28px',
-      cursor: 'pointer',
-      display: 'none',         // shown only on touch
-      alignItems: 'center',
-      justifyContent: 'center',
-      touchAction: 'none',
-      zIndex: '1',
-      userSelect: 'none',
-      WebkitUserSelect: 'none',
-      transition: 'background 0.1s',
-    });
-    dashBtn.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      e.stopPropagation(); // prevent canvas pointer follow from firing
-      dashBtn.style.background = 'rgba(60,100,200,0.55)';
-      triggerDash();
-    }, {passive:false});
-    dashBtn.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      dashBtn.style.background = 'rgba(60,100,200,0.25)';
-    }, {passive:false});
-    ov.style.position = 'relative'; // ensure absolute positioning works
-    ov.appendChild(dashBtn);
-    // Show only on touch screens
-    if ('ontouchstart' in window) dashBtn.style.display = 'flex';
-
-    const onKd = e => {
-      keys[e.key] = true;
-      if ([' ','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
-      if (e.key === ' ') {
-        if (state === 'title')    startLevel(0);
-        else if (state === 'levelwin') startLevel(currentLevel + 1);
-        else if (state === 'gameover') { fullReset(); startLevel(0); }
-        else if (state === 'win') { round++; score+=200; startLevel(0); }
-        else if (state === 'playing') triggerDash();
-      }
-    };
-    const onKu = e => { keys[e.key] = false; };
-    document.addEventListener('keydown', onKd);
-    document.addEventListener('keyup',  onKu);
-    ov.addEventListener('remove', () => {
-      document.removeEventListener('keydown', onKd);
-      document.removeEventListener('keyup',  onKu);
-    });
     // ── Pointer follow (touch/mouse — Frodo follows finger/cursor) ───────────────
     let pointerTarget = null; // {x,y} in world space
 
