@@ -1719,9 +1719,22 @@
     const ea = eye&&eye.phase==='active';
     wraiths.forEach(w=>{
       ctx.save(); ctx.translate(w.x,w.y);
-      const inSky = w.type==='wraith' && w.y < H*0.38;
-      if (inSky)           { drawFellBeast(ctx,w,ea); ctx.restore(); return; }
-      if (w.type==='orc')  { drawOrc(ctx,w,ea);       ctx.restore(); return; }
+      // Transition zone: SKY_Y to SKY_Y - r*4
+      // Fell Beast fades in as Nazgûl rises above SKY_Y
+      const transitionRange = w.r * 6;
+      const skyRatio = w.type==='wraith'
+        ? Math.max(0, Math.min(1, (SKY_Y - w.y) / transitionRange))
+        : 0;
+      if (w.type==='wraith' && skyRatio > 0) {
+        if (skyRatio >= 1) {
+          // Fully in sky: only Fell Beast
+          drawFellBeast(ctx,w,ea); ctx.restore(); return;
+        }
+        // Blending: draw wraith fading out, Fell Beast fading in
+        ctx.globalAlpha = 1 - skyRatio;
+        // fall through to draw cloaked wraith below
+      }
+      if (w.type==='orc')  { drawOrc(ctx,w,ea); ctx.restore(); return; }
       const sense = w.sense||0, t2 = w.capePhase;
       // Glow halo
       const gc = ea?[160,30,255]:sense>0.15?[120,20,200]:[60,10,120];
@@ -1794,6 +1807,12 @@
       ctx.beginPath(); ctx.moveTo(w.r*1.0,-w.r*0.15); ctx.lineTo(w.r*1.35,w.r*0.3); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(w.r*1.45,w.r*0.05); ctx.lineTo(w.r*1.65,w.r*0.55); ctx.stroke();
       ctx.restore();
+      // Fell Beast overlay during sky transition
+      if (skyRatio > 0 && skyRatio < 1) {
+        ctx.globalAlpha = skyRatio;
+        drawFellBeast(ctx, w, ea);
+        ctx.globalAlpha = 1;
+      }
       ctx.restore();
     });
   }
