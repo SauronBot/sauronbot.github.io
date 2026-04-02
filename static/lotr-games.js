@@ -89,55 +89,43 @@
     const dpr = window.devicePixelRatio || 1;
     c.width  = Math.round(w * dpr);
     c.height = Math.round(h * dpr);
-
-    function isPortrait() {
-      return window.innerWidth < window.innerHeight;
-    }
-
+    Object.assign(c.style, {
+      display: 'block',
+      // Fill available space inside the flex column, maintaining aspect ratio
+      maxWidth: '100%',
+      maxHeight: '100%',
+      width: 'auto',
+      height: 'auto',
+      flex: '1 1 auto',
+      objectFit: 'contain',
+    });
+    // Override overlay to use a proper flex column that fits the screen
+    Object.assign(ov.style, {
+      flexDirection: 'column',
+      padding: '36px 0 0 0', // top pad for close button
+      boxSizing: 'border-box',
+    });
     function applyScale() {
-      const portrait  = isPortrait();
-      const isTouch   = 'ontouchstart' in window;
-      const ctrlSpace = isTouch ? 130 : 80; // space for dash btn + close
+      // Force canvas to fill available flex space respecting aspect ratio
       const vw = window.innerWidth;
-      const vh = window.innerHeight - ctrlSpace;
-
-      let scale, displayW, displayH;
-
-      if (portrait && isTouch) {
-        // Portrait phone: rotate canvas −90° so landscape game fills the tall screen
-        // After rotation, game width maps to screen height, game height maps to screen width
-        scale    = Math.min(vh / w, vw / h);
-        displayW = w * scale; // will become screen height after rotation
-        displayH = h * scale; // will become screen width after rotation
-        c.style.width     = displayW + 'px';
-        c.style.height    = displayH + 'px';
-        c.style.transform = `rotate(-90deg) translateX(-${displayW}px)`;
-        c.style.transformOrigin = 'top left';
-        // Wrapper must be sized to the rotated footprint
-        c.style.marginTop  = (displayW - displayH) / 2 + 'px';
-        c.style.marginLeft = '0';
-      } else {
-        // Landscape or desktop: normal scaling
-        scale    = Math.min(vw / w, vh / h);
-        displayW = w * scale;
-        displayH = h * scale;
-        c.style.width       = displayW + 'px';
-        c.style.height      = displayH + 'px';
-        c.style.transform   = '';
-        c.style.transformOrigin = '';
-        c.style.marginTop   = '';
-        c.style.marginLeft  = '';
-      }
+      const vh = window.innerHeight;
+      const ctrlH = 'ontouchstart' in window ? 90 : 50; // dash btn + close
+      const avail = vh - ctrlH - 36; // subtract controls + top padding
+      const scale = Math.min(vw / w, avail / h);
+      const cw = Math.round(w * scale);
+      const ch = Math.round(h * scale);
+      c.style.width  = cw + 'px';
+      c.style.height = ch + 'px';
+      c.style.flex   = 'none';
     }
-
-    c.style.display = 'block';
     applyScale();
     const onResize = () => applyScale();
     window.addEventListener('resize', onResize);
-    window.addEventListener('orientationchange', () => setTimeout(applyScale, 150));
+    window.addEventListener('orientationchange', () => setTimeout(applyScale, 200));
     const mo = new MutationObserver(() => {
       if (!document.body.contains(ov)) {
         window.removeEventListener('resize', onResize);
+        window.removeEventListener('orientationchange', onResize);
       }
     });
     mo.observe(document.body, { childList: true });
@@ -147,7 +135,6 @@
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
     c._dpr = dpr;
-    c._isPortraitTouch = () => isPortrait() && 'ontouchstart' in window;
     return c;
   }
 
@@ -324,14 +311,6 @@
 
     function pointerToWorld(clientX, clientY) {
       const rect = canvas.getBoundingClientRect();
-      if (canvas._isPortraitTouch && canvas._isPortraitTouch()) {
-        // Canvas is rotated -90°: screen Y maps to game X, screen X maps to game Y (inverted)
-        const scaleX = W / rect.height; // rotated: height is game width
-        const scaleY = H / rect.width;  // rotated: width is game height
-        const lx = (clientY - rect.top)  * scaleX;  // screen Y → game X
-        const ly = (1 - (clientX - rect.left) / rect.width) * H; // screen X → game Y (flipped)
-        return { x: lx + cameraX, y: Math.max(0, Math.min(H, ly)) };
-      }
       const scaleX = W / rect.width;
       const scaleY = H / rect.height;
       const lx = (clientX - rect.left) * scaleX;
