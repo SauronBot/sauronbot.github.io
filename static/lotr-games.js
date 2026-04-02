@@ -285,6 +285,9 @@
   ];
 
   function launchCarryTheRing() {
+    // God mode: ?god=chema — infinite lives and infinite dash
+    const GOD_MODE = new URLSearchParams(window.location.search).get('god') === 'chema';
+
     const ov = makeOverlay('#060309');
     const isTouch = 'ontouchstart' in window;
     // Fill the whole screen. Close btn is absolute (no flex space). Dash btn takes 90px on touch.
@@ -832,7 +835,7 @@
         if(eye&&eye.phase==='active'){ctx.fillStyle=`rgba(160,0,0,${eye.open*0.16})`;ctx.fillRect(0,0,W,H);}
         if(eye&&eye.phase==='warning'&&Math.random()>0.65){ctx.fillStyle=`rgba(200,50,0,${Math.random()*0.09})`;ctx.fillRect(0,0,W,H);}
         if(blindFlash>0){ctx.fillStyle=`rgba(255,200,50,${blindFlash*0.92})`;ctx.fillRect(0,0,W,H);}
-        drawUILevel(ctx,W,H,frodo,progress(),eye,timers.elapsed,currentLevel,def,dashCharges,score,round);
+        drawUILevel(ctx,W,H,frodo,progress(),eye,timers.elapsed,currentLevel,def,dashCharges,score,round,GOD_MODE);
         // Level intro overlay (first 3.5s)
         if(timers.elapsed < 3.5) {
           const fade = timers.elapsed < 0.5 ? timers.elapsed*2 : timers.elapsed > 2.8 ? (3.5-timers.elapsed)/0.7 : 1;
@@ -869,8 +872,8 @@
     }
 
     function triggerDash() {
-      if (dashCharges <= 0 || dash) return;
-      dashCharges--;
+      if ((!GOD_MODE && dashCharges <= 0) || dash) return;
+      if (!GOD_MODE) dashCharges--;
       // Dash direction: current keys, else away from nearest Nazgûl
       let dx=0, dy=0;
       if (keys['ArrowLeft']||keys['a']||keys['A']) dx-=1;
@@ -901,7 +904,8 @@
     }
 
     function hitFrodo() {
-      frodo.lives--; frodo.invincible=true; frodo.invTimer=2.8; frodo.hitFlash=1;
+      if (!GOD_MODE) frodo.lives--;
+      frodo.invincible=true; frodo.invTimer=2.8; frodo.hitFlash=1;
       shake={x:0,y:0,dur:0.45,intensity:9};
       for(let i=0;i<14;i++){
         const a=(i/14)*Math.PI*2+Math.random()*0.4, s=1.2+Math.random()*3.5;
@@ -1436,7 +1440,7 @@
   }
 
   // ── UI (shared) ───────────────────────────────────────────────────────
-  function drawUILevel(ctx,W,H,frodo,prog,eye,elapsed,lvl,def,dashCharges=0,score=0,round=1){
+  function drawUILevel(ctx,W,H,frodo,prog,eye,elapsed,lvl,def,dashCharges=0,score=0,round=1,godMode=false){
     // Progress bar
     ctx.fillStyle='rgba(0,0,0,0.65)'; ctx.fillRect(10,10,210,18);
     const [dr,dg,db]=def.destGlow;
@@ -1453,6 +1457,13 @@
     ctx.fillText(`BOOK ${badge}  ·  RND ${round}`, 10, 42);
     ctx.fillStyle='rgba(160,130,60,0.6)'; ctx.font='10px serif';
     ctx.fillText(`⭐ ${Math.floor(score)}`, 10, 56);
+    // God mode badge
+    if (godMode) {
+      ctx.save(); ctx.shadowColor='#ffd700'; ctx.shadowBlur=8;
+      ctx.fillStyle='rgba(255,215,0,0.85)'; ctx.font='bold 10px serif'; ctx.textAlign='left';
+      ctx.fillText('✨ GOD MODE', 10, 70);
+      ctx.restore();
+    }
     // Lives
     for(let i=0;i<3;i++){const lx=W-22-i*24,lit=i<frodo.lives;
       ctx.save(); if(lit){ctx.shadowColor='#d4a020';ctx.shadowBlur=8;}
