@@ -337,7 +337,7 @@
       particles = [];
       eye = {
         phase: 'idle', timer: 0, open: 0,
-        idleDur: def.eyeIdleBase + Math.random()*6,
+        idleDur: def.eyeIdleBase + 3 + Math.random()*6,
         activeDur: def.eyeActiveDur,
         warnDur: 2.2, closeDur: 1.5,
         px: W/2, py: 65,
@@ -465,7 +465,7 @@
           eye.open=Math.max(0,eye.open-dt*1.2);
           if(eye.timer>=eye.closeDur){
             eye.phase='idle';eye.timer=0;
-            eye.idleDur=Math.max(5,def.eyeIdleBase-progress()*10+Math.random()*5);
+            eye.idleDur=Math.max(8,def.eyeIdleBase-progress()*8+3+Math.random()*6);
           }
         }
 
