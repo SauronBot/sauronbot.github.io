@@ -785,7 +785,7 @@
         if(lifePickup) drawLifePickup(ctx,lifePickup,t);
         if(dashRefill) drawDashRefill(ctx,dashRefill,t);
         if (gollum) drawGollum(ctx,gollum,eye);
-        drawWraiths1(ctx,wraiths,eye);
+        drawWraiths1(ctx,wraiths,eye,H);
         if (frodo) drawFrodo1(ctx,frodo,progress(),timers.elapsed);
         ctx.globalAlpha=1;
         particles.forEach(p=>{ctx.globalAlpha=Math.min(1,p.life*2.5);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();});
@@ -1610,11 +1610,10 @@
     ctx.restore();
   }
 
-  function drawWraiths1(ctx,wraiths,eye){
+  function drawWraiths1(ctx,wraiths,eye,H=580){
     const ea = eye&&eye.phase==='active';
     wraiths.forEach(w=>{
       ctx.save(); ctx.translate(w.x,w.y);
-      // Nazgûl mounts Fell Beast when in the sky (upper 40% of screen)
       const inSky = w.type==='wraith' && w.y < H*0.4;
       if (inSky)           { drawFellBeast(ctx,w,ea); ctx.restore(); return; }
       if (w.type==='orc')  { drawOrc(ctx,w,ea);       ctx.restore(); return; }
