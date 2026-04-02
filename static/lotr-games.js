@@ -671,26 +671,35 @@
         if (gollum) {
           gollum.capePhase += dt*3;
           gollum.dartTimer -= dt;
+          // Gollum stays on ground — if Frodo is in sky, Gollum races at 3× on ground
+          const frodoInSky = frodo.y < SKY_Y;
+          const gollumGroundY = Math.max(SKY_Y + 10, H * 0.45); // Gollum minimum Y
+          // Target: if Frodo in sky, aim for point on ground directly below Frodo
+          const gollumTargetX = frodo.x;
+          const gollumTargetY = frodoInSky ? Math.min(H * 0.85, H * 0.6) : frodo.y;
+          const gollumSpeedMult = frodoInSky ? 3.0 : 1.0;
+
           if (gollum.phase==='lurk') {
-            // Orbit off to the side, approach slowly
             gollum.wanderTimer-=dt;
             if(gollum.wanderTimer<=0){
-              gollum.wanderAngle=Math.atan2(frodo.y-gollum.y,frodo.x-gollum.x)+(Math.random()-0.5)*1.8;
+              gollum.wanderAngle=Math.atan2(gollumTargetY-gollum.y,gollumTargetX-gollum.x)+(Math.random()-0.5)*1.8;
               gollum.wanderTimer=1.5+Math.random()*2.5;
             }
-            gollum.x+=Math.cos(gollum.wanderAngle)*gollum.speed*0.6*60*dt;
-            gollum.y+=Math.sin(gollum.wanderAngle)*gollum.speed*0.6*60*dt;
-            // Keep in bounds
+            gollum.x+=Math.cos(gollum.wanderAngle)*gollum.speed*0.6*gollumSpeedMult*60*dt;
+            gollum.y+=Math.sin(gollum.wanderAngle)*gollum.speed*0.6*gollumSpeedMult*60*dt;
+            // Hard clamp to ground zone (can jump up to SKY_Y but not above)
             gollum.x=Math.max(-20,Math.min(WORLD_W+20,gollum.x));
-            gollum.y=Math.max(H*0.25,Math.min(H,gollum.y));
+            gollum.y=Math.max(SKY_Y, Math.min(H, gollum.y));
             if(gollum.dartTimer<=0){
               gollum.phase='dart'; gollum.dartTimer=0.8;
             }
           } else {
-            // Dart straight at Frodo
-            const a=Math.atan2(frodo.y-gollum.y,frodo.x-gollum.x);
-            gollum.x+=Math.cos(a)*gollum.speed*2.2*60*dt;
-            gollum.y+=Math.sin(a)*gollum.speed*2.2*60*dt;
+            // Dart straight at target (ground target if Frodo in sky)
+            const a=Math.atan2(gollumTargetY-gollum.y,gollumTargetX-gollum.x);
+            gollum.x+=Math.cos(a)*gollum.speed*2.2*gollumSpeedMult*60*dt;
+            gollum.y+=Math.sin(a)*gollum.speed*2.2*gollumSpeedMult*60*dt;
+            // Clamp to ground during dart
+            gollum.y=Math.max(SKY_Y, Math.min(H, gollum.y));
             if(gollum.dartTimer<=0){ gollum.phase='lurk'; gollum.dartCD=4+Math.random()*4; gollum.dartTimer=gollum.dartCD; }
           }
           if(!frodo.invincible&&dist(frodo,gollum)<frodo.r+gollum.r){
