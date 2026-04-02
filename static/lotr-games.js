@@ -243,7 +243,7 @@
         px: W/2, py: 65,
       };
       shake = {x:0,y:0,dur:0,intensity:0};
-      timers = {elapsed:0,spawnCD:0,pickupCD:12+Math.random()*8};
+      timers = {elapsed:0,spawnCD:0,pickupCD:3};
       blindFlash = 0;
       lifePickup = null;
       state = 'playing';
@@ -407,7 +407,7 @@
           const px = 180 + Math.random()*(W-360);
           const py = H*0.2 + Math.random()*(H*0.6);
           lifePickup = {x:px, y:py, r:12, pulse:0};
-          timers.pickupCD = 18+Math.random()*10;
+          timers.pickupCD = 20+Math.random()*10;
         }
         if(lifePickup) {
           lifePickup.pulse += dt*3;
