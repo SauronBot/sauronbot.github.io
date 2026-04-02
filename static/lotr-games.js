@@ -491,13 +491,16 @@
         else { x=Math.random()<0.5 ? baseX-450-Math.random()*100 : baseX+450+Math.random()*100; x=Math.max(-35,Math.min(WORLD_W+35,x)); y=H*0.35+Math.random()*H*0.5; }
       }
       const spd = def.wraithSpeed * diffMult() * (0.9 + Math.random()*0.3);
-      // Fell Beast: rare variant in L2/L3, larger/faster, drawn differently
-      const isFellBeast = currentLevel >= 1 && Math.random() < 0.12;
-      const wr = isFellBeast ? 26 : 14;
-      const ws = isFellBeast ? spd * 0.75 : spd; // Fell Beast slower base but terrifying when Eye opens
+      // Max 7 Nazgûl on screen (lore-accurate). Beyond that: orcs.
+      // Fell Beast: rare variant in L2/L3 replacing one Nazgûl slot.
+      const nazgulCount = wraiths.filter(e=>e.type==='wraith'||e.type==='fellbeast').length;
+      const isFellBeast = nazgulCount < 7 && currentLevel >= 1 && Math.random() < 0.12;
+      const isNazgul    = nazgulCount < 7;
+      const eType = isFellBeast ? 'fellbeast' : isNazgul ? 'wraith' : 'orc';
+      const wr = isFellBeast ? 26 : eType==='orc' ? 10 : 14;
+      const ws = isFellBeast ? spd * 0.75 : eType==='orc' ? spd * 1.15 : spd; // orcs are nimble
       wraiths.push({x,y,r:wr,wanderAngle:Math.random()*Math.PI*2,wanderTimer:0,
-                    speed:ws,capePhase:Math.random()*Math.PI*2,
-                    type:isFellBeast?'fellbeast':'wraith'});
+                    speed:ws,capePhase:Math.random()*Math.PI*2,type:eType});
     }
 
     const GOAL = { x: WORLD_W - 120, y: Math.round(H * 0.15), r: 22 };
@@ -1316,6 +1319,71 @@
     }
   }
 
+  function drawOrc(ctx,w,ea){
+    const r=w.r, t=w.capePhase, sense=w.sense||0;
+    // Ground shadow
+    ctx.save(); ctx.globalAlpha=0.15;
+    const sg=ctx.createRadialGradient(0,r*1.4,0,0,r*1.4,r*2);
+    sg.addColorStop(0,'rgba(0,0,0,0.8)'); sg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=sg; ctx.beginPath(); ctx.ellipse(0,r*1.4,r*1.5,r*0.3,0,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+    // Glow (red-orange, aggressive)
+    const og=ctx.createRadialGradient(0,0,0,0,0,r*3.5);
+    og.addColorStop(0,`rgba(${ea?'200,60,0':'140,40,0'},${0.2+sense*0.25})`);
+    og.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=og; ctx.fillRect(-r*3.5,-r*3.5,r*7,r*7);
+    // Legs — running stride
+    const stride=Math.sin(t*3)*r*0.18;
+    ctx.fillStyle='#2a1a0a';
+    ctx.beginPath(); ctx.ellipse(-r*0.3,r*1.1+stride,r*0.28,r*0.55,0.15,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(r*0.3,r*1.1-stride,r*0.28,r*0.55,-0.15,0,Math.PI*2); ctx.fill();
+    // Heavy armour body
+    ctx.fillStyle='#2e1e0e';
+    ctx.beginPath();
+    ctx.moveTo(-r*0.7,-r*0.2);
+    ctx.lineTo(-r*0.65,r*0.7); ctx.lineTo(r*0.65,r*0.7); ctx.lineTo(r*0.7,-r*0.2);
+    ctx.bezierCurveTo(r*0.8,-r*0.6,r*0.4,-r*0.85,0,-r*0.9);
+    ctx.bezierCurveTo(-r*0.4,-r*0.85,-r*0.8,-r*0.6,-r*0.7,-r*0.2);
+    ctx.fill();
+    // Armour plates
+    ctx.save(); ctx.globalAlpha=0.5;
+    ctx.fillStyle='#3a2a12';
+    ctx.fillRect(-r*0.55,-r*0.6,r*1.1,r*0.25); // chest band
+    ctx.fillRect(-r*0.45,r*0.1,r*0.9,r*0.2);   // belly band
+    ctx.restore();
+    // Arms
+    const armSwing=Math.sin(t*3)*r*0.12;
+    ctx.strokeStyle='#2a1a0a'; ctx.lineWidth=r*0.35; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(-r*0.6,r*0.0); ctx.lineTo(-r*1.2,r*0.6-armSwing); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(r*0.6,r*0.0);  ctx.lineTo(r*1.2,r*0.6+armSwing);  ctx.stroke();
+    // Spear
+    ctx.save(); ctx.globalAlpha=0.75;
+    ctx.strokeStyle='#5a3a10'; ctx.lineWidth=r*0.14;
+    ctx.beginPath(); ctx.moveTo(r*1.1,-r*0.8); ctx.lineTo(r*1.3,r*0.7); ctx.stroke();
+    // Spearhead
+    ctx.fillStyle=ea?'#c0d0ff':'#909aaa';
+    ctx.beginPath(); ctx.moveTo(r*0.95,-r*1.0); ctx.lineTo(r*1.2,-r*0.85); ctx.lineTo(r*1.05,-r*0.65); ctx.closePath(); ctx.fill();
+    ctx.restore();
+    // Brutish head
+    ctx.fillStyle='#3a2810';
+    ctx.beginPath(); ctx.ellipse(0,-r*1.15,r*0.62,r*0.58,0,0,Math.PI*2); ctx.fill();
+    // Helmet
+    ctx.fillStyle='#2a1e0e';
+    ctx.beginPath(); ctx.ellipse(0,-r*1.38,r*0.62,r*0.32,0,Math.PI,Math.PI*2); ctx.fill();
+    ctx.fillRect(-r*0.62,-r*1.38,r*1.24,r*0.15); // helmet brim
+    // Angry eyes
+    ctx.save(); ctx.shadowColor=ea?'#ff4400':'#cc2200'; ctx.shadowBlur=4+sense*6;
+    ctx.fillStyle=ea?'#ff5500':'#dd3300';
+    [-r*0.22,r*0.22].forEach(ex2=>{
+      ctx.beginPath(); ctx.ellipse(ex2,-r*1.12,r*0.12,r*0.08,-0.1,0,Math.PI*2); ctx.fill();
+    });
+    ctx.restore();
+    // Tusks
+    ctx.fillStyle='rgba(220,200,160,0.8)';
+    ctx.beginPath(); ctx.ellipse(-r*0.15,-r*0.88,r*0.06,r*0.14,0.3,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(r*0.15,-r*0.88,r*0.06,r*0.14,-0.3,0,Math.PI*2); ctx.fill();
+  }
+
   function drawFellBeast(ctx,w,ea){
     const r=w.r, t=w.capePhase, sense=w.sense||0;
 
@@ -1429,6 +1497,7 @@
     wraiths.forEach(w=>{
       ctx.save(); ctx.translate(w.x,w.y);
       if (w.type==='fellbeast') { drawFellBeast(ctx,w,ea); ctx.restore(); return; }
+      if (w.type==='orc')       { drawOrc(ctx,w,ea);       ctx.restore(); return; }
       const sense = w.sense||0, t2 = w.capePhase;
       // Glow halo
       const gc = ea?[160,30,255]:sense>0.15?[120,20,200]:[60,10,120];
