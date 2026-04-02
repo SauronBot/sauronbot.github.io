@@ -37,14 +37,16 @@
   function makeOverlay(bgColor) {
     const ov = document.createElement('div');
     Object.assign(ov.style, {
-      position:   'fixed', inset: '0',
+      position: 'fixed',
+      top: '0', left: '0', right: '0', bottom: '0',
       background: bgColor || '#060309',
-      zIndex:     '99999',
-      display:    'flex',
+      zIndex: '99999',
+      display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
       fontFamily: '"Palatino Linotype",Palatino,Georgia,serif',
+      overflow: 'hidden',
     });
     document.body.appendChild(ov);
     return ov;
@@ -53,7 +55,14 @@
   function makeCanvas(ov, w, h) {
     const c = document.createElement('canvas');
     c.width = w; c.height = h;
-    Object.assign(c.style, { display: 'block', maxWidth: '100%' });
+    // Scale canvas to fit viewport while preserving aspect ratio
+    const vw = window.innerWidth, vh = window.innerHeight - 80;
+    const scale = Math.min(1, vw / w, vh / h);
+    Object.assign(c.style, {
+      display: 'block',
+      width: (w * scale) + 'px',
+      height: (h * scale) + 'px',
+    });
     ov.appendChild(c);
     return c;
   }
