@@ -681,11 +681,7 @@
       }
 
       if(state==='title') {
-        drawScreen(ctx,W,H,'Carry the Ring','"Even the smallest person can change the course of the future."','WASD / Arrows · 3 levels · 3 lives',t);
-        ctx.textAlign='center'; ctx.textBaseline='middle';
-        ctx.font='11px serif'; ctx.fillStyle='rgba(160,120,50,0.55)';
-        const titles=LEVEL_DEFS.map((d,i)=>`${['I','II','III'][i]}: ${d.title}`);
-        ctx.fillText(titles.join('   ·   '), W/2, H/2+90);
+        drawTitleScreen(ctx,W,H,t);
       }
       if(state==='levelwin') drawLevelWin(ctx,W,H,def,currentLevel,t,levelTransTimer);
       if(state==='gameover') drawScreen(ctx,W,H,'The Ring is Lost','"All hope is gone. The Dark Lord has won."','Press SPACE to try again',t,true);
@@ -1065,9 +1061,7 @@
       ctx.fillText('⚡',lx,40);
       ctx.restore();
     }
-    ctx.fillStyle='rgba(100,160,255,0.5)'; ctx.font='8px serif'; ctx.textAlign='right';
-    ctx.textBaseline='alphabetic';
-    ctx.fillText('DASH',W-8,52);
+
     // Eye warning
     if(eye&&eye.phase==='warning'&&Math.sin(elapsed*11)>0){
       ctx.fillStyle='#ff6010';ctx.font='bold 11px serif';ctx.textAlign='center';
@@ -1146,6 +1140,61 @@
 
 
   // ── SHARED SCREEN HELPER ──────────────────────────────────────────────
+  function drawTitleScreen(ctx,W,H,t) {
+    ctx.fillStyle='rgba(0,0,0,0.82)'; ctx.fillRect(0,0,W,H);
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+
+    // Title
+    ctx.fillStyle='#d4a020'; ctx.font=`bold 42px "Palatino Linotype",Palatino,Georgia,serif`;
+    ctx.fillText('Carry the Ring',W/2,H/2-155);
+    ctx.fillStyle='rgba(160,120,50,0.7)'; ctx.font=`italic 13px serif`;
+    ctx.fillText('"Even the smallest person can change the course of the future."',W/2,H/2-118);
+
+    // Divider
+    ctx.strokeStyle='rgba(140,100,40,0.35)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(W/2-220,H/2-100); ctx.lineTo(W/2+220,H/2-100); ctx.stroke();
+
+    // How to play — left column
+    const col1=W/2-160, col2=W/2+30;
+    const rowH=22, rowStart=H/2-82;
+    const rows=[
+      ['🔸 Move',      'WASD or Arrow keys'],
+      ['🔸 Dash',      'SPACE — burst of speed + invincibility'],
+      ['🔑 Key',       'Collect within 1s to unlock the goal'],
+      ['🔒 Goal',      'Reach it to complete the level'],
+      ['♥  Life',      'Pickup restores 1 life (max 3)'],
+      ['⚡ Dash +1',   'Refill token spawns after each use'],
+      ['👁️  The Eye',   'Opens periodically — Nazgûl hunt you'],
+      ['💀 Nazgûl',   'Sense the Ring nearby — eyes grow larger'],
+    ];
+    rows.forEach(([label,desc],i)=>{
+      const y=rowStart+i*rowH;
+      ctx.textAlign='right'; ctx.fillStyle='rgba(210,170,70,0.9)'; ctx.font='bold 11px serif';
+      ctx.fillText(label,W/2-10,y);
+      ctx.textAlign='left'; ctx.fillStyle='rgba(180,148,80,0.75)'; ctx.font='11px serif';
+      ctx.fillText(desc,W/2+10,y);
+    });
+
+    // Divider
+    ctx.strokeStyle='rgba(140,100,40,0.35)';
+    ctx.beginPath(); ctx.moveTo(W/2-220,H/2+98); ctx.lineTo(W/2+220,H/2+98); ctx.stroke();
+
+    // Level list
+    ctx.textAlign='center'; ctx.font='11px serif'; ctx.fillStyle='rgba(160,120,50,0.55)';
+    const titles=LEVEL_DEFS.map((d,i)=>`${['I','II','III'][i]}: ${d.title}`);
+    ctx.fillText(titles.join('   ·   '),W/2,H/2+114);
+
+    // Lives + dash summary
+    ctx.fillStyle='rgba(160,120,50,0.5)'; ctx.font='10px serif';
+    ctx.fillText('3 lives  ·  3 dash charges  ·  lives carry between levels  ·  dash charges shared',W/2,H/2+134);
+
+    // Start prompt
+    if(Math.sin(t*2.4)>0){
+      ctx.fillStyle='#c89040'; ctx.font='bold 15px serif';
+      ctx.fillText('— Press SPACE to begin —',W/2,H/2+160);
+    }
+  }
+
   function drawScreen(ctx, W, H, title, sub, hint2, t, isDeath) {
     ctx.fillStyle = 'rgba(0,0,0,0.78)'; ctx.fillRect(0,0,W,H);
     ctx.textAlign='center'; ctx.textBaseline='middle';
