@@ -122,12 +122,12 @@
       glow:    [80,160,40],  // RGB of the horizon glow
       glowAlpha: 0.18,
       destGlow:[80,160,40],
-      initWraiths: 2,
-      maxWraiths:  4,
-      wraithSpeed: 1.0,
-      eyeIdleBase: 28,
-      eyeActiveDur: 5,
-      spawnMin: 5,
+      initWraiths: 3,
+      maxWraiths:  5,
+      wraithSpeed: 1.2,
+      eyeIdleBase: 18,
+      eyeActiveDur: 6,
+      spawnMin: 4,
       hasGollum: false,
       hasBlindFlash: false,
       flavour: ['The Shire grows distant...','The Road goes ever on...','Rivendell is near...','Almost there...'],
@@ -147,12 +147,12 @@
       glow:    [160,120,40],
       glowAlpha: 0.22,
       destGlow:[200,100,20],
-      initWraiths: 3,
-      maxWraiths:  6,
-      wraithSpeed: 1.35,
-      eyeIdleBase: 18,
-      eyeActiveDur: 7,
-      spawnMin: 3.5,
+      initWraiths: 4,
+      maxWraiths:  7,
+      wraithSpeed: 1.55,
+      eyeIdleBase: 12,
+      eyeActiveDur: 8,
+      spawnMin: 2.8,
       hasGollum: true,
       hasBlindFlash: false,
       flavour: ['Gollum circles in the shadows...','The marshes pull at every step...','Something precious is near...','We musst go on, yess...'],
@@ -172,12 +172,12 @@
       glow:    [255,50,5],
       glowAlpha: 0.45,
       destGlow:[255,60,0],
-      initWraiths: 5,
-      maxWraiths:  8,
-      wraithSpeed: 1.7,
-      eyeIdleBase: 10,
-      eyeActiveDur: 10,
-      spawnMin: 2.2,
+      initWraiths: 6,
+      maxWraiths:  10,
+      wraithSpeed: 2.0,
+      eyeIdleBase: 7,
+      eyeActiveDur: 12,
+      spawnMin: 1.8,
       hasGollum: true,
       hasBlindFlash: true,
       flavour: ['Every step is agony...','The Eye sees all...','The Ring commands you to stop...','Throw it in the fire!'],
@@ -189,7 +189,7 @@
 
   function launchCarryTheRing() {
     const ov = makeOverlay('#060309');
-    const W = 800, H = 480;
+    const W = 960, H = 580;
     const canvas = makeCanvas(ov, W, H);
     const ctx = canvas.getContext('2d');
 
@@ -268,7 +268,7 @@
                     speed:spd,capePhase:Math.random()*Math.PI*2});
     }
 
-    const GOAL = { x: 730, y: 80, r: 22 };
+    const GOAL = { x: 890, y: 90, r: 22 };
     const progress = () => {
       if (!frodo) return 0;
       const dx = GOAL.x - 80, dy = GOAL.y - (H*0.62);
@@ -277,7 +277,7 @@
       // progress = how far along the straight line to goal
       return Math.max(0, Math.min(1, (fdx*dx + fdy*dy) / (totalDist*totalDist)));
     };
-    const frodoSpd = (def) => (3.8 - progress()*2.4) * (currentLevel===2 ? 0.85 : 1);
+    const frodoSpd = (def) => (3.4 - progress()*2.2) * (currentLevel===2 ? 0.82 : 1);
     const dist = (a,b) => Math.hypot(a.x-b.x,a.y-b.y);
     const lerp  = (a,b,t) => a+(b-a)*t;
 
