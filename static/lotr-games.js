@@ -1071,23 +1071,130 @@
   // ── GOLLUM ────────────────────────────────────────────────────────────
   function drawGollum(ctx,g,eye) {
     ctx.save(); ctx.translate(g.x,g.y);
-    const ea=eye&&eye.phase==='active';
-    // Glow
-    const gg=ctx.createRadialGradient(0,0,0,0,0,g.r*3.5);
-    gg.addColorStop(0,'rgba(60,100,30,0.3)'); gg.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=gg; ctx.fillRect(-g.r*3.5,-g.r*3.5,g.r*7,g.r*7);
-    // Crouched body
-    ctx.fillStyle='#1e1e10';
-    ctx.beginPath(); ctx.ellipse(0,2,g.r*0.7,g.r*0.85,0,0,Math.PI*2); ctx.fill();
-    // Head (large, bald)
-    ctx.fillStyle='#2a2a18';
-    ctx.beginPath(); ctx.ellipse(0,-g.r*0.9,g.r*0.75,g.r*0.7,0,0,Math.PI*2); ctx.fill();
-    // Big pale eyes
-    ctx.save();
-    ctx.shadowColor=ea?'#80ff20':'#60d010'; ctx.shadowBlur=5;
-    ctx.fillStyle=ea?'#a0ff30':'#80e020';
-    [-4,4].forEach(ex2=>{ ctx.beginPath(); ctx.ellipse(ex2,-g.r*0.9,2.5,3,0,0,Math.PI*2); ctx.fill(); });
+    const ea = eye&&eye.phase==='active';
+    const t  = g.capePhase; // reuse as animation timer
+    const r  = g.r;
+
+    // Ground shadow
+    ctx.save(); ctx.globalAlpha=0.18;
+    const sg=ctx.createRadialGradient(0,r*1.2,0,0,r*1.2,r*2);
+    sg.addColorStop(0,'rgba(0,0,0,0.8)'); sg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=sg; ctx.beginPath(); ctx.ellipse(0,r*1.2,r*1.5,r*0.3,0,0,Math.PI*2); ctx.fill();
     ctx.restore();
+
+    // Eerie glow (green when lurking, yellow when darting)
+    const glowCol = ea ? 'rgba(180,255,60,0.25)' : g.phase==='dart' ? 'rgba(255,220,50,0.2)' : 'rgba(60,120,20,0.18)';
+    const gg=ctx.createRadialGradient(0,0,0,0,0,r*4);
+    gg.addColorStop(0,glowCol); gg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=gg; ctx.fillRect(-r*4,-r*4,r*8,r*8);
+
+    // Crouched torso — lean forward, hunched
+    ctx.fillStyle='#252510';
+    ctx.beginPath();
+    ctx.moveTo(-r*0.5,-r*0.3);
+    ctx.bezierCurveTo(-r*0.8,r*0.2, -r*0.7,r*0.9, -r*0.3,r*1.1);
+    ctx.lineTo(r*0.3,r*1.1);
+    ctx.bezierCurveTo(r*0.7,r*0.9, r*0.8,r*0.2, r*0.5,-r*0.3);
+    ctx.closePath(); ctx.fill();
+
+    // Loincloth rags
+    ctx.fillStyle='#1a1808';
+    ctx.beginPath();
+    ctx.moveTo(-r*0.4,r*0.5);
+    ctx.lineTo(-r*0.65,r*1.15); ctx.lineTo(-r*0.15,r*0.9);
+    ctx.lineTo(r*0.15,r*0.9); ctx.lineTo(r*0.65,r*1.15);
+    ctx.lineTo(r*0.4,r*0.5); ctx.closePath(); ctx.fill();
+
+    // Long spindly arms reaching forward
+    const armBob = Math.sin(t*1.4)*r*0.15;
+    ctx.strokeStyle='#252510'; ctx.lineWidth=r*0.28;
+    ctx.lineCap='round';
+    // Left arm
+    ctx.beginPath();
+    ctx.moveTo(-r*0.4,r*0.1);
+    ctx.bezierCurveTo(-r*1.0,r*0.4+armBob, -r*1.4,r*0.2+armBob, -r*1.5,r*0.7+armBob);
+    ctx.stroke();
+    // Right arm
+    ctx.beginPath();
+    ctx.moveTo(r*0.4,r*0.1);
+    ctx.bezierCurveTo(r*1.0,r*0.4-armBob, r*1.4,r*0.2-armBob, r*1.5,r*0.7-armBob);
+    ctx.stroke();
+    // Clawed fingers (left)
+    ctx.strokeStyle='#353520'; ctx.lineWidth=r*0.12;
+    [-r*0.15, 0, r*0.15].forEach((ox,i)=>{
+      ctx.beginPath();
+      ctx.moveTo(-r*1.5+ox, r*0.7+armBob);
+      ctx.lineTo(-r*1.6+ox*1.2, r*1.05+armBob+i*r*0.05); ctx.stroke();
+    });
+    // Clawed fingers (right)
+    [-r*0.15, 0, r*0.15].forEach((ox,i)=>{
+      ctx.beginPath();
+      ctx.moveTo(r*1.5+ox, r*0.7-armBob);
+      ctx.lineTo(r*1.6+ox*1.2, r*1.05-armBob+i*r*0.05); ctx.stroke();
+    });
+
+    // Feet — flat, clawed
+    ctx.fillStyle='#202010';
+    ctx.beginPath(); ctx.ellipse(-r*0.25,r*1.15,r*0.38,r*0.18,-0.2,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(r*0.25,r*1.15,r*0.38,r*0.18,0.2,0,Math.PI*2); ctx.fill();
+
+    // Oversized head — bald, gaunt
+    const headSkin = ea ? '#3a3820' : '#2e2c18';
+    ctx.fillStyle=headSkin;
+    ctx.beginPath(); ctx.ellipse(0,-r*0.95,r*0.88,r*0.82,0,0,Math.PI*2); ctx.fill();
+
+    // Skull definition — cheekbones
+    ctx.save(); ctx.globalAlpha=0.25;
+    ctx.fillStyle='#000';
+    ctx.beginPath(); ctx.ellipse(-r*0.38,-r*0.82,r*0.22,r*0.12,0.3,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(r*0.38,-r*0.82,r*0.22,r*0.12,-0.3,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+
+    // Sunken nose
+    ctx.fillStyle='#1a1808';
+    ctx.beginPath(); ctx.ellipse(0,-r*0.88,r*0.1,r*0.07,0,0,Math.PI*2); ctx.fill();
+
+    // Thin slash mouth — slightly open, showing teeth
+    ctx.strokeStyle='#0e0c06'; ctx.lineWidth=r*0.1;
+    ctx.beginPath(); ctx.moveTo(-r*0.28,-r*0.72); ctx.quadraticCurveTo(0,-r*0.68,r*0.28,-r*0.72); ctx.stroke();
+    // Teeth peaking
+    ctx.fillStyle='rgba(220,210,180,0.6)';
+    [-r*0.12,0,r*0.12].forEach(tx=>{
+      ctx.beginPath(); ctx.rect(tx-r*0.04,-r*0.73,r*0.07,r*0.06); ctx.fill();
+    });
+
+    // Large pale eyes with ring-hunger gleam
+    const eyeSize = r*0.28 + (ea ? r*0.08 : 0);
+    // Eye whites (sunken sockets)
+    ctx.save();
+    ctx.fillStyle='#0a0a06';
+    ctx.beginPath(); ctx.ellipse(-r*0.3,-r*1.02,r*0.32,r*0.26,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(r*0.3,-r*1.02,r*0.32,r*0.26,0,0,Math.PI*2); ctx.fill();
+    // Iris — pale yellow-green
+    ctx.shadowColor=ea?'#ccff30':'#88dd10'; ctx.shadowBlur=ea?12:6;
+    ctx.fillStyle=ea?'#ccff40':'#90e020';
+    ctx.beginPath(); ctx.ellipse(-r*0.3,-r*1.02,eyeSize,eyeSize*1.15,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(r*0.3,-r*1.02,eyeSize,eyeSize*1.15,0,0,Math.PI*2); ctx.fill();
+    // Pupils — slit like a cat
+    ctx.fillStyle='#000';
+    ctx.beginPath(); ctx.ellipse(-r*0.3,-r*1.02,eyeSize*0.25,eyeSize*1.0,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(r*0.3,-r*1.02,eyeSize*0.25,eyeSize*1.0,0,0,Math.PI*2); ctx.fill();
+    // Eye shine
+    ctx.fillStyle='rgba(255,255,220,0.7)';
+    ctx.beginPath(); ctx.arc(-r*0.25,-r*1.07,eyeSize*0.18,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(r*0.35,-r*1.07,eyeSize*0.18,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+
+    // Wispy thin hair strands
+    ctx.save(); ctx.globalAlpha=0.3; ctx.strokeStyle='#3a3820'; ctx.lineWidth=1;
+    [-r*0.5,-r*0.2,r*0.1,r*0.4].forEach((hx,i)=>{
+      ctx.beginPath();
+      ctx.moveTo(hx,-r*1.6+i*r*0.04);
+      ctx.quadraticCurveTo(hx+r*0.1*Math.sin(t+i),-r*1.3,hx+r*0.15*Math.sin(t*1.2+i),-r*1.05);
+      ctx.stroke();
+    });
+    ctx.restore();
+
     ctx.restore();
   }
 
