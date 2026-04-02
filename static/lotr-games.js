@@ -133,7 +133,7 @@
       document.removeEventListener('keyup',  onKu);
     });
 
-    let state = 'title', frodo, wraiths, particles, eye, shake, timers;
+    let state = 'title', frodo, wraiths=[], particles=[], eye=null, shake={x:0,y:0}, timers={elapsed:0};
 
     function startGame() {
       frodo = { x:80, y:H*0.62, r:11, lives:3, invincible:false, invTimer:0, hitFlash:0, ringAngle:0 };
@@ -239,7 +239,7 @@
 
       // DRAW
       ctx.save();
-      if(shake.x||shake.y) ctx.translate(shake.x,shake.y);
+      if(shake&&(shake.x||shake.y)) ctx.translate(shake.x,shake.y);
       drawBg1(ctx,W,H,ts/1000,state==='playing'?progress():0);
       if(state!=='title'){
         drawWraiths1(ctx,wraiths,eye);
@@ -594,7 +594,7 @@
     ov.appendChild(hint);
 
     let state = 'title', survived = 0;
-    let hobbit, eyeBeams, shadows, particles2;
+    let hobbit, eyeBeams=[], shadows=[], particles2=[];
     const FLOOR_Y = H * 0.8;
 
     function startGame() {
