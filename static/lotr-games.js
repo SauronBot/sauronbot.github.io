@@ -500,12 +500,15 @@
       const eType = isNazgul ? 'wraith' : 'orc';
       const wr = eType==='orc' ? 10 : 14;
       const ws = eType==='orc' ? spd * 1.15 : spd;
-      if (eType==='orc') y = Math.max(H*0.42, Math.min(H-wr*2, y));
+      if (eType==='orc') y = Math.max(SKY_Y, Math.min(H-wr*2, y));
       wraiths.push({x,y,r:wr,wanderAngle:Math.random()*Math.PI*2,wanderTimer:0,
                     speed:ws,capePhase:Math.random()*Math.PI*2,type:eType});
     }
 
     // Goal Y varies by level: L1=ground-ish, L2=mid-high, L3=near-top (climb the mountain)
+    // Sky/ground boundary — sky starts slightly above the visual midline
+    const SKY_Y = H * 0.38;
+
     const GOAL_Y_BY_LEVEL = [
       Math.round(H * 0.58), // L1: ground level — enter Rivendell's gates
       Math.round(H * 0.28), // L2: elevated — climb the Emyn Muil
@@ -631,10 +634,10 @@
           w.sense = Math.max(0, Math.min(1, 1 - d2frodo / SENSE_RADIUS));
 
           // Orcs stay on the ground (lower 60% of screen)
-          const orcMinY = w.type==='orc' ? H*0.4 : 0;
-          const targetY = w.type==='orc' ? Math.max(frodo.y, H*0.42) : frodo.y;
+          const orcMinY = w.type==='orc' ? SKY_Y : 0;
+          const targetY = w.type==='orc' ? Math.max(frodo.y, SKY_Y) : frodo.y;
           // Nazgûl on Fell Beast (sky) get +10% speed
-          const skyBoost = (w.type==='wraith' && w.y < H*0.4) ? 1.1 : 1.0;
+          const skyBoost = (w.type==='wraith' && w.y < SKY_Y) ? 1.1 : 1.0;
 
           if(eyeActive || sensing){
             const a=Math.atan2(targetY-w.y,frodo.x-w.x);
@@ -1604,9 +1607,18 @@
     ctx.closePath(); ctx.fill();
     // Rider head
     ctx.beginPath(); ctx.arc(0,-r*0.35,r*0.22,0,Math.PI*2); ctx.fill();
-    // Rider eyes
-    ctx.save(); ctx.shadowColor=ea?'#ff20a0':'#aa0060'; ctx.shadowBlur=4; ctx.fillStyle=ea?'#ff50c0':'#cc0070';
-    [-r*0.07,r*0.07].forEach(ex2=>{ ctx.beginPath(); ctx.arc(ex2,-r*0.36,r*0.05,0,Math.PI*2); ctx.fill(); });
+    // Rider eyes — grow with sense like regular Nazgûl
+    const riderEyeR = r*0.05 + sense*r*0.06;
+    const riderEyeCol = ea?'#ff70ff':sense>0.6?'#ff30aa':sense>0.15?'#dd1880':'#cc0070';
+    const riderEyeGlow = ea?'#cc00ff':sense>0.15?'#990066':'#aa0060';
+    ctx.save(); ctx.shadowColor=riderEyeGlow; ctx.shadowBlur=4+sense*12; ctx.fillStyle=riderEyeCol;
+    [-r*0.07,r*0.07].forEach(ex2=>{
+      ctx.beginPath(); ctx.arc(ex2,-r*0.36,riderEyeR,0,Math.PI*2); ctx.fill();
+      // Eye spark
+      ctx.fillStyle='rgba(255,255,255,0.7)';
+      ctx.beginPath(); ctx.arc(ex2-riderEyeR*0.3,-r*0.36-riderEyeR*0.3,riderEyeR*0.28,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle=riderEyeCol;
+    });
     ctx.restore();
   }
 
@@ -1614,7 +1626,7 @@
     const ea = eye&&eye.phase==='active';
     wraiths.forEach(w=>{
       ctx.save(); ctx.translate(w.x,w.y);
-      const inSky = w.type==='wraith' && w.y < H*0.4;
+      const inSky = w.type==='wraith' && w.y < H*0.38;
       if (inSky)           { drawFellBeast(ctx,w,ea); ctx.restore(); return; }
       if (w.type==='orc')  { drawOrc(ctx,w,ea);       ctx.restore(); return; }
       const sense = w.sense||0, t2 = w.capePhase;
