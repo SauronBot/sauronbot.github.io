@@ -366,6 +366,32 @@
     canvas.addEventListener('mousemove',  (e) => { if(e.buttons) handlePointerMove(e); });
     canvas.addEventListener('mouseup',    handlePointerUp);
 
+    // ── Keyboard input ──────────────────────────────────────────────────────
+    const MOVE_KEYS = new Set(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','a','A','d','D','w','W','s','S']);
+    const onKd = e => {
+      keys[e.key] = true;
+      if ([' ','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
+      // Keyboard movement clears pointer target so both inputs don't fight
+      if (MOVE_KEYS.has(e.key)) pointerTarget = null;
+      if (e.key === ' ') {
+        if (state === 'title')    startLevel(0);
+        else if (state === 'levelwin') startLevel(currentLevel + 1);
+        else if (state === 'gameover') { fullReset(); startLevel(0); }
+        else if (state === 'win') { round++; score+=200; startLevel(0); }
+        else if (state === 'playing') triggerDash();
+      }
+    };
+    const onKu = e => { keys[e.key] = false; };
+    document.addEventListener('keydown', onKd);
+    document.addEventListener('keyup',   onKu);
+    // Cleanup keyboard listeners when overlay is removed
+    new MutationObserver(() => {
+      if (!document.body.contains(ov)) {
+        document.removeEventListener('keydown', onKd);
+        document.removeEventListener('keyup',   onKu);
+      }
+    }).observe(document.body, {childList:true});
+
     let state = 'title';
     let currentLevel = 0;
     let round = 1;    // increments after completing all 3 levels
