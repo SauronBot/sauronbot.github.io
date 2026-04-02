@@ -79,7 +79,9 @@
     c.width  = Math.round(w * dpr);
     c.height = Math.round(h * dpr);
     function applyScale() {
-      const vw = window.innerWidth, vh = window.innerHeight - 140;
+      // On touch screens reserve extra space for the dash button
+      const touchOffset = ('ontouchstart' in window) ? 160 : 100;
+      const vw = window.innerWidth, vh = window.innerHeight - touchOffset;
       const scale = Math.min(vw / w, vh / h);
       c.style.width  = (w * scale) + 'px';
       c.style.height = (h * scale) + 'px';
@@ -291,7 +293,7 @@
     dashBtn.textContent = '⚡';
     Object.assign(dashBtn.style, {
       position: 'absolute',
-      bottom: '72px',     // above close button
+      bottom: '80px',     // above close button, leaves thumb reach zone
       left: '50%',
       transform: 'translateX(-50%)',
       width: '64px', height: '64px',
@@ -312,11 +314,13 @@
     });
     dashBtn.addEventListener('touchstart', (e) => {
       e.preventDefault();
+      e.stopPropagation(); // prevent canvas pointer follow from firing
       dashBtn.style.background = 'rgba(60,100,200,0.55)';
       triggerDash();
     }, {passive:false});
     dashBtn.addEventListener('touchend', (e) => {
       e.preventDefault();
+      e.stopPropagation();
       dashBtn.style.background = 'rgba(60,100,200,0.25)';
     }, {passive:false});
     ov.style.position = 'relative'; // ensure absolute positioning works
@@ -1265,7 +1269,7 @@
     const col1=W/2-160, col2=W/2+30;
     const rowH=22, rowStart=H/2-82;
     const rows=[
-      ['🔸 Move',      'WASD or Arrow keys'],
+      ['🔸 Move',      ('ontouchstart' in window) ? 'Touch & hold the screen' : 'WASD or Arrow keys'],
       ['🔸 Dash',      'SPACE / ⚡ button — burst of speed + invincibility'],
       ['🔑 Key',       'Collect within 1s to unlock the goal'],
       ['🔒 Goal',      'Reach it to complete the level'],
