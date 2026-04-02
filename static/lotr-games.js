@@ -36,7 +36,7 @@
       konamiIdx++;
       if (konamiIdx === KONAMI.length) {
         konamiIdx = 0;
-        launchRandom();
+        launchCarryTheRing();
       }
     } else {
       konamiIdx = (e.key === KONAMI[0]) ? 1 : 0;
@@ -44,13 +44,8 @@
   });
 
   // ── LAUNCHER ──────────────────────────────────────────────────────────
-  const GAMES = [launchCarryTheRing];
-  function launchRandom() {
-    const fn = GAMES[Math.floor(Math.random() * GAMES.length)];
-    fn();
-  }
-  // Exposed for testing / manual trigger
-  window.__lotrLaunch = (i) => (GAMES[i] || launchRandom)();
+  // Exposed for testing
+  window.__lotrLaunch = () => launchCarryTheRing();
 
   // ── OVERLAY HELPERS ───────────────────────────────────────────────────
   function makeOverlay(bgColor) {
