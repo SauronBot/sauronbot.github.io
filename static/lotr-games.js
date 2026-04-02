@@ -460,9 +460,11 @@
         x: W + 40, y: H*0.58,
         r: 9, speed: 2.4,
         wanderAngle: Math.PI, wanderTimer: 0,
-        phase: 'lurk', // 'lurk' | 'dart'
+        phase: 'lurk', // 'lurk' | 'dart' | 'jump'
         dartTimer: 0, dartCD: 5 + Math.random()*4,
         capePhase: 0,
+        jumpCD: 4 + Math.random()*3, // time until next leap attempt
+        jumpTimer: 0, jumpDuration: 0, jumpGroundY: 0, jumpPeakY: 0, jumpStartX: 0,
       };
     }
 
@@ -673,36 +675,57 @@
         if (gollum) {
           gollum.capePhase += dt*3;
           gollum.dartTimer -= dt;
-          // Gollum stays on ground — if Frodo is in sky, Gollum races at 3× on ground
-          const frodoInSky = frodo.y < SKY_Y;
-          const gollumGroundY = Math.max(SKY_Y + 10, H * 0.45); // Gollum minimum Y
-          // Target: if Frodo in sky, aim for point on ground directly below Frodo
-          const gollumTargetX = frodo.x;
-          const gollumTargetY = frodoInSky ? Math.min(H * 0.85, H * 0.6) : frodo.y;
-          const gollumSpeedMult = frodoInSky ? 3.0 : 1.0;
+          gollum.jumpCD -= dt;
 
-          if (gollum.phase==='lurk') {
-            gollum.wanderTimer-=dt;
-            if(gollum.wanderTimer<=0){
-              gollum.wanderAngle=Math.atan2(gollumTargetY-gollum.y,gollumTargetX-gollum.x)+(Math.random()-0.5)*1.8;
-              gollum.wanderTimer=1.5+Math.random()*2.5;
+          const frodoInSky = frodo.y < SKY_Y;
+          const gollumTargetX = frodo.x;
+          const gollumTargetY = frodoInSky ? H * 0.72 : frodo.y;
+          const gollumSpeedMult = frodoInSky && gollum.phase !== 'jump' ? 3.0 : 1.0;
+
+          if (gollum.phase === 'jump') {
+            // Parabolic leap toward Frodo
+            gollum.jumpTimer += dt;
+            const frac = Math.min(1, gollum.jumpTimer / gollum.jumpDuration);
+            // Horizontal: linear toward Frodo X
+            gollum.x = gollum.jumpStartX + (frodo.x - gollum.jumpStartX) * frac;
+            // Vertical: parabola peaking at jumpPeakY
+            const py = gollum.jumpGroundY + (gollum.jumpPeakY - gollum.jumpGroundY) * Math.sin(frac * Math.PI);
+            gollum.y = gollum.jumpGroundY * (1 - frac) + gollum.jumpGroundY * frac + (py - gollum.jumpGroundY) * Math.sin(frac * Math.PI) * 1;
+            // Simpler: lerp ground Y but subtract parabolic arc
+            gollum.y = gollum.jumpGroundY - Math.sin(frac * Math.PI) * (gollum.jumpGroundY - gollum.jumpPeakY);
+            if (frac >= 1) {
+              gollum.phase = 'lurk';
+              gollum.y = gollum.jumpGroundY;
+              gollum.jumpCD = 4.5 + Math.random()*3;
             }
-            gollum.x+=Math.cos(gollum.wanderAngle)*gollum.speed*0.6*gollumSpeedMult*60*dt;
-            gollum.y+=Math.sin(gollum.wanderAngle)*gollum.speed*0.6*gollumSpeedMult*60*dt;
-            // Hard clamp to ground zone (can jump up to SKY_Y but not above)
-            gollum.x=Math.max(-20,Math.min(WORLD_W+20,gollum.x));
-            gollum.y=Math.max(SKY_Y, Math.min(H, gollum.y));
-            if(gollum.dartTimer<=0){
-              gollum.phase='dart'; gollum.dartTimer=0.8;
+          } else if (gollum.phase === 'lurk') {
+            // Trigger leap when Frodo is in sky and cooldown elapsed
+            if (frodoInSky && gollum.jumpCD <= 0) {
+              gollum.phase = 'jump';
+              gollum.jumpTimer = 0;
+              gollum.jumpDuration = 0.7 + Math.random()*0.3;
+              gollum.jumpGroundY = Math.min(H*0.85, gollum.y);
+              gollum.jumpStartX = gollum.x;
+              // Peak: try to reach Frodo Y, capped at SKY_Y
+              gollum.jumpPeakY = Math.max(SKY_Y - 10, frodo.y - gollum.r*2);
+            } else {
+              gollum.wanderTimer -= dt;
+              if (gollum.wanderTimer <= 0) {
+                gollum.wanderAngle = Math.atan2(gollumTargetY-gollum.y, gollumTargetX-gollum.x) + (Math.random()-0.5)*1.8;
+                gollum.wanderTimer = 1.5 + Math.random()*2.5;
+              }
+              gollum.x += Math.cos(gollum.wanderAngle)*gollum.speed*0.6*gollumSpeedMult*60*dt;
+              gollum.y += Math.sin(gollum.wanderAngle)*gollum.speed*0.6*gollumSpeedMult*60*dt;
+              gollum.x = Math.max(-20, Math.min(WORLD_W+20, gollum.x));
+              gollum.y = Math.max(SKY_Y, Math.min(H, gollum.y));
+              if (gollum.dartTimer <= 0) { gollum.phase='dart'; gollum.dartTimer=0.8; }
             }
-          } else {
-            // Dart straight at target (ground target if Frodo in sky)
-            const a=Math.atan2(gollumTargetY-gollum.y,gollumTargetX-gollum.x);
-            gollum.x+=Math.cos(a)*gollum.speed*2.2*gollumSpeedMult*60*dt;
-            gollum.y+=Math.sin(a)*gollum.speed*2.2*gollumSpeedMult*60*dt;
-            // Clamp to ground during dart
-            gollum.y=Math.max(SKY_Y, Math.min(H, gollum.y));
-            if(gollum.dartTimer<=0){ gollum.phase='lurk'; gollum.dartCD=4+Math.random()*4; gollum.dartTimer=gollum.dartCD; }
+          } else { // dart
+            const a = Math.atan2(gollumTargetY-gollum.y, gollumTargetX-gollum.x);
+            gollum.x += Math.cos(a)*gollum.speed*2.2*gollumSpeedMult*60*dt;
+            gollum.y += Math.sin(a)*gollum.speed*2.2*gollumSpeedMult*60*dt;
+            gollum.y = Math.max(SKY_Y, Math.min(H, gollum.y));
+            if (gollum.dartTimer <= 0) { gollum.phase='lurk'; gollum.dartCD=4+Math.random()*4; gollum.dartTimer=gollum.dartCD; }
           }
           if(!frodo.invincible&&dist(frodo,gollum)<frodo.r+gollum.r){
             hitFrodo();
@@ -1218,8 +1241,14 @@
   function drawGollum(ctx,g,eye) {
     ctx.save(); ctx.translate(g.x,g.y);
     const ea = eye&&eye.phase==='active';
-    const t  = g.capePhase; // reuse as animation timer
+    const t  = g.capePhase;
     const r  = g.r;
+    const isJumping = g.phase === 'jump';
+    // Jump stretch: body elongates vertically, arms reach up
+    const stretchY = isJumping ? (0.5 + Math.sin(Math.min(1, g.jumpTimer/g.jumpDuration)*Math.PI)*0.5) : 0;
+    const scaleY   = 1 + stretchY*0.4; // stretch up to 40% taller
+    const scaleX   = 1 - stretchY*0.15; // slightly narrower
+    if (isJumping) ctx.scale(scaleX, scaleY);
 
     // Ground shadow
     ctx.save(); ctx.globalAlpha=0.18;
