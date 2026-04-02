@@ -482,7 +482,7 @@
           // Near start but not on top of Frodo
           x = 200 + Math.random() * (WORLD_W * 0.3);
         }
-        y = H * 0.25 + Math.random() * (H * 0.65);
+        y = H * 0.25 + Math.random() * (H * 0.65); // adjusted below for orcs
       } else {
         // Dynamic spawn: near Frodo
         const baseX = frodo ? frodo.x : W/2;
@@ -499,7 +499,9 @@
       const isNazgul    = nazgulCount < 7;
       const eType = isFellBeast ? 'fellbeast' : isNazgul ? 'wraith' : 'orc';
       const wr = isFellBeast ? 26 : eType==='orc' ? 10 : 14;
-      const ws = isFellBeast ? spd * 0.75 : eType==='orc' ? spd * 1.15 : spd; // orcs are nimble
+      const ws = isFellBeast ? spd * 0.75 : eType==='orc' ? spd * 1.15 : spd;
+      // Orcs spawn only on ground
+      if (eType==='orc') y = Math.max(H*0.42, Math.min(H-wr*2, y));
       wraiths.push({x,y,r:wr,wanderAngle:Math.random()*Math.PI*2,wanderTimer:0,
                     speed:ws,capePhase:Math.random()*Math.PI*2,type:eType});
     }
@@ -629,25 +631,32 @@
           // sense intensity 0→1 as they close in
           w.sense = Math.max(0, Math.min(1, 1 - d2frodo / SENSE_RADIUS));
 
+          // Orcs stay on the ground (lower 60% of screen)
+          const orcMinY = w.type==='orc' ? H*0.4 : 0;
+          // For orcs, clamp Frodo target Y so they don't try to go up
+          const targetY = w.type==='orc' ? Math.max(frodo.y, H*0.42) : frodo.y;
+
           if(eyeActive || sensing){
-            // Lock on to Frodo — Eye-active gives full speed, sensing gives partial
-            const a=Math.atan2(frodo.y-w.y,frodo.x-w.x);
+            const a=Math.atan2(targetY-w.y,frodo.x-w.x);
             const huntMult = eyeActive ? 1.9 : 0.9 + w.sense * 0.7;
-            // When very close, cap speed so Frodo can always escape by moving
             const closePenalty = d2frodo < 120 ? Math.max(0.5, d2frodo/120) : 1;
             w.x+=Math.cos(a)*w.speed*huntMult*closePenalty*60*dt;
             w.y+=Math.sin(a)*w.speed*huntMult*closePenalty*60*dt;
           } else {
             if(w.wanderTimer<=0){
-              w.wanderAngle=Math.atan2(frodo.y-w.y,frodo.x-w.x)+(Math.random()-0.5)*Math.PI*1.6;
+              w.wanderAngle=Math.atan2(targetY-w.y,frodo.x-w.x)+(Math.random()-0.5)*Math.PI*1.6;
               w.wanderTimer=1.2+Math.random()*2;
             }
             w.x+=Math.cos(w.wanderAngle)*w.speed*0.85*60*dt;
             w.y+=Math.sin(w.wanderAngle)*w.speed*0.85*60*dt;
           }
+          // Clamp orc Y to ground zone
+          if(w.type==='orc') w.y = Math.max(orcMinY, Math.min(H-w.r, w.y));
+
           if(w.x<-80||w.x>WORLD_W+80||w.y<-80||w.y>H+80){
             const tx=frodo?frodo.x:W/2;
-            w.wanderAngle=Math.atan2(H*0.55-w.y,tx-w.x)+(Math.random()-0.5)*0.6;
+            const ty=w.type==='orc'?H*0.65:H*0.55;
+            w.wanderAngle=Math.atan2(ty-w.y,tx-w.x)+(Math.random()-0.5)*0.6;
             w.wanderTimer=2;
           }
           if(!frodo.invincible&&dist(frodo,w)<frodo.r+w.r){
