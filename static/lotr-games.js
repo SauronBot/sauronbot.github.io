@@ -412,6 +412,8 @@
     let keyPickup = null;   // {x,y,r,pulse} — must collect before goal unlocks
     let goalUnlocked = false;
     let dashCharges = 3;    // shared across all levels
+    const maxLives     = () => Math.min(5, 3 + (round - 1)); // +1 per round, max 5
+    const maxDash      = () => Math.min(5, 3 + (round - 1)); // +1 per round, max 5
     let dashRefill = null;  // {x,y,r,pulse} — refill token near Gollum's zone
     let dash = null;        // {vx,vy,timer} — active dash state
 
@@ -424,14 +426,15 @@
       const prevLives = frodo ? frodo.lives : 3;
       frodo = {
         x: 80, y: H*0.62, r: 11,
-        lives: (state === 'title' || round === 1 && lvl === 0) ? 3 : prevLives,
+        lives: (state === 'title' || round === 1 && lvl === 0) ? maxLives() : prevLives,
         invincible: false, invTimer: 0, hitFlash: 0, ringAngle: 0,
       };
       wraiths = [];
       // Spread initial wraiths across the world — last third near the goal
       const scaledInit = Math.round(def.initWraiths * areaScale);
       const scaledMax  = Math.round(def.maxWraiths  * areaScale);
-      const initCount  = Math.min(scaledInit + Math.floor((round-1)*0.8), scaledMax);
+      // +1 enemy per round completed, capped at scaledMax
+      const initCount  = Math.min(scaledInit + (round - 1), scaledMax);
       for (let i = 0; i < initCount; i++) spawnWraith(def, i, initCount);
       gollum = def.hasGollum ? makeGollum() : null;
       particles = [];
@@ -449,7 +452,9 @@
       goalUnlocked = false;
       dash = null;
       dashRefill = null;
-      if (state === 'title') dashCharges = 3; // only reset on fresh game
+      // On fresh game reset to base; on new round top up to round bonus
+      if (state === 'title') dashCharges = maxLives(); // round=1 → 3
+      else dashCharges = Math.max(dashCharges, maxDash()); // carry + give round bonus
       // Key spawns at a random mid-field position, away from start and goal
       const kx = 300 + Math.random() * (WORLD_W - 700);
       const ky = H * 0.2 + Math.random() * (H * 0.6);
@@ -595,7 +600,7 @@
         if (dashRefill) {
           dashRefill.pulse += dt*2.5;
           if (Math.hypot(frodo.x-dashRefill.x, frodo.y-dashRefill.y) < frodo.r+dashRefill.r) {
-            dashCharges = Math.min(3, dashCharges+1);
+            dashCharges = Math.min(maxDash(), dashCharges+1);
             for(let i=0;i<12;i++){const a=(i/12)*Math.PI*2,s=2+Math.random()*2;
               particles.push({x:dashRefill.x,y:dashRefill.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1,
                               life:0.5,size:3+Math.random()*3,color:'#60a0ff'});}
@@ -802,7 +807,7 @@
 
         // Life pickup
         timers.pickupCD-=dt;
-        if(!lifePickup && timers.pickupCD<=0 && frodo.lives<3) {
+        if(!lifePickup && timers.pickupCD<=0 && frodo.lives<maxLives()) {
           // Spawn away from goal and away from start
           // Spawn pickup somewhere ahead of Frodo in world space
           const spawnMin2 = frodo ? frodo.x + 150 : 300;
@@ -815,7 +820,7 @@
         if(lifePickup) {
           lifePickup.pulse += dt*3;
           if(Math.hypot(frodo.x-lifePickup.x, frodo.y-lifePickup.y) < frodo.r+lifePickup.r) {
-            frodo.lives = Math.min(3, frodo.lives+1);
+            frodo.lives = Math.min(maxLives(), frodo.lives+1);
             // Burst particles
             for(let i=0;i<12;i++){const a=(i/12)*Math.PI*2,s=2+Math.random()*2;
               particles.push({x:lifePickup.x,y:lifePickup.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1,
@@ -865,7 +870,7 @@
         if(eye&&eye.phase==='active'){ctx.fillStyle=`rgba(160,0,0,${eye.open*0.16})`;ctx.fillRect(0,0,W,H);}
         if(eye&&eye.phase==='warning'&&Math.random()>0.65){ctx.fillStyle=`rgba(200,50,0,${Math.random()*0.09})`;ctx.fillRect(0,0,W,H);}
         if(blindFlash>0){ctx.fillStyle=`rgba(255,200,50,${blindFlash*0.92})`;ctx.fillRect(0,0,W,H);}
-        drawUILevel(ctx,W,H,frodo,progress(),eye,timers.elapsed,currentLevel,def,dashCharges,score,round,GOD_MODE);
+        drawUILevel(ctx,W,H,frodo,progress(),eye,timers.elapsed,currentLevel,def,dashCharges,score,round,GOD_MODE,maxLives(),maxDash());
         // Level intro overlay (first 3.5s)
         if(timers.elapsed < 3.5) {
           const fade = timers.elapsed < 0.5 ? timers.elapsed*2 : timers.elapsed > 2.8 ? (3.5-timers.elapsed)/0.7 : 1;
@@ -897,7 +902,7 @@
 
     function fullReset() {
       // lastScore/lastRound/lastLevel already captured in hitFrodo()
-      round = 1; score = 0; dashCharges = 3;
+      round = 1; score = 0; dashCharges = maxDash(); // round=1 → 3
       frodo = null;
     }
 
@@ -1476,7 +1481,7 @@
   }
 
   // ── UI (shared) ───────────────────────────────────────────────────────
-  function drawUILevel(ctx,W,H,frodo,prog,eye,elapsed,lvl,def,dashCharges=0,score=0,round=1,godMode=false){
+  function drawUILevel(ctx,W,H,frodo,prog,eye,elapsed,lvl,def,dashCharges=0,score=0,round=1,godMode=false,maxL=3,maxD=3){
     // Progress bar
     ctx.fillStyle='rgba(0,0,0,0.65)'; ctx.fillRect(10,10,210,18);
     const [dr,dg,db]=def.destGlow;
@@ -1500,16 +1505,16 @@
       ctx.fillText('✨ GOD MODE', 10, 70);
       ctx.restore();
     }
-    // Lives
-    for(let i=0;i<3;i++){const lx=W-22-i*24,lit=i<frodo.lives;
+    // Lives (up to maxL pips)
+    for(let i=0;i<maxL;i++){const lx=W-22-i*24,lit=i<frodo.lives;
       ctx.save(); if(lit){ctx.shadowColor='#d4a020';ctx.shadowBlur=8;}
       ctx.strokeStyle=lit?'#d4a820':'#3a2810'; ctx.lineWidth=lit?2.2:1;
       ctx.beginPath(); ctx.arc(lx,19,8,0,Math.PI*2); ctx.stroke();
       if(lit){ctx.fillStyle='rgba(212,168,32,0.18)';ctx.beginPath();ctx.arc(lx,19,8,0,Math.PI*2);ctx.fill();}
       ctx.restore();}
-    // Dash charges (⚡ pips below lives)
+    // Dash charges (⚡ pips, up to maxD)
     ctx.font='bold 11px serif'; ctx.textAlign='right';
-    for(let i=0;i<3;i++){const lx=W-16-i*22,lit=i<dashCharges;
+    for(let i=0;i<maxD;i++){const lx=W-16-i*22,lit=i<dashCharges;
       ctx.save();
       if(lit){ctx.shadowColor='#60a0ff';ctx.shadowBlur=6;}
       ctx.fillStyle=lit?'rgba(100,160,255,0.95)':'rgba(40,60,120,0.3)';
@@ -1986,7 +1991,7 @@
 
     // Lives + dash summary
     ctx.fillStyle='rgba(160,120,50,0.5)'; ctx.font='10px serif';
-    ctx.fillText('3 lives  ·  3 dash charges  ·  lives carry between levels  ·  dash charges shared',W/2,H/2+134);
+    ctx.fillText('3 lives + 3 dash charges (each +1 per round, max 5)  ·  carries between levels',W/2,H/2+134);
 
     // Start prompt
     if(Math.sin(t*2.4)>0){
