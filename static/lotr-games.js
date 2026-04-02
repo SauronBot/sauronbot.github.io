@@ -466,8 +466,9 @@
         phase: 'lurk', // 'lurk' | 'dart' | 'jump'
         dartTimer: 0, dartCD: 5 + Math.random()*4,
         capePhase: 0,
-        jumpCD: 4 + Math.random()*3, // time until next leap attempt
+        jumpCD: 5 + Math.random()*3,   // cooldown between leaps
         jumpTimer: 0, jumpDuration: 0, jumpGroundY: 0, jumpPeakY: 0, jumpStartX: 0,
+        jumpAttemptsLeft: 0,           // how many leaps remain in current burst
       };
     }
 
@@ -678,67 +679,71 @@
           gollum.capePhase += dt*3;
           gollum.dartTimer -= dt;
           gollum.jumpCD -= dt;
-
           const frodoInSky = frodo.y < SKY_Y;
-          const gollumTargetX = frodo.x;
-          const gollumTargetY = frodoInSky ? H * 0.72 : frodo.y;
-          const gollumSpeedMult = frodoInSky && gollum.phase !== 'jump' ? 3.0 : 1.0;
+          // Gollum is always slightly slower than Frodo (never catches him by speed alone)
+          const gollumTopSpeed = frodoSpd(def) * 0.82;
 
           if (gollum.phase === 'jump') {
-            // Parabolic leap toward Frodo
+            // Parabolic leap from SKY_Y boundary
             gollum.jumpTimer += dt;
             const frac = Math.min(1, gollum.jumpTimer / gollum.jumpDuration);
-            // Horizontal: linear toward Frodo X
             gollum.x = gollum.jumpStartX + (frodo.x - gollum.jumpStartX) * frac;
-            // Vertical: parabola peaking at jumpPeakY
-            const py = gollum.jumpGroundY + (gollum.jumpPeakY - gollum.jumpGroundY) * Math.sin(frac * Math.PI);
-            gollum.y = gollum.jumpGroundY * (1 - frac) + gollum.jumpGroundY * frac + (py - gollum.jumpGroundY) * Math.sin(frac * Math.PI) * 1;
-            // Simpler: lerp ground Y but subtract parabolic arc
             gollum.y = gollum.jumpGroundY - Math.sin(frac * Math.PI) * (gollum.jumpGroundY - gollum.jumpPeakY);
             if (frac >= 1) {
-              gollum.phase = 'lurk';
-              gollum.y = SKY_Y; // lands back at the boundary
-              gollum.jumpCD = 4.5 + Math.random()*3;
+              // Land back at boundary
+              gollum.y = SKY_Y;
+              gollum.jumpAttemptsLeft--;
+              if (gollum.jumpAttemptsLeft > 0) {
+                // Another leap after a short pause
+                gollum.jumpCD = 1.2 + Math.random()*0.8;
+                gollum.phase = 'lurk';
+              } else {
+                // Done trying — back to free wandering
+                gollum.phase = 'lurk';
+                gollum.jumpCD = 8 + Math.random()*6; // long cooldown before noticing Frodo in sky again
+              }
             }
           } else if (gollum.phase === 'lurk') {
-            // Trigger leap when Frodo is in sky and cooldown elapsed
-            if (frodoInSky && gollum.jumpCD <= 0) {
-              // Only leap from the sky boundary — rush there first if not close
-              const atBoundary = Math.abs(gollum.y - SKY_Y) < gollum.r * 3;
-              if (!atBoundary) {
-                // Snap Gollum to boundary Y and run toward Frodo X at ground level
-                gollum.y = SKY_Y;
-              }
-              gollum.phase = 'jump';
-              gollum.jumpTimer = 0;
-              gollum.jumpDuration = 0.65 + Math.random()*0.25;
-              gollum.jumpGroundY = SKY_Y; // always launches from boundary
-              gollum.jumpStartX = gollum.x;
-              // Peak: reach Frodo Y
-              gollum.jumpPeakY = Math.max(20, frodo.y - gollum.r);
-            } else {
-              gollum.wanderTimer -= dt;
-              if (frodoInSky) {
-                // Scurry toward Frodo X and climb to SKY_Y boundary to prepare leap
-                const dx2 = gollum.x < frodo.x ? 1 : -1;
-                gollum.x += dx2 * gollum.speed * gollumSpeedMult * 60 * dt;
-                gollum.y = Math.max(SKY_Y, gollum.y - gollum.speed * 1.5 * 60 * dt);
+            // Trigger a burst of leaps when Frodo is in sky and cooldown elapsed
+            if (frodoInSky && gollum.jumpCD <= 0 && gollum.jumpAttemptsLeft === 0) {
+              gollum.jumpAttemptsLeft = 2 + Math.floor(Math.random()*2); // 2-3 attempts
+            }
+            // If attempts remain and cooldown is up, launch
+            if (gollum.jumpAttemptsLeft > 0 && gollum.jumpCD <= 0) {
+              // Move toward SKY_Y if not already there
+              if (gollum.y > SKY_Y + gollum.r*2) {
+                gollum.y = Math.max(SKY_Y, gollum.y - gollumTopSpeed*2*60*dt);
+                gollum.x += (frodo.x > gollum.x ? 1 : -1) * gollumTopSpeed*0.5*60*dt;
               } else {
-                if (gollum.wanderTimer <= 0) {
-                  gollum.wanderAngle = Math.atan2(gollumTargetY-gollum.y, gollumTargetX-gollum.x) + (Math.random()-0.5)*1.8;
-                  gollum.wanderTimer = 1.5 + Math.random()*2.5;
-                }
-                gollum.x += Math.cos(gollum.wanderAngle)*gollum.speed*0.6*60*dt;
-                gollum.y += Math.sin(gollum.wanderAngle)*gollum.speed*0.6*60*dt;
+                // At boundary — leap
+                gollum.y = SKY_Y;
+                gollum.phase = 'jump';
+                gollum.jumpTimer = 0;
+                gollum.jumpDuration = 0.6 + Math.random()*0.25;
+                gollum.jumpGroundY = SKY_Y;
+                gollum.jumpStartX = gollum.x;
+                gollum.jumpPeakY = Math.max(20, frodo.y - gollum.r);
               }
+            } else {
+              // Free wandering — Gollum does his own thing
+              gollum.wanderTimer -= dt;
+              if (gollum.wanderTimer <= 0) {
+                // Loosely biased toward Frodo X but not slavishly
+                const bias = frodoInSky ? 0.3 : 0.7; // less bias when Frodo is flying
+                const toFrodo = Math.atan2(frodo.y - gollum.y, frodo.x - gollum.x);
+                gollum.wanderAngle = toFrodo + (Math.random()-0.5) * Math.PI * (2 - bias);
+                gollum.wanderTimer = 2 + Math.random()*3;
+              }
+              gollum.x += Math.cos(gollum.wanderAngle)*gollumTopSpeed*0.55*60*dt;
+              gollum.y += Math.sin(gollum.wanderAngle)*gollumTopSpeed*0.55*60*dt;
               gollum.x = Math.max(-20, Math.min(WORLD_W+20, gollum.x));
               gollum.y = Math.max(SKY_Y, Math.min(H, gollum.y));
-              if (gollum.dartTimer <= 0) { gollum.phase='dart'; gollum.dartTimer=0.8; }
+              if (gollum.dartTimer <= 0 && !frodoInSky) { gollum.phase='dart'; gollum.dartTimer=0.8; }
             }
-          } else { // dart
-            const a = Math.atan2(gollumTargetY-gollum.y, gollumTargetX-gollum.x);
-            gollum.x += Math.cos(a)*gollum.speed*2.2*gollumSpeedMult*60*dt;
-            gollum.y += Math.sin(a)*gollum.speed*2.2*gollumSpeedMult*60*dt;
+          } else { // dart at Frodo on ground
+            const a = Math.atan2(frodo.y-gollum.y, frodo.x-gollum.x);
+            gollum.x += Math.cos(a)*gollumTopSpeed*2.0*60*dt;
+            gollum.y += Math.sin(a)*gollumTopSpeed*2.0*60*dt;
             gollum.y = Math.max(SKY_Y, Math.min(H, gollum.y));
             if (gollum.dartTimer <= 0) { gollum.phase='lurk'; gollum.dartCD=4+Math.random()*4; gollum.dartTimer=gollum.dartCD; }
           }
