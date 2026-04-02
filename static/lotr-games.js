@@ -710,10 +710,9 @@
             }
             // If attempts remain and cooldown is up, launch
             if (gollum.jumpAttemptsLeft > 0 && gollum.jumpCD <= 0) {
-              // Move toward SKY_Y if not already there
+              // Climb vertically to SKY_Y from current X (no horizontal tracking)
               if (gollum.y > SKY_Y + gollum.r*2) {
                 gollum.y = Math.max(SKY_Y, gollum.y - gollumTopSpeed*2*60*dt);
-                gollum.x += (frodo.x > gollum.x ? 1 : -1) * gollumTopSpeed*0.5*60*dt;
               } else {
                 // At boundary — leap
                 gollum.y = SKY_Y;
@@ -728,10 +727,14 @@
               // Free wandering — Gollum does his own thing
               gollum.wanderTimer -= dt;
               if (gollum.wanderTimer <= 0) {
-                // Loosely biased toward Frodo X but not slavishly
-                const bias = frodoInSky ? 0.3 : 0.7; // less bias when Frodo is flying
-                const toFrodo = Math.atan2(frodo.y - gollum.y, frodo.x - gollum.x);
-                gollum.wanderAngle = toFrodo + (Math.random()-0.5) * Math.PI * (2 - bias);
+                if (frodoInSky) {
+                  // Frodo's in the sky — Gollum wanders freely, no bias
+                  gollum.wanderAngle = Math.random() * Math.PI * 2;
+                } else {
+                  // Frodo on ground — loose bias toward him
+                  const toFrodo = Math.atan2(frodo.y - gollum.y, frodo.x - gollum.x);
+                  gollum.wanderAngle = toFrodo + (Math.random()-0.5) * Math.PI * 1.4;
+                }
                 gollum.wanderTimer = 2 + Math.random()*3;
               }
               gollum.x += Math.cos(gollum.wanderAngle)*gollumTopSpeed*0.55*60*dt;
