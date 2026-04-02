@@ -741,14 +741,23 @@
               gollum.y += Math.sin(gollum.wanderAngle)*gollumTopSpeed*0.55*60*dt;
               gollum.x = Math.max(-20, Math.min(WORLD_W+20, gollum.x));
               gollum.y = Math.max(SKY_Y, Math.min(H, gollum.y));
-              if (gollum.dartTimer <= 0 && !frodoInSky) { gollum.phase='dart'; gollum.dartTimer=0.8; }
+              if (gollum.dartTimer <= 0 && !frodoInSky) {
+                gollum.phase='dart';
+                gollum.dartTimer=0.5 + Math.random()*0.4; // short burst
+              }
             }
-          } else { // dart at Frodo on ground
+          } else { // dart — Gollum's pounce: faster than Frodo's base, short duration
             const a = Math.atan2(frodo.y-gollum.y, frodo.x-gollum.x);
-            gollum.x += Math.cos(a)*gollumTopSpeed*2.0*60*dt;
-            gollum.y += Math.sin(a)*gollumTopSpeed*2.0*60*dt;
+            // Dart speed: ~1.8× Frodo's current speed (comparable to Frodo's dash burst)
+            const dartSpd = frodoSpd(def) * 1.8;
+            gollum.x += Math.cos(a)*dartSpd*60*dt;
+            gollum.y += Math.sin(a)*dartSpd*60*dt;
             gollum.y = Math.max(SKY_Y, Math.min(H, gollum.y));
-            if (gollum.dartTimer <= 0) { gollum.phase='lurk'; gollum.dartCD=4+Math.random()*4; gollum.dartTimer=gollum.dartCD; }
+            if (gollum.dartTimer <= 0) {
+              gollum.phase='lurk';
+              gollum.dartCD = 5 + Math.random()*5; // cooldown before next pounce
+              gollum.dartTimer = gollum.dartCD;
+            }
           }
           if(!frodo.invincible&&dist(frodo,gollum)<frodo.r+gollum.r){
             hitFrodo();
@@ -844,7 +853,7 @@
         if(keyPickup&&keyPickup.spawned) drawKeyPickup(ctx,keyPickup,t,currentLevel);
         if(lifePickup) drawLifePickup(ctx,lifePickup,t);
         if(dashRefill) drawDashRefill(ctx,dashRefill,t);
-        if (gollum) drawGollum(ctx,gollum,eye);
+        if (gollum) drawGollum(ctx,gollum,eye,frodo);
         drawWraiths1(ctx,wraiths,eye,H);
         if (frodo) drawFrodo1(ctx,frodo,progress(),timers.elapsed);
         ctx.globalAlpha=1;
@@ -1262,17 +1271,23 @@
   }
 
   // ── GOLLUM ────────────────────────────────────────────────────────────
-  function drawGollum(ctx,g,eye) {
+  function drawGollum(ctx,g,eye,frodo) {
     ctx.save(); ctx.translate(g.x,g.y);
     const ea = eye&&eye.phase==='active';
     const t  = g.capePhase;
     const r  = g.r;
     const isJumping = g.phase === 'jump';
-    // Jump stretch: body elongates vertically, arms reach up
+    const isDarting = g.phase === 'dart';
+    // Jump: body elongates vertically
     const stretchY = isJumping ? (0.5 + Math.sin(Math.min(1, g.jumpTimer/g.jumpDuration)*Math.PI)*0.5) : 0;
-    const scaleY   = 1 + stretchY*0.4; // stretch up to 40% taller
-    const scaleX   = 1 - stretchY*0.15; // slightly narrower
+    const scaleY   = 1 + stretchY*0.4;
+    const scaleX   = 1 - stretchY*0.15;
     if (isJumping) ctx.scale(scaleX, scaleY);
+    // Dart: body leans forward (rotate slightly in movement direction)
+    if (isDarting) {
+      const leanDir = frodo && g.x < frodo.x ? 1 : -1;
+      ctx.rotate(leanDir * 0.32); // lean 18° forward
+    }
 
     // Ground shadow
     ctx.save(); ctx.globalAlpha=0.18;
