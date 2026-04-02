@@ -451,6 +451,7 @@
       const kx = 300 + Math.random() * (WORLD_W - 700);
       const ky = H * 0.2 + Math.random() * (H * 0.6);
       keyPickup = { x: kx, y: ky, r: 14, pulse: 0, spawned: false, spawnTimer: 1 };
+      GOAL.y = GOAL_Y_BY_LEVEL[lvl] || GOAL_Y_BY_LEVEL[0];
       state = 'playing';
     }
 
@@ -503,7 +504,13 @@
                     speed:ws,capePhase:Math.random()*Math.PI*2,type:eType});
     }
 
-    const GOAL = { x: WORLD_W - 120, y: Math.round(H * 0.15), r: 22 };
+    // Goal Y varies by level: L1=ground-ish, L2=mid-high, L3=near-top (climb the mountain)
+    const GOAL_Y_BY_LEVEL = [
+      Math.round(H * 0.58), // L1: ground level — enter Rivendell's gates
+      Math.round(H * 0.28), // L2: elevated — climb the Emyn Muil
+      Math.round(H * 0.12), // L3: near top — summit of Mount Doom
+    ];
+    const GOAL = { x: WORLD_W - 120, y: GOAL_Y_BY_LEVEL[0], r: 22 };
     // Scale enemy counts with canvas area (square root — linear spread, not quadratic)
     const REF_AREA = 960 * 580;
     const areaScale = Math.min(2.5, Math.max(0.5, Math.sqrt(W * H / REF_AREA)));
@@ -764,7 +771,7 @@
         // Apply camera transform for all world-space objects
         ctx.save();
         ctx.translate(-cameraX, 0);
-        drawGoal(ctx,GOAL,def,t,progress(),80,H*0.62,goalUnlocked);
+        drawGoal(ctx,GOAL,def,t,progress(),80,H*0.62,goalUnlocked,currentLevel,H);
         if(keyPickup&&keyPickup.spawned) drawKeyPickup(ctx,keyPickup,t,currentLevel);
         if(lifePickup) drawLifePickup(ctx,lifePickup,t);
         if(dashRefill) drawDashRefill(ctx,dashRefill,t);
@@ -907,10 +914,52 @@
     ctx.restore();
   }
 
-  function drawGoal(ctx, goal, def, t, prog, startX, startY, unlocked) {
+  function drawGoal(ctx, goal, def, t, prog, startX, startY, unlocked, currentLvl=0, H=580) {
     const { x, y, r } = goal;
-    const lvl = LEVEL_DEFS.indexOf(def);
+    const lvl = currentLvl;
     const pulse = unlocked ? 1 + Math.sin(t * 3) * 0.22 : 1;
+
+    // Level 3: Mount Doom mountain below the goal
+    if (lvl === 2) {
+      ctx.save();
+      // Mountain body
+      const mw = r*5, mh = H - y - r*2; // extends from goal down to ground
+      const mx = x;
+      // Outer mountain silhouette
+      const mg = ctx.createLinearGradient(mx,y+r,mx,H);
+      mg.addColorStop(0,'#1a0804'); mg.addColorStop(0.4,'#120603'); mg.addColorStop(1,'#0a0402');
+      ctx.fillStyle=mg;
+      ctx.beginPath();
+      ctx.moveTo(mx-mw*0.95, H);
+      ctx.lineTo(mx-mw*0.6, y+mh*0.55);
+      ctx.lineTo(mx-mw*0.35, y+mh*0.3);
+      ctx.lineTo(mx, y+r*1.5); // peak at goal
+      ctx.lineTo(mx+mw*0.35, y+mh*0.3);
+      ctx.lineTo(mx+mw*0.6, y+mh*0.55);
+      ctx.lineTo(mx+mw*0.95, H);
+      ctx.closePath(); ctx.fill();
+      // Lava cracks glowing on mountain face
+      ctx.save(); ctx.shadowColor='#ff4400'; ctx.shadowBlur=8;
+      const lavaG = ctx.createLinearGradient(mx,y+r,mx,H);
+      lavaG.addColorStop(0,`rgba(255,80,0,${0.7+Math.sin(t*2)*0.15})`);
+      lavaG.addColorStop(1,'rgba(200,40,0,0.3)');
+      ctx.strokeStyle=lavaG; ctx.lineWidth=2;
+      // Left crack
+      ctx.beginPath(); ctx.moveTo(mx-r*0.5,y+mh*0.25);
+      ctx.bezierCurveTo(mx-r*1.2,y+mh*0.4, mx-r*0.8,y+mh*0.6, mx-r*1.5,y+mh*0.8); ctx.stroke();
+      // Right crack
+      ctx.beginPath(); ctx.moveTo(mx+r*0.3,y+mh*0.2);
+      ctx.bezierCurveTo(mx+r*0.8,y+mh*0.4, mx+r*0.4,y+mh*0.65, mx+r*1.2,y+mh*0.85); ctx.stroke();
+      ctx.restore();
+      // Summit smoke/fire glow
+      const smokeG=ctx.createRadialGradient(mx,y,0,mx,y,r*3);
+      smokeG.addColorStop(0,`rgba(255,100,0,${0.4+Math.sin(t*1.5)*0.1})`);
+      smokeG.addColorStop(0.5,'rgba(180,30,0,0.15)');
+      smokeG.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=smokeG; ctx.fillRect(mx-r*3,y-r*2,r*6,r*5);
+      ctx.restore();
+    }
+
     ctx.save();
     if (!unlocked) {
       // Locked: dim grey with padlock
