@@ -312,7 +312,8 @@
         invincible: false, invTimer: 0, hitFlash: 0, ringAngle: 0,
       };
       wraiths = [];
-      for (let i = 0; i < def.initWraiths; i++) spawnWraith(def);
+      // Spread initial wraiths across the world — last third near the goal
+      for (let i = 0; i < def.initWraiths; i++) spawnWraith(def, i, def.initWraiths);
       gollum = def.hasGollum ? makeGollum() : null;
       particles = [];
       eye = {
@@ -345,14 +346,31 @@
       };
     }
 
-    function spawnWraith(def) {
-      // Spawn near Frodo (within 600px in world space) so they're always relevant
-      const baseX = frodo ? frodo.x : W/2;
-      const edge = Math.floor(Math.random()*3);
+    function spawnWraith(def, initIdx, initTotal) {
       let x, y;
-      if (edge===0) { x=Math.max(40,Math.min(WORLD_W-40,baseX+(Math.random()-0.5)*700)); y=-35; }
-      else if (edge===1) { x=Math.max(40,Math.min(WORLD_W-40,baseX+(Math.random()-0.5)*700)); y=H+35; }
-      else { x = Math.random()<0.5 ? baseX-450-Math.random()*100 : baseX+450+Math.random()*100; x=Math.max(-35,Math.min(WORLD_W+35,x)); y=H*0.35+Math.random()*H*0.5; }
+      if (initIdx !== undefined) {
+        // Initial placement: distribute evenly across the world
+        // Last third of wraiths spawn near the goal end
+        const section = initIdx / initTotal;
+        if (section >= 0.6) {
+          // Near goal: right quarter of world
+          x = WORLD_W * 0.75 + Math.random() * WORLD_W * 0.22;
+        } else if (section >= 0.3) {
+          // Middle of world
+          x = WORLD_W * 0.35 + Math.random() * WORLD_W * 0.35;
+        } else {
+          // Near start but not on top of Frodo
+          x = 200 + Math.random() * (WORLD_W * 0.3);
+        }
+        y = H * 0.25 + Math.random() * (H * 0.65);
+      } else {
+        // Dynamic spawn: near Frodo
+        const baseX = frodo ? frodo.x : W/2;
+        const edge = Math.floor(Math.random()*3);
+        if (edge===0) { x=Math.max(40,Math.min(WORLD_W-40,baseX+(Math.random()-0.5)*700)); y=-35; }
+        else if (edge===1) { x=Math.max(40,Math.min(WORLD_W-40,baseX+(Math.random()-0.5)*700)); y=H+35; }
+        else { x=Math.random()<0.5 ? baseX-450-Math.random()*100 : baseX+450+Math.random()*100; x=Math.max(-35,Math.min(WORLD_W+35,x)); y=H*0.35+Math.random()*H*0.5; }
+      }
       const spd = def.wraithSpeed * (0.9 + Math.random()*0.3);
       wraiths.push({x,y,r:14,wanderAngle:Math.random()*Math.PI*2,wanderTimer:0,
                     speed:spd,capePhase:Math.random()*Math.PI*2});
