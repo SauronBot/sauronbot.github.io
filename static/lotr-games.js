@@ -232,28 +232,9 @@
   function launchCarryTheRing() {
     const ov = makeOverlay('#060309');
     const isTouch = 'ontouchstart' in window;
-
-    // ── Size: maximise canvas, reserve just what controls need ──────────────
-    // On mobile: full width, full height minus close btn (36px) and dash btn (80px)
-    // On desktop: up to 1200×700
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const reserveH = isTouch ? 36 + 80 : 36 + 16; // close + (dash or margin)
-    const maxW = isTouch ? vw         : Math.min(vw, 1200);
-    const maxH = isTouch ? vh - reserveH : Math.min(vh - reserveH, 700);
-    // On portrait touch: use height as primary, cap width to screen
-    // On landscape/desktop: use width as primary
-    const portrait = isTouch && vw < vh;
-    let W, H;
-    if (portrait) {
-      // Use maxH as the game width (rotate the game mentally)
-      // Fill available height, clamp game width to screen width
-      H = Math.min(Math.round(maxH * 0.55), maxW); // use ~55% of height as game height
-      W = maxW; // full screen width
-    } else {
-      W = maxW;
-      H = Math.min(maxH, Math.round(maxW * 3 / 5));
-    }
+    // Fill the whole screen. Close btn is absolute (no flex space). Dash btn takes 90px on touch.
+    const W = window.innerWidth;
+    const H = window.innerHeight - (isTouch ? 90 : 0);
     const WORLD_W = W * 2;
     const canvas = makeCanvas(ov, W, H);
     const ctx = canvas.getContext('2d');
