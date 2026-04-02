@@ -707,7 +707,7 @@
     }
 
     function fullReset() {
-      lastScore = score; lastRound = round; lastLevel = currentLevel;
+      // lastScore/lastRound/lastLevel already captured in hitFrodo()
       round = 1; score = 0; dashCharges = 3;
       frodo = null;
     }
@@ -753,7 +753,11 @@
                         life:0.5+Math.random()*0.4,size:3+Math.random()*3,
                         color:Math.random()>0.5?'#d4a020':'#903010'});
       }
-      if(frodo.lives<=0) state='gameover';
+      if(frodo.lives<=0) {
+        // Capture stats NOW before fullReset() wipes them
+        lastScore = score; lastRound = round; lastLevel = currentLevel;
+        state = 'gameover';
+      }
     }
 
     requestAnimationFrame(loop);
