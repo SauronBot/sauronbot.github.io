@@ -418,7 +418,7 @@
     let dash = null;        // {vx,vy,timer} — active dash state
 
     // Difficulty multiplier per round (caps to avoid impossible)
-    function diffMult() { return 1 + (round - 1) * 0.18; }
+    function diffMult() { return 1 + (round - 1) * 0.10; } // +10% enemy speed per round, Frodo unaffected
 
     function startLevel(lvl) {
       currentLevel = lvl;
