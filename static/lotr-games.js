@@ -1156,21 +1156,33 @@
             if (!frodo.invincible && d2f < frodo.r + w.r) hitFrodo();
             return;
           }
-          // Uruk-hai: coordinated pair hunt
+          // Uruk-hai: patrol when calm, coordinated flanking hunt when sensing/Eye active
           if (w.type === 'uruk') {
             w.capePhase += dt * 2;
             const d2f = dist(frodo, w);
             w.sense = Math.max(0, Math.min(1, 1 - d2f / SENSE_RADIUS));
-            const partner = wraiths.find(o => o !== w && o.type === 'uruk' && dist(o, w) < 120);
-            let targetAngle = Math.atan2(frodo.y - w.y, frodo.x - w.x);
-            if (partner) {
-              const side = w.x < partner.x ? -1 : 1;
-              targetAngle += side * Math.PI * 0.25;
-            }
-            const huntMult = eyeActive ? 1.3 : 0.85 + w.sense * 0.5;
             const uSpd = w.speed * enemySpeedMult;
-            w.x += Math.cos(targetAngle) * uSpd * huntMult * 60 * dt;
-            w.y += Math.sin(targetAngle) * uSpd * huntMult * 60 * dt;
+            if (eyeActive || d2f < SENSE_RADIUS) {
+              // Hunt: coordinate with partner, flank from sides
+              const partner = wraiths.find(o => o !== w && o.type === 'uruk' && dist(o, w) < 200);
+              let targetAngle = Math.atan2(frodo.y - w.y, frodo.x - w.x);
+              if (partner) { const side = w.x < partner.x ? -1 : 1; targetAngle += side * Math.PI * 0.25; }
+              const huntMult = eyeActive ? 1.3 : 0.85 + w.sense * 0.5;
+              w.x += Math.cos(targetAngle) * uSpd * huntMult * 60 * dt;
+              w.y += Math.sin(targetAngle) * uSpd * huntMult * 60 * dt;
+            } else {
+              // Patrol: march back and forth across the world, staying on ground
+              w.wanderTimer -= dt;
+              if (w.wanderTimer <= 0) {
+                // 20% chance to drift toward Frodo, 80% structured patrol
+                w.wanderAngle = Math.random() < 0.2
+                  ? Math.atan2(frodo.y - w.y, frodo.x - w.x) + (Math.random()-0.5)*0.6
+                  : (w.wanderAngle > 0 ? -Math.PI*0.1 - Math.random()*0.3 : Math.PI*0.1 + Math.random()*0.3) + (Math.random()-0.5)*0.4;
+                w.wanderTimer = 3 + Math.random() * 4;
+              }
+              w.x += Math.cos(w.wanderAngle) * uSpd * 0.55 * 60 * dt;
+              w.y += Math.sin(w.wanderAngle) * uSpd * 0.3 * 60 * dt;
+            }
             w.y = Math.max(SKY_Y, Math.min(H - w.r * 2, w.y));
             if(w.x<-80||w.x>WORLD_W+80||w.y<-80||w.y>H+80){
               w.wanderAngle=Math.atan2(H*0.65-w.y,(frodo?frodo.x:W/2)-w.x)+(Math.random()-0.5)*0.6; w.wanderTimer=2;
