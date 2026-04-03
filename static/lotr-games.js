@@ -2335,9 +2335,10 @@
     ctx.moveTo(0,H*0.46); ctx.lineTo(W,H*0.44); ctx.lineTo(W,H*0.60); ctx.lineTo(0,H*0.62);
     ctx.closePath(); ctx.fill();
 
-    // Level atmosphere: parallax 0.45x mid-ground
-    ctx.save(); ctx.translate(-cameraX*0.45, 0);
+    // Level atmosphere: each branch draws in its own save/restore -- NO shared outer save
+    // This eliminates all save/restore stack bugs from branch control flow
     if (def === LEVEL_DEFS[0]) {
+      ctx.save(); ctx.translate(-cameraX*0.45, 0);
       // Shire: lush rolling hills, hedgerows, oak trees, wildflowers, morning mist
 
       // Rolling far hills (behind road, parallax already applied)
@@ -2474,8 +2475,10 @@
       ctx.fillStyle='rgba(200,140,50,0.6)';
       ctx.beginPath(); ctx.arc(hx+3,hy+1,1.5,0,Math.PI*2); ctx.fill(); // door knob
       ctx.restore(); ctx.restore();
+      ctx.restore(); // end Shire parallax
 
     } else if (def === LEVEL_DEFS[1]) {
+      ctx.save(); ctx.translate(-cameraX*0.45, 0);
       // Moria: stone columns + lava fissures + stalactites
       // Lava fissures on ground
       ctx.save(); ctx.shadowColor='#ff4400'; ctx.shadowBlur=8;
@@ -2512,7 +2515,9 @@
         ctx.beginPath(); ctx.arc(sx,sl+drip+12,2,0,Math.PI*2); ctx.fill();
         ctx.restore();
       }
+      ctx.restore(); // end Moria parallax
     } else if (def === LEVEL_DEFS[2]) {
+      ctx.save(); ctx.translate(-cameraX*0.45, 0);
       // Lothlórien: golden trees + silver stream + floating motes
       // Silver stream on ground
       ctx.save(); ctx.shadowColor='rgba(200,220,255,0.4)'; ctx.shadowBlur=8;
@@ -2551,7 +2556,9 @@
         mg.addColorStop(1,'rgba(0,0,0,0)');
         ctx.fillStyle=mg; ctx.fillRect(mx-6,my-6,12,12);
       }
+      ctx.restore(); // end Lothlórien parallax
     } else if (def === LEVEL_DEFS[3]) {
+      ctx.save(); ctx.translate(-cameraX*0.45, 0);
       // Dead Marshes: eerie lights + face glimmers beneath the water
       for(let i=0;i<10;i++){
         const mx=80+i*185, my=H*0.6+Math.sin(t*0.6+i)*6;
@@ -2579,7 +2586,9 @@
         fg.addColorStop(1,'rgba(0,0,0,0)');
         ctx.fillStyle=fg; ctx.fillRect(fx-40,fy-15,80,25);
       }
+      ctx.restore(); // end Dead Marshes parallax
     } else if (def === LEVEL_DEFS[4]) {
+      ctx.save(); ctx.translate(-cameraX*0.45, 0);
       // Black Gate: multi-layered fortress, lava rivers, orc army silhouettes
       // Far background: volcanic sky glow (screen-space)
       ctx.save();
@@ -2660,7 +2669,9 @@
         fg.addColorStop(1,'rgba(0,0,0,0)');
         ctx.fillStyle=fg; ctx.fillRect(fx-18,H*0.14,50,H*0.22);
       }
+      ctx.restore(); // end Black Gate parallax
     } else if (def === LEVEL_DEFS[5]) {
+      ctx.save(); ctx.translate(-cameraX*0.45, 0);
       // Shelob's Lair: webs + bioluminescence (pure darkness handled by torch overlay)
       // Web strands
       ctx.save(); ctx.globalAlpha=0.2; ctx.strokeStyle='rgba(220,220,200,0.7)'; ctx.lineWidth=1;
@@ -2685,7 +2696,9 @@
         bg.addColorStop(1,'rgba(0,0,0,0)');
         ctx.fillStyle=bg; ctx.fillRect(bx-22,by-22,44,44);
       }
+      ctx.restore(); // end Shelob parallax
     } else if (def === LEVEL_DEFS[6]) {
+      ctx.save(); ctx.translate(-cameraX*0.45, 0);
       // Minas Morgul: undead city, corrupted green sky, wights drifting
       // Ground-level green mist
       for(let i=0;i<12;i++){
@@ -2743,12 +2756,14 @@
       gg.addColorStop(0,`rgba(40,200,80,${0.20+Math.sin(t*0.8)*0.06})`);
       gg.addColorStop(1,'rgba(0,0,0,0)');
       ctx.fillStyle=gg; ctx.fillRect(0,0,W,H);
-      ctx.restore();
+      ctx.restore(); // end green glow
+      ctx.restore(); // end Morgul parallax
     } else if (def === LEVEL_DEFS[7]) {
+      ctx.save(); ctx.translate(-cameraX*0.45, 0);
       // Pelennor: massive war -- army clash, oliphaunts silhouette, fires everywhere
-      // War glow on horizon (screen-space inside parallax save is fine with a nested save)
+      // War glow on horizon (screen-space)
       ctx.save();
-      ctx.setTransform(1,0,0,1,0,0); // reset to screen-space temporarily
+      ctx.setTransform(1,0,0,1,0,0);
       const warGlow=ctx.createLinearGradient(0,H*0.35,0,H*0.55);
       warGlow.addColorStop(0,'rgba(0,0,0,0)');
       warGlow.addColorStop(0.5,`rgba(200,80,0,${0.10+Math.sin(t*0.3)*0.04})`);
@@ -2808,10 +2823,12 @@
         sg.addColorStop(1,'rgba(0,0,0,0)');
         ctx.fillStyle=sg; ctx.fillRect(sx-42,sy-18,84,30);
       }
+      ctx.restore(); // end Pelennor parallax
     } else {
+      ctx.save(); ctx.translate(-cameraX*0.45, 0);
       // Mount Doom: ash rain + intensifying doom glow
-      // Ash particles raining down (screen-space, draw before restoring)
-      ctx.restore(); // end parallax early
+      // Restore parallax before screen-space drawing
+      ctx.restore(); // end Doom parallax (nothing to draw in world-space here)
       if(prog>0.2){
         ctx.save(); ctx.globalAlpha=prog*0.3;
         for(let i=0;i<15;i++){
@@ -2831,9 +2848,9 @@
       if(prog>0.8&&Math.random()<0.04){
         ctx.fillStyle=`rgba(255,150,0,${(prog-0.8)*0.6})`; ctx.fillRect(0,0,W,H);
       }
-      return; // already restored
+      return;
     }
-    ctx.restore();
+    // (each branch manages its own save/restore)
   }
 
   // ── GOLLUM ────────────────────────────────────────────────────────────
