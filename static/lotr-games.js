@@ -1642,7 +1642,6 @@
         if(def.hasBalrog||def.hasShelob){
           const eyePhase = eye ? eye.phase : 'idle';
           const eyeOpen  = eye ? (eye.open||0) : 0;
-          // When Eye is warning/active, fade darkness out proportionally
           const eyeSuppression = eyePhase==='active' ? eyeOpen
             : eyePhase==='warning' ? eyeOpen*0.6
             : 0;
@@ -1651,13 +1650,34 @@
             const torchR = def.hasBalrog
               ? (160 - progress()*40) * (1 + Math.sin(t*2.1)*0.04)
               : 90 - progress()*20;
-            // Scale darkness strength down as Eye opens
             const darkStr = 1 - eyeSuppression;
-            const dark=ctx.createRadialGradient(fsx,fsy,torchR*0.18,fsx,fsy,torchR*2.2);
-            dark.addColorStop(0,'rgba(0,0,0,0)');
-            dark.addColorStop(0.45,`rgba(0,0,0,${0.55*darkStr})`);
-            dark.addColorStop(1,`rgba(0,0,0,${0.97*darkStr})`);
-            ctx.fillStyle=dark; ctx.fillRect(0,0,W,H);
+            // Offscreen mask: fill black, punch light holes with destination-out
+            const oc = document.createElement('canvas');
+            oc.width=W; oc.height=H;
+            const ox = oc.getContext('2d');
+            ox.fillStyle=`rgba(0,0,0,${0.97*darkStr})`;
+            ox.fillRect(0,0,W,H);
+            ox.globalCompositeOperation='destination-out';
+            // Hole: Frodo's torch
+            const fg=ox.createRadialGradient(fsx,fsy,torchR*0.1,fsx,fsy,torchR*2.2);
+            fg.addColorStop(0,`rgba(0,0,0,${darkStr})`);
+            fg.addColorStop(0.45,`rgba(0,0,0,${0.5*darkStr})`);
+            fg.addColorStop(1,'rgba(0,0,0,0)');
+            ox.fillStyle=fg; ox.fillRect(0,0,W,H);
+            // Holes: column torches (Moria only, parallax 0.45x)
+            if(def.hasBalrog){
+              for(let ci=0;ci<8;ci++){
+                const ctx_x=(120+ci*240+16)-cameraX*0.45;
+                const ctx_y=H*0.38;
+                const fl=0.7+Math.sin(t*7.3+ci*1.9)*0.15+Math.sin(t*13.1+ci)*0.08;
+                const cg=ox.createRadialGradient(ctx_x,ctx_y,0,ctx_x,ctx_y,160*fl);
+                cg.addColorStop(0,`rgba(0,0,0,${darkStr})`);
+                cg.addColorStop(0.45,`rgba(0,0,0,${0.55*darkStr})`);
+                cg.addColorStop(1,'rgba(0,0,0,0)');
+                ox.fillStyle=cg; ox.fillRect(0,0,W,H);
+              }
+            }
+            ctx.drawImage(oc,0,0);
           }
         }
         // Blessing halo (Lothlorien)
