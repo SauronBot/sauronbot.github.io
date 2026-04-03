@@ -3754,11 +3754,12 @@
       ctx.font='9px serif';
       ctx.fillText(`combo in ${Math.ceil(10-comboTimer)}s`,10,70);
     }
-    // God mode badge (y=84, below combo line)
+    // God mode badge (bottom-right corner)
     if (godMode) {
       ctx.save(); ctx.shadowColor='#ffd700'; ctx.shadowBlur=8;
-      ctx.fillStyle='rgba(255,215,0,0.85)'; ctx.font='bold 10px serif'; ctx.textAlign='left';
-      ctx.fillText('✨ GOD MODE', 10, 84);
+      ctx.fillStyle='rgba(255,215,0,0.75)'; ctx.font='bold 10px serif';
+      ctx.textAlign='right'; ctx.textBaseline='bottom';
+      ctx.fillText('✨ GOD MODE', W-12, H-12);
       ctx.restore();
     }
     // Lives (up to maxL pips)
