@@ -570,29 +570,59 @@
     ov.appendChild(dashBtn);
     if ('ontouchstart' in window) dashBtn.style.display = 'flex';
 
-    // Sound controls (bottom-left): two buttons — music | sfx
+    // Sound controls (bottom-left): two SVG icon buttons — music | sfx
     _audioEnabled = true;
-    function makeSndBtn(icon, title, left) {
+    // SVG: elvish harp (music) -- 16x16 viewBox
+    const SVG_HARP_ON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="rgba(200,160,60,0.95)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+      <path d="M3 14 C3 6 9 2 13 2" />
+      <line x1="3" y1="14" x2="13" y2="14" />
+      <line x1="13" y1="2" x2="13" y2="14" />
+      <line x1="5.5" y1="12" x2="5.5" y2="5" />
+      <line x1="8" y1="13" x2="8" y2="3.5" />
+      <line x1="10.5" y1="13.5" x2="10.5" y2="5" />
+    </svg>`;
+    const SVG_HARP_OFF = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="rgba(90,70,30,0.55)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+      <path d="M3 14 C3 6 9 2 13 2" />
+      <line x1="3" y1="14" x2="13" y2="14" />
+      <line x1="13" y1="2" x2="13" y2="14" />
+      <line x1="5.5" y1="12" x2="5.5" y2="5" />
+      <line x1="8" y1="13" x2="8" y2="3.5" />
+      <line x1="10.5" y1="13.5" x2="10.5" y2="5" />
+      <line x1="1" y1="1" x2="15" y2="15" stroke="rgba(160,60,40,0.7)" stroke-width="1.4"/>
+    </svg>`;
+    // SVG: horn of gondor (sfx)
+    const SVG_HORN_ON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="rgba(200,160,60,0.95)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+      <path d="M2 6 L2 10 L7 10 L12 13 L12 3 L7 6 Z" fill="rgba(200,160,60,0.15)"/>
+      <path d="M2 6 L2 10 L7 10 L12 13 L12 3 L7 6 Z" />
+      <path d="M14 5.5 Q15.5 8 14 10.5" stroke-width="1.1"/>
+    </svg>`;
+    const SVG_HORN_OFF = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="rgba(90,70,30,0.55)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+      <path d="M2 6 L2 10 L7 10 L12 13 L12 3 L7 6 Z" />
+      <path d="M14 5.5 Q15.5 8 14 10.5" stroke-width="1.1"/>
+      <line x1="1" y1="1" x2="15" y2="15" stroke="rgba(160,60,40,0.7)" stroke-width="1.4"/>
+    </svg>`;
+    function makeSndBtn(svg, title, left) {
       const b = document.createElement('button');
-      b.textContent = icon;
+      b.innerHTML = svg;
       Object.assign(b.style, {
         position:'absolute', bottom:'12px', left: left+'px',
-        background:'rgba(0,0,0,0.45)', border:'1px solid rgba(180,140,60,0.4)',
-        color:'rgba(200,160,60,0.9)', fontSize:'14px', width:'30px', height:'30px',
-        borderRadius:'6px', cursor:'pointer', zIndex:'10', lineHeight:'1',
+        background:'rgba(0,0,0,0.45)', border:'1px solid rgba(180,140,60,0.35)',
+        padding:'0', width:'30px', height:'30px',
+        borderRadius:'6px', cursor:'pointer', zIndex:'10',
         display:'flex', alignItems:'center', justifyContent:'center',
+        transition:'border-color 0.2s, opacity 0.2s',
       });
       b.title = title;
       ov.appendChild(b);
       return b;
     }
-    const musicBtn = makeSndBtn('\uD83C\uDFB5', 'Toggle music (ambient drones)', 12);
-    const sfxBtn   = makeSndBtn('\uD83D\uDD0A', 'Toggle sound effects', 46);
+    const musicBtn = makeSndBtn(SVG_HARP_ON, 'Toggle music (ambient drones)', 12);
+    const sfxBtn   = makeSndBtn(SVG_HORN_ON,  'Toggle sound effects', 46);
     function updateSndBtns() {
-      musicBtn.textContent = _musicEnabled ? '\uD83C\uDFB5' : '\uD83D\uDD07';
-      musicBtn.style.color = _musicEnabled ? 'rgba(200,160,60,0.9)' : 'rgba(100,80,40,0.4)';
-      sfxBtn.textContent   = _sfxEnabled   ? '\uD83D\uDD0A' : '\uD83D\uDD07';
-      sfxBtn.style.color   = _sfxEnabled   ? 'rgba(200,160,60,0.9)' : 'rgba(100,80,40,0.4)';
+      musicBtn.innerHTML = _musicEnabled ? SVG_HARP_ON : SVG_HARP_OFF;
+      musicBtn.style.borderColor = _musicEnabled ? 'rgba(180,140,60,0.5)' : 'rgba(90,70,30,0.3)';
+      sfxBtn.innerHTML   = _sfxEnabled   ? SVG_HORN_ON : SVG_HORN_OFF;
+      sfxBtn.style.borderColor   = _sfxEnabled   ? 'rgba(180,140,60,0.5)' : 'rgba(90,70,30,0.3)';
     }
     musicBtn.addEventListener('click', () => {
       if (!_audioEnabled) { _audioEnabled = true; const ac=getAudioCtx(); if(ac&&ac.state==='suspended')ac.resume(); }
