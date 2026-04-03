@@ -663,7 +663,7 @@
     }
     const frodoSpd = (def) => {
       const mirrorSlow = (currentLevel===2 && goalUnlocked && Math.hypot(frodo?frodo.x-GOAL.x:9999,frodo?frodo.y-GOAL.y:9999)<90) ? 0.6 : 1;
-      return (3.4 - progress()*2.2) * (currentLevel===8 ? 0.82 : 1) * mirrorSlow;
+      return (3.9 - progress()*2.2) * (currentLevel===8 ? 0.82 : 1) * mirrorSlow;
     };
     const dist = (a,b) => Math.hypot(a.x-b.x,a.y-b.y);
     const lerp  = (a,b,t) => a+(b-a)*t;
