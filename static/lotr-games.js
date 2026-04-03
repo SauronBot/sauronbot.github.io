@@ -1089,6 +1089,14 @@
           dark.addColorStop(1,'rgba(0,0,0,0.97)');
           ctx.fillStyle=dark; ctx.fillRect(0,0,W,H);
         }
+        // Black Gate — first sight of the Eye
+        if(currentLevel===4&&eye.phase==='active'&&timers.elapsed<20&&Math.sin(timers.elapsed*2)>0){
+          ctx.save(); ctx.shadowColor='#ff2200'; ctx.shadowBlur=10;
+          ctx.fillStyle='rgba(220,60,0,0.9)'; ctx.font='bold 12px serif';
+          ctx.textAlign='center';
+          ctx.fillText('THE EYE OF SAURON — FIRST SIGHT',W/2,48);
+          ctx.restore();
+        }
         // Pelennor — Eye distracted banner
         if(currentLevel===7&&eyeDistracted&&Math.sin(timers.elapsed*3)>0){
           ctx.save(); ctx.shadowColor='#80c030'; ctx.shadowBlur=8;
@@ -1801,7 +1809,15 @@
         ctx.fillStyle=fg; ctx.fillRect(fx-40,fy-15,80,25);
       }
     } else if (def === LEVEL_DEFS[4]) {
-      // Black Gate: fortress walls + forge fires
+      // Black Gate: fortress walls + forge fires + orc patrol dust
+      // Ground dust clouds
+      for(let i=0;i<8;i++){
+        const dx=60+i*240+Math.sin(t*0.4+i)*30, dy=H*0.56;
+        const dg=ctx.createRadialGradient(dx,dy,0,dx,dy,30);
+        dg.addColorStop(0,`rgba(60,30,10,${0.08+Math.sin(t*0.6+i)*0.04})`);
+        dg.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=dg; ctx.fillRect(dx-30,dy-12,60,20);
+      }
       // Battlements (parallax 0.2x via translate above)
       ctx.save(); ctx.translate(-cameraX*(0.2-0.45), 0); // adjust for outer translate
       const battleH = H*0.32;
