@@ -482,6 +482,9 @@
     let ynapassTimer = 0;
     let eyeDistracted=false, eyeDistractTimer=15, eyeEagleTimer=0, eagleParticles=[];
     let blindFlash = 0, levelTransTimer = 0;
+    let seenEnemyTypes = new Set(), enemyIntroTimer = 0, enemyIntroName = '';
+    let flavourIdx = -1, flavourAlpha = 0;
+    let hitFlashLevel = 0;
     let lifePickup = null;  // {x,y,r,pulse}
     let keyPickup = null;   // {x,y,r,pulse} — must collect before goal unlocks
     let goalUnlocked = false;
@@ -543,6 +546,10 @@
       hornTimer = 20 + Math.random()*5;
       hornActive = 0;
       ynapassTimer = 0;
+      seenEnemyTypes = new Set();
+      enemyIntroTimer = 0; enemyIntroName = '';
+      flavourIdx = -1; flavourAlpha = 0;
+      hitFlashLevel = lvl;
       state = 'playing';
     }
 
@@ -761,6 +768,19 @@
         const eyeActive = eye.phase==='active';
         const enemySpeedMult = (blessingActive > 0 ? 0.8 : 1) * (hornActive > 0 ? 0.5 : 1);
         if (ynapassTimer > 0) ynapassTimer -= dt;
+        if (enemyIntroTimer > 0) enemyIntroTimer -= dt;
+        // Enemy introduction detection
+        wraiths.forEach(w => {
+          if (!seenEnemyTypes.has(w.type) && (w.type==='troll'||w.type==='wight'||w.type==='uruk')) {
+            seenEnemyTypes.add(w.type);
+            enemyIntroTimer = 2.2;
+            enemyIntroName = w.type==='troll'?'Cave Troll':w.type==='wight'?'Morgul Wight':'Uruk-hai';
+          }
+        });
+        // Flavour text crossfade
+        const newFi = Math.min(def.flavour.length-1, Math.floor(progress()*def.flavour.length));
+        if (newFi !== flavourIdx) { flavourIdx = newFi; flavourAlpha = 0; }
+        if (flavourAlpha < 1) flavourAlpha = Math.min(1, flavourAlpha + dt * 1.5);
 
         // Wraiths
         const SENSE_RADIUS = Math.round(120 * areaScale); // scales with canvas size
@@ -1192,7 +1212,7 @@
         // Apply camera transform for all world-space objects
         ctx.save();
         ctx.translate(-cameraX, 0);
-        drawGoal(ctx,GOAL,def,t,progress(),80,H*0.62,goalUnlocked,currentLevel,H);
+        drawGoal(ctx,GOAL,def,t,progress(),80,H*0.62,goalUnlocked,currentLevel,H,eye?eye.open:0);
         if(keyPickup&&keyPickup.spawned) drawKeyPickup(ctx,keyPickup,t,currentLevel);
         if(lifePickup) drawLifePickup(ctx,lifePickup,t);
         if(dashRefill) drawDashRefill(ctx,dashRefill,t);
@@ -1230,6 +1250,21 @@
         if(eye&&eye.open>0.02) drawEye1(ctx,W,eye);
         if(eye&&eye.phase==='active'){ctx.fillStyle=`rgba(160,0,0,${eye.open*0.16})`;ctx.fillRect(0,0,W,H);}
         if(eye&&eye.phase==='warning'&&Math.random()>0.65){ctx.fillStyle=`rgba(200,50,0,${Math.random()*0.09})`;ctx.fillRect(0,0,W,H);}
+        // Permanent level atmosphere tint
+        const LEVEL_TINTS=['rgba(20,10,5,0.06)','rgba(20,10,5,0.06)','rgba(10,30,10,0.05)','rgba(15,20,8,0.08)','rgba(20,5,0,0.08)','rgba(10,0,15,0.10)','rgba(0,20,5,0.09)','rgba(20,10,0,0.07)','rgba(25,5,0,0.12)'];
+        if(LEVEL_TINTS[currentLevel]){ctx.fillStyle=LEVEL_TINTS[currentLevel];ctx.fillRect(0,0,W,H);}
+        // Enemy introduction flash
+        if(enemyIntroTimer>0){
+          const introFade=enemyIntroTimer<0.5?enemyIntroTimer*2:Math.min(1,(2.2-enemyIntroTimer)*4);
+          ctx.save(); ctx.globalAlpha=introFade*0.92;
+          ctx.fillStyle='rgba(0,0,0,0.55)'; ctx.fillRect(W/2-130,H*0.42,260,38);
+          ctx.fillStyle='#e8c840'; ctx.font='bold 13px "Palatino Linotype",Palatino,Georgia,serif';
+          ctx.textAlign='center'; ctx.textBaseline='middle';
+          ctx.fillText(enemyIntroName.toUpperCase(),W/2,H*0.42+13);
+          ctx.fillStyle='rgba(180,140,60,0.7)'; ctx.font='italic 10px serif';
+          ctx.fillText('new enemy',W/2,H*0.42+28);
+          ctx.restore();
+        }
         if(blindFlash>0){ctx.fillStyle=`rgba(255,200,50,${blindFlash*0.92})`;ctx.fillRect(0,0,W,H);}
         // YOU SHALL NOT PASS (Moria balrog activation)
         if (ynapassTimer > 0) {
@@ -1311,20 +1346,37 @@
           }
         }
         drawUILevel(ctx,W,H,frodo,progress(),eye,timers.elapsed,currentLevel,def,dashCharges,score,round,GOD_MODE,maxLives(),maxDash());
-        // Level intro overlay (first 3.5s)
-        if(timers.elapsed < 3.5) {
-          const fade = timers.elapsed < 0.5 ? timers.elapsed*2 : timers.elapsed > 2.8 ? (3.5-timers.elapsed)/0.7 : 1;
-          ctx.save(); ctx.globalAlpha = fade * 0.88;
-          ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.fillRect(0,H/2-70,W,130);
-          ctx.globalAlpha = fade;
+        // Cinematic level intro (4.5s total)
+        if(timers.elapsed < 4.5) {
+          const el = timers.elapsed;
+          // Phase 1 (0-1.2s): black + badge only
+          // Phase 2 (1.2-3.8s): title + subtitle
+          // Phase 3 (3.8-4.5s): fade out
+          const bgAlpha = el < 0.6 ? el/0.6 : el > 3.8 ? Math.max(0,(4.5-el)/0.7) : 1;
+          ctx.save();
+          ctx.fillStyle=`rgba(0,0,0,${bgAlpha*0.78})`; ctx.fillRect(0,H/2-80,W,160);
+          ctx.globalAlpha = bgAlpha;
           ctx.textAlign='center'; ctx.textBaseline='middle';
-          const badge=def.book||['I','II','III'][currentLevel]||'I';
-          ctx.fillStyle='rgba(200,160,50,0.8)'; ctx.font='bold 11px serif';
-          ctx.fillText(`BOOK ${badge} · CH.${def.chapter||'?'}`,W/2,H/2-42);
-          ctx.fillStyle='#e8d060'; ctx.font=`bold 26px "Palatino Linotype",Palatino,Georgia,serif`;
-          ctx.fillText(def.title,W/2,H/2-16);
-          ctx.fillStyle='rgba(180,140,60,0.75)'; ctx.font=`italic 12px serif`;
-          ctx.fillText(def.subtitle,W/2,H/2+16);
+          const badge=def.book||'I';
+          // Badge always visible in phase 1+2
+          const badgeFade = el<0.4?el/0.4:1;
+          ctx.globalAlpha = bgAlpha * badgeFade;
+          ctx.fillStyle='rgba(200,160,50,0.85)'; ctx.font='bold 12px serif';
+          ctx.fillText(`BOOK ${badge}  --  CHAPTER ${def.chapter||'?'}`,W/2,H/2-52);
+          // Title + subtitle slide in at 1.2s
+          if(el > 1.2) {
+            const titleFade = Math.min(1,(el-1.2)/0.4);
+            const slideY = (1-titleFade)*18;
+            ctx.globalAlpha = bgAlpha * titleFade;
+            ctx.fillStyle='#f0d860'; ctx.font=`bold 28px "Palatino Linotype",Palatino,Georgia,serif`;
+            ctx.fillText(def.title,W/2,H/2-16+slideY);
+            if(el > 1.7) {
+              const subFade = Math.min(1,(el-1.7)/0.5);
+              ctx.globalAlpha = bgAlpha * subFade * 0.85;
+              ctx.fillStyle='rgba(220,180,80,1)'; ctx.font=`italic 13px "Palatino Linotype",Palatino,Georgia,serif`;
+              ctx.fillText(def.subtitle,W/2,H/2+18);
+            }
+          }
           ctx.restore();
         }
       }
@@ -1452,7 +1504,7 @@
     ctx.restore();
   }
 
-  function drawGoal(ctx, goal, def, t, prog, startX, startY, unlocked, currentLvl=0, H=580) {
+  function drawGoal(ctx, goal, def, t, prog, startX, startY, unlocked, currentLvl=0, H=580, eyeOpen=0) {
     const { x, y, r } = goal;
     const lvl = currentLvl;
     const pulse = unlocked ? 1 + Math.sin(t * 3) * 0.22 : 1;
@@ -1796,7 +1848,7 @@
       const [cr,cg2,cb] = GOAL_RGB[lvl]||GOAL_RGB[0];
       const ringAlpha = 0.6 + Math.sin(t*3)*0.3;
       ctx.shadowColor = gHex;
-      ctx.shadowBlur  = 28 * pulse;
+      ctx.shadowBlur  = 28 * pulse * (1 - eyeOpen * 0.45);
       ctx.strokeStyle = (GOAL_STROKE[lvl]||GOAL_STROKE[0])+`${ringAlpha})`;
       ctx.lineWidth = 3;
       ctx.beginPath(); ctx.arc(x, y, r * pulse, 0, Math.PI*2); ctx.stroke();
@@ -3001,11 +3053,10 @@
       ctx.fillStyle='#ff6010';ctx.font='bold 11px serif';ctx.textAlign='center';
       ctx.fillText('THE EYE OPENS...',W/2,32);}
     // Flavour
-    const fi=Math.min(def.flavour.length-1,Math.floor(prog*(def.flavour.length)));
-    if(prog>0.1){
-      ctx.fillStyle=`rgba(200,138,38,${Math.min(1,(prog-0.1)*2.5)})`;
+    if(prog>0.08 && flavourIdx >= 0 && flavourIdx < def.flavour.length){
+      ctx.fillStyle=`rgba(200,138,38,${flavourAlpha*Math.min(1,(prog-0.08)*3)})`;
       ctx.font='italic 11px serif'; ctx.textAlign='center';
-      ctx.fillText(def.flavour[fi],W/2,H-10);
+      ctx.fillText(def.flavour[flavourIdx],W/2,H-10);
     }
   }
 
@@ -3307,9 +3358,10 @@
     const sg=ctx.createRadialGradient(0,r*1.5,0,0,r*1.5,r*2);
     sg.addColorStop(0,'rgba(0,0,0,0.8)'); sg.addColorStop(1,'rgba(0,0,0,0)');
     ctx.fillStyle=sg; ctx.beginPath(); ctx.ellipse(0,r*1.5,r*1.6,r*0.4,0,0,Math.PI*2); ctx.fill(); ctx.restore();
-    // Warm glow (fades with corruption)
+    // Warm glow (shifts cooler and darker with corruption)
+    const glowRGB = lvl<3?'195,155,70':lvl<6?'140,110,50':'160,80,40';
     const bg=ctx.createRadialGradient(0,0,0,0,0,r*4);
-    bg.addColorStop(0,`rgba(195,155,70,${0.18*warmth})`); bg.addColorStop(1,'rgba(0,0,0,0)');
+    bg.addColorStop(0,`rgba(${glowRGB},${0.18*warmth})`); bg.addColorStop(1,'rgba(0,0,0,0)');
     ctx.fillStyle=bg; ctx.fillRect(-r*4,-r*4,r*8,r*8);
     // Ring corruption aura (grows in Books II and III)
     if(corruption > 0.3){
@@ -3372,8 +3424,10 @@
       ctx.beginPath(); ctx.arc(rx,ry,9+prog*2.5,0,Math.PI*2); ctx.stroke(); }
     ctx.fillStyle=`rgba(255,240,100,${0.7+prog*0.2})`;
     ctx.beginPath(); ctx.arc(rx-2,ry-2,1.5,0,Math.PI*2); ctx.fill(); ctx.restore();
-    // Hit flash
-    if(frodo.hitFlash>0){ ctx.fillStyle=`rgba(255,50,0,${frodo.hitFlash*0.6})`;
+    // Hit flash (level-tinted)
+    const HIT_FLASH_COLS=['80,200,80','255,120,0','160,200,255','100,160,60','200,30,0','160,60,200','60,200,100','255,160,40','220,20,0'];
+    const hfc = HIT_FLASH_COLS[lvl]||'255,50,0';
+    if(frodo.hitFlash>0){ ctx.fillStyle=`rgba(${hfc},${frodo.hitFlash*0.55})`;
       ctx.beginPath(); ctx.arc(0,0,r*2.5,0,Math.PI*2); ctx.fill(); }
     ctx.restore();
   }
