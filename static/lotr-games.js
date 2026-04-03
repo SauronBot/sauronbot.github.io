@@ -710,7 +710,7 @@
       // E key: use Galadriel's phial
       if ((e.key === 'e' || e.key === 'E') && state === 'playing' && blessingCount > 0 && blessingActive <= 0) {
         blessingCount--;
-        blessingActive = 5; // 5s: slow enemies, suppress Eye, invincible, enemies flee
+        blessingActive = currentLevel === 8 ? 2 : 5; // Mt. Doom: only 2s (Ring's power overwhelms the light)
         whisperText = "May it be a light for you in dark places..."; whisperTimer = 3.5; whisperCooldown = 0;
         for(let i=0;i<20;i++){const a=(i/20)*Math.PI*2,s=1.5+Math.random()*3;
           particles.push({x:frodo.x,y:frodo.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1.5,
