@@ -1304,14 +1304,16 @@
                 life:0.3+Math.random()*0.3,size:6+Math.random()*8,color:Math.random()>0.3?'#ff4400':'#ff8800'});
             }
             if (!frodo.invincible && Math.hypot(frodo.x-balrog.x,frodo.y-balrog.y) < frodo.r+balrog.r) {
-              frodo.lives = Math.max(0, frodo.lives - 2);
+              if (!GOD_MODE) {
+                frodo.lives = Math.max(0, frodo.lives - 2);
+                if (frodo.lives <= 0) { lastScore=score;lastRound=round;lastLevel=currentLevel; state='gameover'; }
+              }
               frodo.invincible=true; frodo.invTimer=3.5; frodo.hitFlash=1;
               shake={x:0,y:0,dur:0.8,intensity:18};
               // Reset balrog 400px behind Frodo
               const backA = Math.atan2(frodo.y-balrog.y,frodo.x-balrog.x)+Math.PI;
               balrog.x = frodo.x + Math.cos(backA)*400;
               balrog.y = frodo.y;
-              if (frodo.lives <= 0) { lastScore=score;lastRound=round;lastLevel=currentLevel; state='gameover'; }
               for(let i=0;i<18;i++){const a=(i/18)*Math.PI*2,s=2+Math.random()*3;
                 particles.push({x:frodo.x,y:frodo.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1.5,
                   life:0.6+Math.random()*0.4,size:4+Math.random()*4,color:Math.random()>0.5?'#ff4400':'#903010'});}
