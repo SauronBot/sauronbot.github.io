@@ -474,6 +474,12 @@
     let score = 0;    // accumulated points
     let lastScore = 0, lastRound = 1, lastLevel = 0; // for gameover screen
     let frodo, wraiths=[], gollum=null, balrog=null, shelob=null, particles=[], eye=null, shake={x:0,y:0}, timers={elapsed:0};
+    let spiderlings = [];
+    let blessingPickup = null;
+    let blessingActive = 0;
+    let hornTimer = 20;
+    let hornActive = 0;
+    let ynapassTimer = 0;
     let eyeDistracted=false, eyeDistractTimer=15, eyeEagleTimer=0, eagleParticles=[];
     let blindFlash = 0, levelTransTimer = 0;
     let lifePickup = null;  // {x,y,r,pulse}
@@ -531,6 +537,12 @@
       const ky = H * 0.2 + Math.random() * (H * 0.6);
       keyPickup = { x: kx, y: ky, r: 14, pulse: 0, spawned: false, spawnTimer: 1 };
       GOAL.y = GOAL_Y_BY_LEVEL[lvl] || GOAL_Y_BY_LEVEL[0];
+      spiderlings = def.hasShelob ? Array.from({length:5},()=>({x:W*0.5+Math.random()*200-100, y:-80+Math.random()*40, r:5, angle:Math.random()*Math.PI*2, speed:2.5+Math.random()})) : [];
+      blessingPickup = (lvl === 2) ? {x: WORLD_W*0.5, y: H*0.4, r: 16, pulse: 0, collected: false} : null;
+      blessingActive = 0;
+      hornTimer = 20 + Math.random()*5;
+      hornActive = 0;
+      ynapassTimer = 0;
       state = 'playing';
     }
 
@@ -594,14 +606,29 @@
       // Max 7 Nazgûl on screen (lore-accurate). Beyond that: orcs.
       // Fell Beast: rare variant in L2/L3 replacing one Nazgûl slot.
       // Nazgûl (max 7) or orc. Fell Beast form is determined at draw-time by Y position.
-      const nazgulCount = wraiths.filter(e=>e.type==='wraith').length;
-      const isNazgul    = nazgulCount < 7;
-      const eType = isNazgul ? 'wraith' : 'orc';
-      const wr = eType==='orc' ? 10 : 14;
-      const ws = eType==='orc' ? spd * 1.15 : spd;
-      if (eType==='orc') y = Math.max(SKY_Y, Math.min(H-wr*2, y));
+      const nazgulCount  = wraiths.filter(e=>e.type==='wraith').length;
+      const trollCount   = wraiths.filter(e=>e.type==='troll').length;
+      const wightCount   = wraiths.filter(e=>e.type==='wight').length;
+      const urukCount    = wraiths.filter(e=>e.type==='uruk').length;
+      const orcCount     = wraiths.filter(e=>e.type==='orc').length;
+      const scaledMaxSW  = Math.round(def.maxWraiths * areaScale);
+
+      let eType = 'wraith';
+      if (def === LEVEL_DEFS[1] && trollCount < 2 && Math.random() < 0.35) {
+        eType = 'troll';
+      } else if ((def === LEVEL_DEFS[6] || def === LEVEL_DEFS[7]) && wightCount < 5 && nazgulCount >= 4) {
+        eType = 'wight';
+      } else if ((def === LEVEL_DEFS[4] || def === LEVEL_DEFS[5]) && orcCount >= 3 && urukCount < Math.floor(scaledMaxSW * 0.4)) {
+        eType = 'uruk';
+      } else {
+        eType = nazgulCount < 7 ? 'wraith' : 'orc';
+      }
+
+      const wr = eType==='troll' ? 22 : eType==='wight' ? 10 : eType==='uruk' ? 13 : eType==='orc' ? 10 : 14;
+      const ws = eType==='troll' ? spd * 0.65 : eType==='wight' ? spd * 0.9 : eType==='uruk' ? spd * 1.2 : eType==='orc' ? spd * 1.15 : spd;
+      if (eType==='orc' || eType==='troll' || eType==='uruk') y = Math.max(SKY_Y, Math.min(H-wr*2, y));
       wraiths.push({x,y,r:wr,wanderAngle:Math.random()*Math.PI*2,wanderTimer:0,
-                    speed:ws,capePhase:Math.random()*Math.PI*2,type:eType});
+                    speed:ws,capePhase:Math.random()*Math.PI*2,type:eType,sense:0});
     }
 
     // Goal Y varies by level: L1=ground-ish, L2=mid-high, L3=near-top (climb the mountain)
@@ -732,29 +759,94 @@
         }
 
         const eyeActive = eye.phase==='active';
+        const enemySpeedMult = (blessingActive > 0 ? 0.8 : 1) * (hornActive > 0 ? 0.5 : 1);
+        if (ynapassTimer > 0) ynapassTimer -= dt;
 
         // Wraiths
         const SENSE_RADIUS = Math.round(120 * areaScale); // scales with canvas size
         wraiths.forEach(w=>{
+          // Cave Troll: slow stomp, ground-bound
+          if (w.type === 'troll') {
+            w.capePhase += dt;
+            const d2f = dist(frodo, w);
+            w.sense = Math.max(0, Math.min(1, 1 - d2f / (SENSE_RADIUS * 1.5)));
+            const tSpd = w.speed * enemySpeedMult;
+            if (eyeActive || d2f < SENSE_RADIUS * 1.5) {
+              const a = Math.atan2(frodo.y - w.y, frodo.x - w.x);
+              w.x += Math.cos(a) * tSpd * 60 * dt;
+              w.y += Math.sin(a) * tSpd * 60 * dt;
+            } else {
+              w.wanderTimer -= dt;
+              if (w.wanderTimer <= 0) { w.wanderAngle = Math.random() * Math.PI * 2; w.wanderTimer = 3 + Math.random() * 3; }
+              w.x += Math.cos(w.wanderAngle) * tSpd * 0.3 * 60 * dt;
+              w.y += Math.sin(w.wanderAngle) * tSpd * 0.3 * 60 * dt;
+            }
+            w.y = Math.max(SKY_Y, Math.min(H - w.r * 2, w.y));
+            if(w.x<-80||w.x>WORLD_W+80||w.y<-80||w.y>H+80){
+              w.wanderAngle=Math.atan2(H*0.65-w.y,(frodo?frodo.x:W/2)-w.x)+(Math.random()-0.5)*0.6; w.wanderTimer=2;
+            }
+            if (!frodo.invincible && dist(frodo, w) < frodo.r + w.r) hitFrodoHard();
+            return;
+          }
+          // Morgul Wight: always drifts toward Frodo
+          if (w.type === 'wight') {
+            w.capePhase += dt * 1.5;
+            const d2f = dist(frodo, w);
+            w.sense = Math.max(0, Math.min(1, 1 - d2f / SENSE_RADIUS));
+            const burstMult = d2f < 40 ? 2.5 : 1.0;
+            const a = Math.atan2(frodo.y - w.y, frodo.x - w.x);
+            const wSpd = w.speed * enemySpeedMult;
+            w.x += Math.cos(a) * wSpd * burstMult * 60 * dt;
+            w.y += Math.sin(a) * wSpd * burstMult * 60 * dt;
+            if(w.x<-80||w.x>WORLD_W+80||w.y<-80||w.y>H+80){
+              w.wanderAngle=Math.atan2(H*0.55-w.y,(frodo?frodo.x:W/2)-w.x)+(Math.random()-0.5)*0.6; w.wanderTimer=2;
+            }
+            if (!frodo.invincible && d2f < frodo.r + w.r) hitFrodo();
+            return;
+          }
+          // Uruk-hai: coordinated pair hunt
+          if (w.type === 'uruk') {
+            w.capePhase += dt * 2;
+            const d2f = dist(frodo, w);
+            w.sense = Math.max(0, Math.min(1, 1 - d2f / SENSE_RADIUS));
+            const partner = wraiths.find(o => o !== w && o.type === 'uruk' && dist(o, w) < 120);
+            let targetAngle = Math.atan2(frodo.y - w.y, frodo.x - w.x);
+            if (partner) {
+              const side = w.x < partner.x ? -1 : 1;
+              targetAngle += side * Math.PI * 0.25;
+            }
+            const huntMult = eyeActive ? 1.3 : 0.85 + w.sense * 0.5;
+            const uSpd = w.speed * enemySpeedMult;
+            w.x += Math.cos(targetAngle) * uSpd * huntMult * 60 * dt;
+            w.y += Math.sin(targetAngle) * uSpd * huntMult * 60 * dt;
+            w.y = Math.max(SKY_Y, Math.min(H - w.r * 2, w.y));
+            if(w.x<-80||w.x>WORLD_W+80||w.y<-80||w.y>H+80){
+              w.wanderAngle=Math.atan2(H*0.65-w.y,(frodo?frodo.x:W/2)-w.x)+(Math.random()-0.5)*0.6; w.wanderTimer=2;
+            }
+            if (!frodo.invincible && d2f < frodo.r + w.r) hitFrodo();
+            return;
+          }
+
           w.capePhase+=dt*1.8; w.wanderTimer-=dt;
           const d2frodo = dist(frodo, w);
           const sensing = d2frodo < SENSE_RADIUS;
-          // sense intensity 0→1 as they close in
+          // sense intensity 0->1 as they close in
           w.sense = Math.max(0, Math.min(1, 1 - d2frodo / SENSE_RADIUS));
 
           // Orcs stay on the ground (lower 60% of screen)
           const orcMinY = w.type==='orc' ? SKY_Y : 0;
           const targetY = w.type==='orc' ? Math.max(frodo.y, SKY_Y) : frodo.y;
-          // Nazgûl on Fell Beast (sky) get +10% speed
+          // Nazgul on Fell Beast (sky) get +10% speed
           const skyBoost = (w.type==='wraith' && w.y < SKY_Y && !def.hasBalrog && !def.hasShelob) ? 1.1 : 1.0;
+          const eSpd = w.speed * enemySpeedMult;
 
           if(eyeActive || sensing){
             // Eye active or sensing: hunt
             const a=Math.atan2(targetY-w.y,frodo.x-w.x);
             const huntMult = eyeActive ? 1.35 : 0.9 + w.sense * 0.5;
             const closePenalty = d2frodo < 120 ? Math.max(0.5, d2frodo/120) : 1;
-            w.x+=Math.cos(a)*w.speed*huntMult*closePenalty*skyBoost*60*dt;
-            w.y+=Math.sin(a)*w.speed*huntMult*closePenalty*skyBoost*60*dt;
+            w.x+=Math.cos(a)*eSpd*huntMult*closePenalty*skyBoost*60*dt;
+            w.y+=Math.sin(a)*eSpd*huntMult*closePenalty*skyBoost*60*dt;
           } else if (w.type==='orc') {
             // Orcs: free wander with loose bias, occasional random direction change
             if(w.wanderTimer<=0){
@@ -765,16 +857,16 @@
                 : Math.random()*Math.PI*2;
               w.wanderTimer=2+Math.random()*4;
             }
-            w.x+=Math.cos(w.wanderAngle)*w.speed*0.7*60*dt;
-            w.y+=Math.sin(w.wanderAngle)*w.speed*0.7*60*dt;
+            w.x+=Math.cos(w.wanderAngle)*eSpd*0.7*60*dt;
+            w.y+=Math.sin(w.wanderAngle)*eSpd*0.7*60*dt;
           } else {
-            // Nazgûl: loosely wander toward Frodo
+            // Nazgul: loosely wander toward Frodo
             if(w.wanderTimer<=0){
               w.wanderAngle=Math.atan2(targetY-w.y,frodo.x-w.x)+(Math.random()-0.5)*Math.PI*1.6;
               w.wanderTimer=1.2+Math.random()*2;
             }
-            w.x+=Math.cos(w.wanderAngle)*w.speed*0.85*skyBoost*60*dt;
-            w.y+=Math.sin(w.wanderAngle)*w.speed*0.85*skyBoost*60*dt;
+            w.x+=Math.cos(w.wanderAngle)*eSpd*0.85*skyBoost*60*dt;
+            w.y+=Math.sin(w.wanderAngle)*eSpd*0.85*skyBoost*60*dt;
           }
           // Clamp orc Y to ground zone
           if(w.type==='orc') w.y = Math.max(orcMinY, Math.min(H-w.r, w.y));
@@ -885,6 +977,7 @@
           balrog.firePhase += dt*2.5;
           if (!balrog.active && progress() > 0.52) {
             balrog.active = true;
+            ynapassTimer = 1.8;
             shake = {x:0,y:0,dur:1.8,intensity:14};
             for(let i=0;i<28;i++){const a=(i/28)*Math.PI*2,s=3+Math.random()*4;
               particles.push({x:balrog.x,y:balrog.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-2,
@@ -949,6 +1042,23 @@
           }
         }
 
+        // Spiderlings (Shelob's lair)
+        if (spiderlings.length > 0) {
+          spiderlings.forEach(sp => {
+            sp.angle += dt * (2 + sp.speed * 0.3);
+            const orbitR = 70 + Math.sin(sp.angle * 2) * 20;
+            const targetX = (shelob ? shelob.x : frodo.x) + Math.cos(sp.angle) * orbitR;
+            const targetY = (shelob ? Math.max(0, shelob.y) : frodo.y) + Math.sin(sp.angle) * orbitR * 0.4;
+            sp.x += (targetX - sp.x) * dt * 4;
+            sp.y += (targetY - sp.y) * dt * 4;
+            if (shelob && shelob.phase === 'drop') {
+              const sa = Math.atan2(frodo.y - sp.y, frodo.x - sp.x);
+              sp.x += Math.cos(sa) * sp.speed * 30 * dt;
+              sp.y += Math.sin(sa) * sp.speed * 30 * dt;
+            }
+          });
+        }
+
         // Pelennor Eye distraction mechanic
         if (currentLevel === 7) {
           eyeDistractTimer -= dt;
@@ -968,9 +1078,19 @@
           else { eye.idleDur=Math.max(6,(LEVEL_DEFS[7].eyeIdleBase+3+Math.random()*6)/diffMult()); eye.activeDur=LEVEL_DEFS[7].eyeActiveDur; }
         }
 
-        // Lothlórien — Eye glows silver-green instead of red
+        // Horn of Gondor (Pelennor)
+        if (currentLevel === 7) {
+          hornTimer -= dt;
+          if (hornActive > 0) hornActive -= dt;
+          if (hornTimer <= 0 && hornActive <= 0) {
+            hornActive = 3;
+            hornTimer = 20 + Math.random() * 10;
+          }
+        }
+
+        // Lothlórien -- Eye glows silver-green instead of red
         // (handled in drawEye1 via def flag; here just soften its red tinge)
-        // Minas Morgul — Eye never fully closes
+        // Minas Morgul -- Eye never fully closes
         if (currentLevel === 6 && eye.open < 0.22) eye.open = 0.22;
 
         // Spawn more wraiths
@@ -1033,6 +1153,20 @@
           }
         }
 
+        // Galadriel's blessing (Lothlorien)
+        if (blessingPickup && !blessingPickup.collected) {
+          blessingPickup.pulse += dt * 2;
+          if (Math.hypot(frodo.x - blessingPickup.x, frodo.y - blessingPickup.y) < frodo.r + blessingPickup.r) {
+            blessingPickup.collected = true;
+            dashCharges = Math.min(maxDash(), dashCharges + 2);
+            blessingActive = 8;
+            for(let i=0;i<16;i++){const a=(i/16)*Math.PI*2,s=2+Math.random()*3;
+              particles.push({x:frodo.x,y:frodo.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1.5,
+                life:0.8+Math.random()*0.4,size:4+Math.random()*4,color:'#c0d8ff'});}
+          }
+        }
+        if (blessingActive > 0) blessingActive -= dt;
+
         // Shake
         if(shake.dur>0){shake.dur-=dt;shake.x=(Math.random()-0.5)*shake.intensity*2;shake.y=(Math.random()-0.5)*shake.intensity*2;}
         else{shake.x=shake.y=0;}
@@ -1075,8 +1209,12 @@
           }
           drawShelob(ctx,shelob,eye);
         }
+        // Spiderlings
+        spiderlings.forEach(sp => drawSpiderling(ctx, sp));
+        // Blessing pickup
+        if (blessingPickup && !blessingPickup.collected) drawBlessingPickup(ctx, blessingPickup, t);
         drawWraiths1(ctx,wraiths,eye,H,SKY_Y,!!(def.hasBalrog||def.hasShelob));
-        if (frodo) drawFrodo1(ctx,frodo,progress(),timers.elapsed);
+        if (frodo) drawFrodo1(ctx,frodo,progress(),timers.elapsed,currentLevel);
         // Eagle particles (Pelennor distraction)
         eagleParticles.forEach(ep=>{
           ctx.save(); ctx.globalAlpha=Math.min(1,ep.life*0.5);
@@ -1093,6 +1231,23 @@
         if(eye&&eye.phase==='active'){ctx.fillStyle=`rgba(160,0,0,${eye.open*0.16})`;ctx.fillRect(0,0,W,H);}
         if(eye&&eye.phase==='warning'&&Math.random()>0.65){ctx.fillStyle=`rgba(200,50,0,${Math.random()*0.09})`;ctx.fillRect(0,0,W,H);}
         if(blindFlash>0){ctx.fillStyle=`rgba(255,200,50,${blindFlash*0.92})`;ctx.fillRect(0,0,W,H);}
+        // YOU SHALL NOT PASS (Moria balrog activation)
+        if (ynapassTimer > 0) {
+          const fade = ynapassTimer < 0.5 ? ynapassTimer * 2 : 1;
+          ctx.save(); ctx.globalAlpha = fade * 0.95;
+          ctx.shadowColor = '#ffd700'; ctx.shadowBlur = 20;
+          ctx.fillStyle = '#ffd700';
+          ctx.font = `bold ${Math.round(W * 0.055)}px "Palatino Linotype",Palatino,Georgia,serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('YOU SHALL NOT PASS', W/2, H/2);
+          ctx.restore();
+        }
+        // Dead Marshes fog (index 3)
+        if (currentLevel === 3 && progress() > 0.4) {
+          const fogAlpha = (0.05 + Math.sin(timers.elapsed * 1.2) * 0.05) * Math.min(1, (progress() - 0.4) * 5);
+          ctx.fillStyle = `rgba(80,90,70,${fogAlpha})`;
+          ctx.fillRect(0, 0, W, H);
+        }
         // Torch darkness (Moria + Shelob)
         if(def.hasBalrog||def.hasShelob){
           const fsx=frodo.x-cameraX, fsy=frodo.y;
@@ -1103,12 +1258,21 @@
           dark.addColorStop(1,'rgba(0,0,0,0.97)');
           ctx.fillStyle=dark; ctx.fillRect(0,0,W,H);
         }
+        // Blessing halo (Lothlorien)
+        if (blessingActive > 0) {
+          const fx = frodo.x - cameraX, fy = frodo.y;
+          ctx.save(); ctx.shadowColor='rgba(180,220,255,0.6)'; ctx.shadowBlur=20;
+          ctx.strokeStyle=`rgba(180,220,255,${0.3+Math.sin(timers.elapsed*3)*0.15})`;
+          ctx.lineWidth=2.5;
+          ctx.beginPath(); ctx.arc(fx, fy, frodo.r * 2.2, 0, Math.PI*2); ctx.stroke();
+          ctx.restore();
+        }
         // Black Gate — first sight of the Eye
         if(currentLevel===4&&eye.phase==='active'&&timers.elapsed<20&&Math.sin(timers.elapsed*2)>0){
           ctx.save(); ctx.shadowColor='#ff2200'; ctx.shadowBlur=10;
           ctx.fillStyle='rgba(220,60,0,0.9)'; ctx.font='bold 12px serif';
           ctx.textAlign='center';
-          ctx.fillText('THE EYE OF SAURON — FIRST SIGHT',W/2,48);
+          ctx.fillText('THE EYE OF SAURON -- FIRST SIGHT',W/2,48);
           ctx.restore();
         }
         // Pelennor — Eye distracted banner
@@ -1118,6 +1282,33 @@
           ctx.textAlign='center';
           ctx.fillText('THE EYE TURNS TO WAR',W/2,32);
           ctx.restore();
+        }
+        // Horn of Gondor banner (Pelennor)
+        if (currentLevel === 7 && hornActive > 0 && Math.sin(timers.elapsed * 4) > 0) {
+          ctx.save(); ctx.shadowColor='#ffd700'; ctx.shadowBlur=12;
+          ctx.fillStyle='rgba(255,215,0,0.9)'; ctx.font='bold 14px "Palatino Linotype",Palatino,Georgia,serif';
+          ctx.textAlign='center';
+          ctx.fillText('THE HORN OF GONDOR SOUNDS',W/2,H*0.25);
+          ctx.restore();
+        }
+        // Mount Doom endgame (index 8, progress >= 0.9)
+        if (currentLevel === 8 && progress() >= 0.9) {
+          const eyeScale = (progress() - 0.9) * 10;
+          ctx.save(); ctx.globalAlpha = eyeScale * 0.4;
+          const doomEye = ctx.createRadialGradient(W/2, H*0.3, 0, W/2, H*0.3, W*0.6);
+          doomEye.addColorStop(0, 'rgba(255,80,0,0.8)');
+          doomEye.addColorStop(0.3, 'rgba(180,20,0,0.5)');
+          doomEye.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = doomEye; ctx.fillRect(0, 0, W, H);
+          ctx.restore();
+          if (Math.sin(timers.elapsed * 2) > 0) {
+            ctx.save(); ctx.shadowColor = '#fff'; ctx.shadowBlur = 8;
+            ctx.fillStyle = `rgba(255,255,255,${0.6 + Math.sin(timers.elapsed*3)*0.3})`;
+            ctx.font = 'italic 16px "Palatino Linotype",Palatino,Georgia,serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('One last step.', W/2, H - 30);
+            ctx.restore();
+          }
         }
         drawUILevel(ctx,W,H,frodo,progress(),eye,timers.elapsed,currentLevel,def,dashCharges,score,round,GOD_MODE,maxLives(),maxDash());
         // Level intro overlay (first 3.5s)
@@ -1202,6 +1393,20 @@
         lastScore = score; lastRound = round; lastLevel = currentLevel;
         state = 'gameover';
       }
+    }
+
+    function hitFrodoHard() {
+      if (GOD_MODE) return;
+      frodo.lives = Math.max(0, frodo.lives - 2);
+      frodo.invincible = true; frodo.invTimer = 3.5; frodo.hitFlash = 1;
+      shake = {x:0,y:0,dur:0.8,intensity:16};
+      for(let i=0;i<20;i++){
+        const a=(i/20)*Math.PI*2,s=2+Math.random()*4;
+        particles.push({x:frodo.x,y:frodo.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-2,
+          life:0.7+Math.random()*0.4,size:5+Math.random()*5,
+          color:Math.random()>0.4?'#ff4400':'#903010'});
+      }
+      if(frodo.lives<=0){lastScore=score;lastRound=round;lastLevel=currentLevel;state='gameover';}
     }
 
     requestAnimationFrame(loop);
@@ -2254,32 +2459,320 @@
     ctx.restore();
   }
 
+  // ── CAVE TROLL ──────────────────────────────────────────────
+  function drawCaveTroll(ctx, w, ea) {
+    const r = w.r, t = w.capePhase, sense = w.sense || 0;
+    // Ground shadow
+    ctx.save(); ctx.globalAlpha = 0.2;
+    const sg = ctx.createRadialGradient(0, r*1.6, 0, 0, r*1.6, r*2.5);
+    sg.addColorStop(0, 'rgba(0,0,0,0.8)'); sg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = sg; ctx.beginPath(); ctx.ellipse(0, r*1.6, r*2, r*0.5, 0, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+    // Glow (greenish)
+    const gg = ctx.createRadialGradient(0, 0, 0, 0, 0, r*3);
+    gg.addColorStop(0, `rgba(${ea?'100,120,60':'60,80,40'},${0.15+sense*0.2})`);
+    gg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = gg; ctx.fillRect(-r*3, -r*3, r*6, r*6);
+    // Thick legs
+    const stride = Math.sin(t * 2) * r * 0.12;
+    ctx.fillStyle = '#3a3828';
+    ctx.beginPath(); ctx.ellipse(-r*0.45, r*1.3+stride, r*0.4, r*0.7, 0.1, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(r*0.45, r*1.3-stride, r*0.4, r*0.7, -0.1, 0, Math.PI*2); ctx.fill();
+    // Huge rounded body
+    const bg = ctx.createRadialGradient(0, r*0.1, 0, 0, r*0.1, r*1.3);
+    bg.addColorStop(0, '#4a4a38'); bg.addColorStop(0.5, '#3a3a28'); bg.addColorStop(1, '#2a2a1e');
+    ctx.fillStyle = bg;
+    ctx.beginPath(); ctx.ellipse(0, r*0.1, r*1.1, r*1.2, 0, 0, Math.PI*2); ctx.fill();
+    // Greenish tinge overlay
+    ctx.save(); ctx.globalAlpha = 0.15;
+    ctx.fillStyle = '#406030';
+    ctx.beginPath(); ctx.ellipse(0, r*0.1, r*1.0, r*1.1, 0, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+    // Arms
+    const armBob = Math.sin(t * 2.5) * r * 0.1;
+    ctx.strokeStyle = '#3a3828'; ctx.lineWidth = r*0.45; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(-r*0.8, r*0.0); ctx.lineTo(-r*1.5, r*0.5+armBob); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(r*0.8, r*0.0); ctx.lineTo(r*1.6, -r*0.3+armBob); ctx.stroke();
+    // Club in right hand
+    ctx.save(); ctx.globalAlpha = 0.8;
+    ctx.strokeStyle = '#5a4a28'; ctx.lineWidth = r*0.3;
+    ctx.beginPath(); ctx.moveTo(r*1.5, -r*0.3+armBob); ctx.lineTo(r*1.8, -r*1.4+armBob); ctx.stroke();
+    // Club head
+    ctx.fillStyle = '#6a5a38';
+    ctx.beginPath(); ctx.ellipse(r*1.8, -r*1.6+armBob, r*0.45, r*0.35, 0.3, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+    // Small head
+    ctx.fillStyle = '#4a4a38';
+    ctx.beginPath(); ctx.ellipse(0, -r*1.15, r*0.5, r*0.45, 0, 0, Math.PI*2); ctx.fill();
+    // Beady eyes
+    ctx.save(); ctx.shadowColor = ea ? '#ff4400' : '#aa6600'; ctx.shadowBlur = 4+sense*4;
+    ctx.fillStyle = ea ? '#ff5500' : '#cc8800';
+    ctx.beginPath(); ctx.arc(-r*0.18, -r*1.18, r*0.1, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(r*0.18, -r*1.18, r*0.1, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+    // Mouth
+    ctx.strokeStyle = '#1a1a10'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(0, -r*1.0, r*0.2, 0.2, Math.PI-0.2); ctx.stroke();
+  }
+
+  // ── MORGUL WIGHT ────────────────────────────────────────────
+  function drawMorgulWight(ctx, w, ea) {
+    const r = w.r, t = w.capePhase, sense = w.sense || 0;
+    ctx.save(); ctx.globalAlpha = 0.65;
+    // Blue-white glow
+    const gg = ctx.createRadialGradient(0, 0, 0, 0, 0, r*4);
+    gg.addColorStop(0, `rgba(${ea?'160,200,255':'100,140,200'},${0.3+sense*0.2})`);
+    gg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = gg; ctx.fillRect(-r*4, -r*4, r*8, r*8);
+    // Tattered robe
+    const wave = Math.sin(t) * r * 0.3;
+    ctx.fillStyle = ea ? '#3a4560' : '#2a3548';
+    ctx.beginPath();
+    ctx.moveTo(0, -r*0.8);
+    ctx.bezierCurveTo(-r*1.3, -r*0.2+wave, -r*1.4, r*0.8+wave, -r*0.3, r*2.0);
+    ctx.lineTo(r*0.3, r*2.0);
+    ctx.bezierCurveTo(r*1.4, r*0.8-wave, r*1.3, -r*0.2-wave, 0, -r*0.8);
+    ctx.fill();
+    // Tattered edges
+    ctx.strokeStyle = 'rgba(140,160,200,0.3)'; ctx.lineWidth = 0.8;
+    for (let i = 0; i < 5; i++) {
+      const bx = -r*0.3 + i * r * 0.15;
+      ctx.beginPath(); ctx.moveTo(bx, r*1.8); ctx.lineTo(bx + Math.sin(t+i)*r*0.15, r*2.3); ctx.stroke();
+    }
+    // Arms reaching out
+    ctx.strokeStyle = '#8090a8'; ctx.lineWidth = r*0.2; ctx.lineCap = 'round';
+    const reach = Math.sin(t * 1.2) * r * 0.2;
+    ctx.beginPath(); ctx.moveTo(-r*0.5, r*0.1); ctx.lineTo(-r*2.0-reach, r*0.0+reach); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(r*0.5, r*0.1); ctx.lineTo(r*2.0+reach, r*0.0-reach); ctx.stroke();
+    // Bony fingers
+    [-1, 1].forEach(side => {
+      const hx = side * (r*2.0 + (side===-1?-reach:reach));
+      const hy = r*0.0 + (side===-1?reach:-reach);
+      for (let f = 0; f < 3; f++) {
+        const fa = side * (0.3 + f * 0.3) - 0.3;
+        ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(hx + Math.cos(fa)*r*0.5, hy + Math.sin(fa)*r*0.4); ctx.stroke();
+      }
+    });
+    // Skeletal face
+    ctx.fillStyle = '#b0b8c8';
+    ctx.beginPath(); ctx.ellipse(0, -r*0.85, r*0.5, r*0.55, 0, 0, Math.PI*2); ctx.fill();
+    // Hollow eyes
+    ctx.fillStyle = '#000';
+    ctx.beginPath(); ctx.ellipse(-r*0.18, -r*0.9, r*0.13, r*0.16, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(r*0.18, -r*0.9, r*0.13, r*0.16, 0, 0, Math.PI*2); ctx.fill();
+    // Eye glow inside sockets
+    ctx.save(); ctx.shadowColor = '#80c0ff'; ctx.shadowBlur = 6+sense*6;
+    ctx.fillStyle = ea ? '#a0d0ff' : '#6090c0';
+    ctx.beginPath(); ctx.arc(-r*0.18, -r*0.9, r*0.06, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(r*0.18, -r*0.9, r*0.06, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+    // Nose hole
+    ctx.fillStyle = '#606878';
+    ctx.beginPath(); ctx.ellipse(0, -r*0.72, r*0.06, r*0.08, 0, 0, Math.PI*2); ctx.fill();
+    // Jaw
+    ctx.strokeStyle = '#8090a0'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(0, -r*0.65, r*0.25, 0.3, Math.PI-0.3); ctx.stroke();
+    // Tattered armour
+    ctx.save(); ctx.globalAlpha = 0.3;
+    ctx.fillStyle = '#5a6578';
+    ctx.fillRect(-r*0.4, -r*0.3, r*0.8, r*0.5);
+    ctx.restore();
+    ctx.restore(); // end globalAlpha 0.65
+  }
+
+  // ── URUK-HAI ────────────────────────────────────────────────
+  function drawUrukHai(ctx, w, ea) {
+    const r = w.r, t = w.capePhase, sense = w.sense || 0;
+    // Ground shadow
+    ctx.save(); ctx.globalAlpha = 0.18;
+    const sg = ctx.createRadialGradient(0, r*1.4, 0, 0, r*1.4, r*2);
+    sg.addColorStop(0, 'rgba(0,0,0,0.8)'); sg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = sg; ctx.beginPath(); ctx.ellipse(0, r*1.4, r*1.6, r*0.35, 0, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+    // Glow (dark red)
+    const gg = ctx.createRadialGradient(0, 0, 0, 0, 0, r*3.5);
+    gg.addColorStop(0, `rgba(${ea?'180,30,0':'120,20,0'},${0.2+sense*0.25})`);
+    gg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = gg; ctx.fillRect(-r*3.5, -r*3.5, r*7, r*7);
+    // Legs
+    const stride = Math.sin(t * 3) * r * 0.15;
+    ctx.fillStyle = '#1a1a1a';
+    ctx.beginPath(); ctx.ellipse(-r*0.3, r*1.1+stride, r*0.25, r*0.55, 0.1, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(r*0.3, r*1.1-stride, r*0.25, r*0.55, -0.1, 0, Math.PI*2); ctx.fill();
+    // Angular black armour body
+    ctx.fillStyle = '#0e0e0e';
+    ctx.beginPath();
+    ctx.moveTo(-r*0.75, -r*0.3);
+    ctx.lineTo(-r*0.7, r*0.7); ctx.lineTo(r*0.7, r*0.7); ctx.lineTo(r*0.75, -r*0.3);
+    ctx.lineTo(r*0.4, -r*0.9); ctx.lineTo(-r*0.4, -r*0.9);
+    ctx.closePath(); ctx.fill();
+    // Armour plate highlights
+    ctx.save(); ctx.globalAlpha = 0.4;
+    ctx.fillStyle = '#2a2a2a';
+    ctx.fillRect(-r*0.55, -r*0.6, r*1.1, r*0.2);
+    ctx.fillRect(-r*0.5, r*0.15, r*1.0, r*0.15);
+    ctx.restore();
+    // Arms
+    const armSwing = Math.sin(t * 3) * r * 0.1;
+    ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = r*0.35; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(-r*0.65, r*0.0); ctx.lineTo(-r*1.3, r*0.5-armSwing); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(r*0.65, r*0.0); ctx.lineTo(r*1.3, -r*0.2+armSwing); ctx.stroke();
+    // Pike in right hand
+    ctx.save(); ctx.globalAlpha = 0.85;
+    ctx.strokeStyle = '#4a3a1a'; ctx.lineWidth = r*0.12;
+    ctx.beginPath(); ctx.moveTo(r*1.2, -r*0.2+armSwing); ctx.lineTo(r*1.4, -r*2.2); ctx.stroke();
+    // Spearhead
+    ctx.fillStyle = ea ? '#d0e0ff' : '#a0a8b8';
+    ctx.beginPath(); ctx.moveTo(r*1.25, -r*2.4); ctx.lineTo(r*1.55, -r*2.1); ctx.lineTo(r*1.4, -r*1.8); ctx.closePath(); ctx.fill();
+    ctx.restore();
+    // Head with helmet
+    ctx.fillStyle = '#0e0e0e';
+    ctx.beginPath(); ctx.ellipse(0, -r*1.15, r*0.58, r*0.55, 0, 0, Math.PI*2); ctx.fill();
+    // Helmet crest
+    ctx.fillStyle = '#1a1a1a';
+    ctx.beginPath();
+    ctx.moveTo(0, -r*1.85); ctx.lineTo(-r*0.15, -r*1.45); ctx.lineTo(r*0.15, -r*1.45);
+    ctx.closePath(); ctx.fill();
+    // White hand of Saruman on helm
+    ctx.save(); ctx.fillStyle = '#e0dcd0'; ctx.globalAlpha = 0.85;
+    ctx.beginPath(); ctx.ellipse(0, -r*1.15, r*0.2, r*0.22, 0, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#e0dcd0'; ctx.lineWidth = r*0.06;
+    var fingerAngles = [-0.5, -0.25, 0, 0.25, 0.5];
+    fingerAngles.forEach(function(fa) {
+      ctx.beginPath();
+      ctx.moveTo(Math.sin(fa)*r*0.18, -r*1.15 - r*0.2);
+      ctx.lineTo(Math.sin(fa)*r*0.28, -r*1.15 - r*0.42);
+      ctx.stroke();
+    });
+    ctx.restore();
+    // Red glowing eyes
+    ctx.save(); ctx.shadowColor = ea ? '#ff2200' : '#cc0000'; ctx.shadowBlur = 6+sense*8;
+    ctx.fillStyle = ea ? '#ff4400' : '#dd2200';
+    ctx.beginPath(); ctx.arc(-r*0.2, -r*1.15, r*0.1, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(r*0.2, -r*1.15, r*0.1, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  // ── SPIDERLING ──────────────────────────────────────────────
+  function drawSpiderling(ctx, sp) {
+    ctx.save(); ctx.translate(sp.x, sp.y);
+    ctx.fillStyle = '#2a1030';
+    ctx.beginPath(); ctx.ellipse(0, 0, sp.r, sp.r*0.7, 0, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#1a0820'; ctx.lineWidth = 0.8;
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2 + sp.angle * 0.5;
+      const legLen = sp.r * 2.2;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(a) * sp.r * 0.5, Math.sin(a) * sp.r * 0.35);
+      ctx.lineTo(Math.cos(a) * legLen, Math.sin(a) * legLen * 0.6);
+      ctx.stroke();
+    }
+    ctx.fillStyle = '#cc2020';
+    ctx.beginPath(); ctx.arc(-sp.r*0.2, -sp.r*0.2, 1, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(sp.r*0.2, -sp.r*0.2, 1, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  // ── BLESSING PICKUP ─────────────────────────────────────────
+  function drawBlessingPickup(ctx, p, t) {
+    const pulse = 1 + Math.sin(p.pulse) * 0.25;
+    ctx.save(); ctx.translate(p.x, p.y);
+    ctx.shadowColor = '#c0d8ff'; ctx.shadowBlur = 20 * pulse;
+    ctx.fillStyle = `rgba(200,220,255,${0.6+Math.sin(p.pulse)*0.3})`;
+    ctx.beginPath();
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2 - Math.PI / 2;
+      const rad = i % 2 === 0 ? p.r * pulse : p.r * 0.4 * pulse;
+      if (i === 0) ctx.moveTo(Math.cos(a) * rad, Math.sin(a) * rad);
+      else ctx.lineTo(Math.cos(a) * rad, Math.sin(a) * rad);
+    }
+    ctx.closePath(); ctx.fill();
+    const ig = ctx.createRadialGradient(0, 0, 0, 0, 0, p.r * 0.6);
+    ig.addColorStop(0, 'rgba(255,220,150,0.8)'); ig.addColorStop(1, 'rgba(200,220,255,0)');
+    ctx.fillStyle = ig;
+    ctx.beginPath(); ctx.arc(0, 0, p.r * 0.6, 0, Math.PI*2); ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = 'rgba(200,220,255,0.7)'; ctx.font = 'bold 8px serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    ctx.fillText('BLESSING', 0, p.r + 4);
+    ctx.restore();
+  }
+
   // ── LEVEL WIN SCREEN ─────────────────────────────────────────────────
+  // Journey waypoints for the map
+  const JOURNEY_MAP = [
+    { label: 'Shire',       x: 0.08 },
+    { label: 'Moria',       x: 0.20 },
+    { label: 'Lorien',      x: 0.30 },
+    { label: 'Marshes',     x: 0.40 },
+    { label: 'Black Gate',  x: 0.50 },
+    { label: 'Shelob',      x: 0.60 },
+    { label: 'Morgul',      x: 0.70 },
+    { label: 'Pelennor',    x: 0.80 },
+    { label: 'Mt. Doom',    x: 0.92 },
+  ];
+
+  function drawJourneyMap(ctx, W, mapY, clearedLvl) {
+    const mapW = W * 0.72, mapX = W * 0.14;
+    // Road line
+    ctx.save();
+    ctx.strokeStyle = 'rgba(140,100,40,0.4)'; ctx.lineWidth = 2; ctx.setLineDash([4,6]);
+    ctx.beginPath(); ctx.moveTo(mapX, mapY); ctx.lineTo(mapX + mapW, mapY); ctx.stroke();
+    ctx.setLineDash([]);
+    // Waypoints
+    JOURNEY_MAP.forEach((wp, i) => {
+      const wx = mapX + mapW * ((wp.x - 0.08) / (0.92 - 0.08));
+      const lit = i <= clearedLvl;
+      const isCurrent = i === clearedLvl;
+      ctx.save();
+      if (isCurrent) { ctx.shadowColor = '#ffd040'; ctx.shadowBlur = 12; }
+      ctx.fillStyle = lit ? '#ffd030' : 'rgba(80,60,20,0.5)';
+      ctx.beginPath(); ctx.arc(wx, mapY, isCurrent ? 6 : 4, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = lit ? 'rgba(200,160,60,0.9)' : 'rgba(100,80,40,0.4)';
+      ctx.font = isCurrent ? 'bold 9px serif' : '8px serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      ctx.fillText(wp.label, wx, mapY - 9);
+      ctx.restore();
+    });
+    ctx.restore();
+  }
+
   function drawLevelWin(ctx,W,H,def,lvl,t,timer) {
-    ctx.fillStyle=`rgba(0,0,0,${Math.min(0.82,timer*1.2)})`; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle=`rgba(0,0,0,${Math.min(0.88,timer*1.2)})`; ctx.fillRect(0,0,W,H);
     if(timer<0.5) return;
     ctx.textAlign='center'; ctx.textBaseline='middle';
     const fade=Math.min(1,(timer-0.5)*1.5);
     ctx.globalAlpha=fade;
-    const badge=LEVEL_DEFS[lvl]?.book||['I','II','III'][lvl]||'I';
-    ctx.fillStyle='#c8a838'; ctx.font=`bold 11px serif`;
-    ctx.fillText(`BOOK ${badge} COMPLETE`,W/2,H/2-100);
-    ctx.fillStyle='#e8d060'; ctx.font=`bold 28px "Palatino Linotype",Palatino,Georgia,serif`;
-    ctx.fillText(def.title,W/2,H/2-68);
-    ctx.fillStyle='#e8c848'; ctx.font=`italic 16px "Palatino Linotype",Palatino,Georgia,serif`;
+    // Journey map at top
+    drawJourneyMap(ctx, W, H/2 - 125, lvl);
+    const badge=LEVEL_DEFS[lvl]?.book||'I';
+    ctx.fillStyle='rgba(180,140,50,0.7)'; ctx.font='bold 10px serif';
+    ctx.fillText(`BOOK ${badge}  --  CHAPTER ${LEVEL_DEFS[lvl]?.chapter||'?'}  COMPLETE`,W/2,H/2-88);
+    ctx.fillStyle='#e8d060'; ctx.font=`bold 26px "Palatino Linotype",Palatino,Georgia,serif`;
+    ctx.fillText(def.title,W/2,H/2-62);
+    ctx.fillStyle='#e8c848'; ctx.font=`italic 15px "Palatino Linotype",Palatino,Georgia,serif`;
     ctx.fillText(def.winMsg,W/2,H/2-36);
-    ctx.fillStyle='#a07830'; ctx.font=`italic 13px serif`;
+    // Tolkien quote with aged parchment feel
+    ctx.fillStyle='rgba(180,140,60,0.15)'; ctx.fillRect(W/2-180,H/2-22,360,40);
+    ctx.fillStyle='rgba(160,120,50,0.8)'; ctx.font=`italic 12px serif`;
     ctx.fillText(def.winQuote,W/2,H/2-8);
-    // Stars for completed book (1 star = Book I done, etc.)
+    ctx.fillStyle='rgba(120,90,40,0.5)'; ctx.font='9px serif';
+    ctx.fillText('-- J.R.R. Tolkien',W/2,H/2+10);
+    // Stars for completed book
     for(let i=0;i<3;i++){
-      const sx=W/2-44+i*44, sy=H/2+28;
+      const sx=W/2-44+i*44, sy=H/2+38;
       const lit=i<=Math.floor(lvl/3);
       ctx.save(); ctx.shadowColor='#ffcc20'; ctx.shadowBlur=lit?14:0;
       ctx.fillStyle=lit?'#ffd030':'rgba(80,60,20,0.4)';
       ctx.font='26px serif'; ctx.fillText('★',sx,sy); ctx.restore();
     }
-    ctx.fillStyle='rgba(180,140,60,0.85)'; ctx.font='bold 14px serif';
-    const nextDef=LEVEL_DEFS[lvl+1]; ctx.fillText(nextDef?`SPACE → Book ${nextDef.book} Ch.${nextDef.chapter}: ${nextDef.title}`:'',W/2,H/2+80);
+    const nextDef=LEVEL_DEFS[lvl+1];
+    if(nextDef){
+      ctx.fillStyle='rgba(180,140,60,0.85)'; ctx.font='bold 13px serif';
+      ctx.fillText(`SPACE  --  ${nextDef.title}`,W/2,H/2+75);
+      ctx.fillStyle='rgba(140,110,50,0.55)'; ctx.font='italic 11px serif';
+      ctx.fillText(nextDef.subtitle,W/2,H/2+94);
+    }
     ctx.globalAlpha=1;
   }
 
@@ -2319,20 +2812,33 @@
 
   // ── UI (shared) ───────────────────────────────────────────────────────
   function drawUILevel(ctx,W,H,frodo,prog,eye,elapsed,lvl,def,dashCharges=0,score=0,round=1,godMode=false,maxL=3,maxD=3){
-    // Progress bar
-    ctx.fillStyle='rgba(0,0,0,0.65)'; ctx.fillRect(10,10,210,18);
+    // Progress bar -- grows heavier/darker with level number
+    const ringHeaviness = lvl / 8; // 0 at Shire, 1.0 at Mount Doom
+    ctx.fillStyle=`rgba(0,0,0,${0.55+ringHeaviness*0.25})`; ctx.fillRect(10,10,210,18);
     const [dr,dg,db]=def.destGlow;
     const bar=ctx.createLinearGradient(10,0,220,0);
-    bar.addColorStop(0,`rgb(${Math.floor(dr*0.3)},${Math.floor(dg*0.6)},${Math.floor(db*0.3)})`);
-    bar.addColorStop(1,`rgb(${dr},${dg},${db})`);
+    // Bar colour desaturates and reddens with Ring weight
+    const barR=Math.floor(dr*0.3+ringHeaviness*80), barG=Math.floor(dg*0.6*(1-ringHeaviness*0.5)), barB=Math.floor(db*0.3*(1-ringHeaviness*0.7));
+    bar.addColorStop(0,`rgb(${barR},${barG},${barB})`);
+    bar.addColorStop(1,`rgb(${Math.min(255,dr+ringHeaviness*60)},${Math.floor(dg*(1-ringHeaviness*0.4))},${Math.floor(db*(1-ringHeaviness*0.6))})`);
     ctx.fillStyle=bar; ctx.fillRect(10,10,210*prog,18);
-    ctx.strokeStyle='rgba(140,95,40,0.75)'; ctx.lineWidth=1; ctx.strokeRect(10,10,210,18);
+    // Ring weight indicator marks
+    if(ringHeaviness>0.4){
+      for(let i=1;i<4;i++){
+        ctx.save(); ctx.globalAlpha=ringHeaviness*0.4;
+        ctx.fillStyle='rgba(180,30,0,0.6)';
+        ctx.fillRect(10+210*(i/4)-1,10,2,18);
+        ctx.restore();
+      }
+    }
+    ctx.strokeStyle=`rgba(${140+Math.floor(ringHeaviness*80)},${Math.floor(95*(1-ringHeaviness*0.3))},40,0.75)`;
+    ctx.lineWidth=1; ctx.strokeRect(10,10,210,18);
     ctx.fillStyle='rgba(200,160,70,0.85)'; ctx.font='9px serif'; ctx.textAlign='left';
     ctx.fillText(def.progressLabel,13,23);
     // Level badge + round + score
-    const badge=LEVEL_DEFS[lvl]?.book||['I','II','III'][lvl]||'';
+    const badge=LEVEL_DEFS[lvl]?.book||'I';
     ctx.fillStyle='rgba(180,140,50,0.7)'; ctx.font='bold 11px serif';
-    ctx.fillText(`BOOK ${badge}  ·  RND ${round}`, 10, 42);
+    ctx.fillText(`BOOK ${badge}  --  RND ${round}`, 10, 42);
     ctx.fillStyle='rgba(160,130,60,0.6)'; ctx.font='10px serif';
     ctx.fillText(`⭐ ${Math.floor(score)}`, 10, 56);
     // God mode badge
@@ -2574,7 +3080,10 @@
         ctx.globalAlpha = 1 - skyRatio;
         // fall through to draw cloaked wraith below
       }
-      if (w.type==='orc')  { drawOrc(ctx,w,ea); ctx.restore(); return; }
+      if (w.type==='orc')   { drawOrc(ctx,w,ea); ctx.restore(); return; }
+      if (w.type==='troll') { drawCaveTroll(ctx,w,ea); ctx.restore(); return; }
+      if (w.type==='wight') { drawMorgulWight(ctx,w,ea); ctx.restore(); return; }
+      if (w.type==='uruk')  { drawUrukHai(ctx,w,ea); ctx.restore(); return; }
       const sense = w.sense||0, t2 = w.capePhase;
       // Glow halo
       const gc = ea?[160,30,255]:sense>0.15?[120,20,200]:[60,10,120];
@@ -2657,19 +3166,29 @@
     });
   }
 
-  function drawFrodo1(ctx,frodo,prog,elapsed){
+  function drawFrodo1(ctx,frodo,prog,elapsed,lvl=0){
     ctx.save(); ctx.translate(frodo.x,frodo.y);
+    // Corruption: lean forward more with each book, cloak darkens
+    const corruption = lvl / 8;  // 0 = Shire, 1.0 = Mount Doom
+    if (corruption > 0.1) ctx.rotate(corruption * 0.22); // hunching forward
     if(frodo.invincible&&Math.floor(elapsed*10)%2===0) ctx.globalAlpha=0.4;
-    const warmth=1-prog*0.72, r=frodo.r;
+    const warmth=(1-prog*0.72)*(1-corruption*0.4), r=frodo.r;
     // Ground shadow
     ctx.save(); ctx.globalAlpha=0.2;
     const sg=ctx.createRadialGradient(0,r*1.5,0,0,r*1.5,r*2);
     sg.addColorStop(0,'rgba(0,0,0,0.8)'); sg.addColorStop(1,'rgba(0,0,0,0)');
     ctx.fillStyle=sg; ctx.beginPath(); ctx.ellipse(0,r*1.5,r*1.6,r*0.4,0,0,Math.PI*2); ctx.fill(); ctx.restore();
-    // Warm glow
+    // Warm glow (fades with corruption)
     const bg=ctx.createRadialGradient(0,0,0,0,0,r*4);
     bg.addColorStop(0,`rgba(195,155,70,${0.18*warmth})`); bg.addColorStop(1,'rgba(0,0,0,0)');
     ctx.fillStyle=bg; ctx.fillRect(-r*4,-r*4,r*8,r*8);
+    // Ring corruption aura (grows in Books II and III)
+    if(corruption > 0.3){
+      const ca=ctx.createRadialGradient(0,0,0,0,0,r*3.5);
+      ca.addColorStop(0,`rgba(80,0,0,${(corruption-0.3)*0.35})`);
+      ca.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=ca; ctx.fillRect(-r*3.5,-r*3.5,r*7,r*7);
+    }
     // Big hobbit feet
     ctx.fillStyle=`hsl(20,45%,${20-prog*8}%)`;
     ctx.beginPath(); ctx.ellipse(-r*0.45,r*1.1,r*0.52,r*0.28,Math.PI*0.12,0,Math.PI*2); ctx.fill();
@@ -2781,79 +3300,111 @@
 
   // ── SHARED SCREEN HELPER ──────────────────────────────────────────────
   function drawTitleScreen(ctx,W,H,t) {
-    ctx.fillStyle='rgba(0,0,0,0.82)'; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='rgba(0,0,0,0.88)'; ctx.fillRect(0,0,W,H);
     ctx.textAlign='center'; ctx.textBaseline='middle';
 
+    // Ambient firefly glow
+    for(let i=0;i<6;i++){
+      const fx=W*0.1+Math.sin(t*0.5+i*1.1)*W*0.38, fy=H*0.15+Math.cos(t*0.4+i*0.8)*H*0.12;
+      const fg=ctx.createRadialGradient(fx,fy,0,fx,fy,18);
+      fg.addColorStop(0,`rgba(200,220,100,${0.2+Math.sin(t*1.2+i)*0.12})`);
+      fg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=fg; ctx.fillRect(fx-18,fy-18,36,36);
+    }
+
     // Title
-    ctx.fillStyle='#d4a020'; ctx.font=`bold 42px "Palatino Linotype",Palatino,Georgia,serif`;
-    ctx.fillText('Carry the Ring',W/2,H/2-155);
+    ctx.save(); ctx.shadowColor='#c8a020'; ctx.shadowBlur=20;
+    ctx.fillStyle='#e8c030'; ctx.font=`bold 46px "Palatino Linotype",Palatino,Georgia,serif`;
+    ctx.fillText('Carry the Ring',W/2,H*0.12);
+    ctx.restore();
     ctx.fillStyle='rgba(160,120,50,0.7)'; ctx.font=`italic 13px serif`;
-    ctx.fillText('"Even the smallest person can change the course of the future."',W/2,H/2-118);
+    ctx.fillText('"Even the smallest person can change the course of the future."',W/2,H*0.19);
+
+    // Journey map
+    ctx.fillStyle='rgba(140,100,40,0.3)'; ctx.fillRect(W/2-220,H*0.24,440,32);
+    drawJourneyMap(ctx, W, H*0.24+16, -1);
 
     // Divider
     ctx.strokeStyle='rgba(140,100,40,0.35)'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(W/2-220,H/2-100); ctx.lineTo(W/2+220,H/2-100); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(W/2-220,H*0.33); ctx.lineTo(W/2+220,H*0.33); ctx.stroke();
 
-    // How to play — left column
-    const col1=W/2-160, col2=W/2+30;
-    const rowH=22, rowStart=H/2-82;
+    // Controls
+    const rowH=21, rowStart=H*0.35;
     const rows=[
-      ['🔸 Move',      ('ontouchstart' in window) ? 'Touch & hold the screen' : 'WASD or Arrow keys'],
-      ['🔸 Dash',      'SPACE / ⚡ button — burst of speed + invincibility'],
-      ['🔑 Key',       'Collect within 1s to unlock the goal'],
-      ['🔒 Goal',      'Reach it to complete the level'],
-      ['♥  Life',      'Pickup restores 1 life (max 3)'],
-      ['⚡ Dash +1',   'Refill token spawns after each use'],
-      ['👁️  The Eye',   'Opens periodically — Nazgûl hunt you'],
-      ['💀 Nazgûl',   'Sense the Ring nearby — eyes grow larger'],
+      ['🔸 Move',       'WASD / Arrow keys  (touch: hold screen)'],
+      ['⚡ Dash',       'SPACE -- burst of speed + brief invincibility'],
+      ['🔑 Key',        'Collect to unlock the goal'],
+      ['♥ Life',        'Restore 1 life (max 3)'],
+      ['👁️ Eye of Sauron', 'Opens periodically -- Nazgul hunt you when active'],
     ];
     rows.forEach(([label,desc],i)=>{
-      const y=rowStart+i*rowH;
+      const ry=rowStart+i*rowH;
       ctx.textAlign='right'; ctx.fillStyle='rgba(210,170,70,0.9)'; ctx.font='bold 11px serif';
-      ctx.fillText(label,W/2-10,y);
+      ctx.fillText(label,W/2-8,ry);
       ctx.textAlign='left'; ctx.fillStyle='rgba(180,148,80,0.75)'; ctx.font='11px serif';
-      ctx.fillText(desc,W/2+10,y);
+      ctx.fillText(desc,W/2+8,ry);
     });
+
+    // Chapter enemies legend
+    ctx.strokeStyle='rgba(140,100,40,0.35)';
+    ctx.beginPath(); ctx.moveTo(W/2-220,H*0.58); ctx.lineTo(W/2+220,H*0.58); ctx.stroke();
+    ctx.fillStyle='rgba(160,120,50,0.55)'; ctx.font='bold 9px serif'; ctx.textAlign='center';
+    ctx.fillText('CHAPTER ENEMIES',W/2,H*0.60);
+    const enemyRows=[
+      'L2 Moria: Cave Troll (heavy, -2 lives)    L5-6 Black Gate/Shelob: Uruk-hai (fast, flanks)',
+      'L7-8 Morgul/Pelennor: Morgul Wight (always hunts, bursts close)',
+    ];
+    ctx.font='9px serif'; ctx.fillStyle='rgba(140,110,50,0.5)';
+    enemyRows.forEach((r,i)=>ctx.fillText(r,W/2,H*0.625+i*14));
 
     // Divider
     ctx.strokeStyle='rgba(140,100,40,0.35)';
-    ctx.beginPath(); ctx.moveTo(W/2-220,H/2+98); ctx.lineTo(W/2+220,H/2+98); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(W/2-220,H*0.67); ctx.lineTo(W/2+220,H*0.67); ctx.stroke();
 
-    // Level list
-    ctx.textAlign='center'; ctx.font='11px serif'; ctx.fillStyle='rgba(160,120,50,0.55)';
-    const titles=LEVEL_DEFS.map((d,i)=>`Book ${d.book} Ch.${d.chapter}: ${d.title}`);
-    ctx.fillText(titles.join('   ·   '),W/2,H/2+114);
-
-    // Lives + dash summary
-    ctx.fillStyle='rgba(160,120,50,0.5)'; ctx.font='10px serif';
-    ctx.fillText('3 lives + 3 dash charges (each +1 per round, max 5)  ·  9 levels across 3 books',W/2,H/2+134);
+    // Book list
+    ctx.font='10px serif'; ctx.fillStyle='rgba(150,115,50,0.5)';
+    ['Book I: Fellowship -- Shire, Moria, Lothlorien',
+     'Book II: Two Towers -- Marshes, Black Gate, Shelob',
+     'Book III: Return -- Morgul, Pelennor, Mt. Doom'
+    ].forEach((b,i)=>ctx.fillText(b,W/2,H*0.69+i*14));
 
     // Start prompt
     if(Math.sin(t*2.4)>0){
+      ctx.save(); ctx.shadowColor='#c89040'; ctx.shadowBlur=8;
       ctx.fillStyle='#c89040'; ctx.font='bold 15px serif';
-      ctx.fillText('— Press SPACE to begin —',W/2,H/2+160);
+      ctx.fillText('-- Press SPACE to begin --',W/2,H*0.80);
+      ctx.restore();
     }
   }
 
   function drawGameOver(ctx,W,H,t,score,rnd,lvl) {
-    ctx.fillStyle='rgba(0,0,0,0.85)'; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='rgba(0,0,0,0.88)'; ctx.fillRect(0,0,W,H);
+    // Dark red eye glow
+    const dg=ctx.createRadialGradient(W/2,H*0.3,0,W/2,H*0.3,W*0.5);
+    dg.addColorStop(0,'rgba(120,0,0,0.35)'); dg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=dg; ctx.fillRect(0,0,W,H);
     ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.save(); ctx.shadowColor='#800010'; ctx.shadowBlur=16;
     ctx.fillStyle='#8c0010'; ctx.font=`bold 40px "Palatino Linotype",Palatino,Georgia,serif`;
-    ctx.fillText('The Ring is Lost',W/2,H/2-110);
+    ctx.fillText('The Ring is Lost',W/2,H/2-115);
+    ctx.restore();
     ctx.fillStyle='rgba(160,80,40,0.8)'; ctx.font=`italic 13px serif`;
-    ctx.fillText('"All hope is gone. The Dark Lord has won."',W/2,H/2-75);
+    ctx.fillText('"All hope is gone. The Dark Lord has won."',W/2,H/2-80);
+    // Journey map showing how far they got
+    ctx.fillStyle='rgba(80,40,20,0.3)'; ctx.fillRect(W/2-200,H/2-62,400,20);
+    drawJourneyMap(ctx,W,H/2-52,lvl);
     // Stats box
     ctx.strokeStyle='rgba(140,60,30,0.4)'; ctx.lineWidth=1;
-    ctx.strokeRect(W/2-160,H/2-52,320,110);
-    const book=LEVEL_DEFS[lvl]?.book||'?'; const chapter=LEVEL_DEFS[lvl]?.chapter||'?';
+    ctx.strokeRect(W/2-160,H/2-32,320,90);
+    const book=LEVEL_DEFS[lvl]?.book||'?';
+    const levelTitle=LEVEL_DEFS[lvl]?.title||'?';
     const rows=[
-      [`Book ${book} — Round ${rnd}`, 'rgba(200,140,60,0.9)', 'bold 14px serif'],
-      [`Score: ${Math.floor(score).toLocaleString()}`, 'rgba(220,180,80,0.95)', 'bold 22px "Palatino Linotype",Palatino,Georgia,serif'],
-      [`Progress: ${['Fellowship','Two Towers','Return of the King'][lvl]}`, 'rgba(160,120,50,0.7)', '12px serif'],
+      [`Fell in: ${levelTitle}`, 'rgba(200,140,60,0.9)', 'bold 13px serif'],
+      [`Score: ${Math.floor(score).toLocaleString()}  --  Round ${rnd}`, 'rgba(220,180,80,0.95)', 'bold 20px "Palatino Linotype",Palatino,Georgia,serif'],
     ];
     rows.forEach(([txt,col,font],i)=>{
       ctx.fillStyle=col; ctx.font=font;
-      ctx.fillText(txt,W/2,H/2-28+i*30);
+      ctx.fillText(txt,W/2,H/2-14+i*30);
     });
     if(Math.sin(t*2.2)>0){
       ctx.fillStyle='rgba(180,80,40,0.85)'; ctx.font='bold 14px serif';
