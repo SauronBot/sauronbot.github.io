@@ -1470,7 +1470,7 @@
       // Tall elven trees flanking the gate — slender trunks, layered canopy
       const treePositions=[-r*4.5,-r*2.8,r*2.8,r*4.5];
       treePositions.forEach((ox,i)=>{
-        const tx=x+ox, th=H-y+r*1.5, ty=y+r*0.5;
+        const tx=x+ox, th=r*2.2, ty=y+r*0.5; // short trunks
         // Trunk
         ctx.fillStyle=`hsl(${28+i*4},${45}%,${18}%)`;
         ctx.fillRect(tx-r*0.12,ty,r*0.24,th);
