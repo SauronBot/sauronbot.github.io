@@ -560,6 +560,7 @@
     let flavourIdx = -1, flavourAlpha = 0;
     let hitFlashLevel = 0;
     let whisperText = '', whisperTimer = 0, whisperCooldown = 0;
+    let ambientParticles = [], ambientSpawnTimer = 0;
     let lifePickup = null;  // {x,y,r,pulse}
     let keyPickup = null;   // {x,y,r,pulse} — must collect before goal unlocks
     let goalUnlocked = false;
@@ -626,6 +627,7 @@
       flavourIdx = -1; flavourAlpha = 0;
       hitFlashLevel = lvl;
       whisperText = ''; whisperTimer = 0; whisperCooldown = 0;
+      ambientParticles = []; ambientSpawnTimer = 0;
       state = 'playing';
     }
 
@@ -1281,6 +1283,25 @@
         }
         if (blessingActive > 0) blessingActive -= dt;
 
+        // Ambient particles (level atmosphere)
+        ambientSpawnTimer -= dt;
+        if (ambientSpawnTimer <= 0) {
+          ambientSpawnTimer = currentLevel===0?0.25:currentLevel===2?0.35:currentLevel===7?0.2:currentLevel===8?0.15:0.45;
+          const ax = frodo.x + (Math.random()-0.5)*W*1.2, ay = Math.random()*H;
+          if (currentLevel===0) // Shire: pollen drifting rightward
+            ambientParticles.push({x:ax,y:ay,vx:0.6+Math.random()*0.4,vy:-0.1+Math.random()*0.2,life:4+Math.random()*3,size:1.5+Math.random(),color:'rgba(220,210,120,0.55)',type:'pollen'});
+          else if (currentLevel===1) // Moria: dust falling from ceiling
+            ambientParticles.push({x:ax,y:0,vx:(Math.random()-0.5)*0.3,vy:0.4+Math.random()*0.6,life:3+Math.random()*2,size:1+Math.random()*1.5,color:'rgba(100,80,60,0.4)',type:'dust'});
+          else if (currentLevel===2) // Lothl: silver petals
+            ambientParticles.push({x:ax,y:0,vx:(Math.random()-0.5)*0.4,vy:0.3+Math.random()*0.5,life:5+Math.random()*3,size:2+Math.random()*1.5,color:`rgba(200,220,255,${0.4+Math.random()*0.25})`,type:'petal'});
+          else if (currentLevel===7) // Pelennor: embers
+            ambientParticles.push({x:ax,y:H*0.6+Math.random()*H*0.3,vx:(Math.random()-0.5)*0.8,vy:-(0.8+Math.random()*1.2),life:1.5+Math.random(),size:1.5+Math.random()*2,color:Math.random()<0.6?'rgba(255,120,0,0.6)':'rgba(200,80,0,0.5)',type:'ember'});
+          else if (currentLevel===8) // Mount Doom: ash
+            ambientParticles.push({x:ax,y:0,vx:(Math.random()-0.5)*0.6,vy:0.5+Math.random()*0.8,life:4+Math.random()*3,size:1+Math.random()*2,color:`rgba(60,50,45,${0.3+Math.random()*0.25})`,type:'ash'});
+        }
+        ambientParticles=ambientParticles.filter(p=>p.life>0);
+        ambientParticles.forEach(p=>{p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.life-=dt;});
+
         // Shake
         if(shake.dur>0){shake.dur-=dt;shake.x=(Math.random()-0.5)*shake.intensity*2;shake.y=(Math.random()-0.5)*shake.intensity*2;}
         else{shake.x=shake.y=0;}
@@ -1324,6 +1345,17 @@
           drawShelob(ctx,shelob,eye);
         }
         // Spiderlings
+        // Ambient particles
+        ambientParticles.forEach(p=>{
+          ctx.save(); ctx.globalAlpha=Math.min(1,p.life*0.5);
+          ctx.fillStyle=p.color;
+          if(p.type==='petal'){
+            ctx.beginPath(); ctx.ellipse(p.x,p.y,p.size*1.4,p.size*0.7,p.x*0.01,0,Math.PI*2); ctx.fill();
+          } else {
+            ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2); ctx.fill();
+          }
+          ctx.restore();
+        });
         spiderlings.forEach(sp => drawSpiderling(ctx, sp));
         // Blessing pickup
         if (blessingPickup && !blessingPickup.collected) drawBlessingPickup(ctx, blessingPickup, t);
