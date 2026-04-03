@@ -555,7 +555,10 @@
       if (state !== 'playing') {
         if (state==='title') startLevel(0);
         else if (state==='levelwin') startLevel(currentLevel+1);
-        else if (state==='gameover') { fullReset(); startLevel(0); }
+        else if (state==='gameover') {
+          if (e.key === 'c' || e.key === 'C') { if (sessionCheckpoint > 0) { fullReset(); startLevel(sessionCheckpoint); } }
+          else { fullReset(); startLevel(0); }
+        }
         else if (state==='win') { round++; score+=200; startLevel(0); }
         return;
       }
@@ -629,7 +632,7 @@
       if (e.key === ' ') {
         if (state === 'title')    startLevel(0);
         else if (state === 'levelwin') startLevel(currentLevel + 1);
-        else if (state === 'gameover') { fullReset(); startLevel(0); }
+        else if (state === 'gameover') { if(sessionCheckpoint>0){fullReset();startLevel(sessionCheckpoint);}else{fullReset();startLevel(0);} }
         else if (state === 'win') { round++; score+=200; startLevel(0); }
         else if (state === 'playing') triggerDash();
       }
@@ -650,6 +653,7 @@
     let round = 1;    // increments after completing all 3 levels
     let score = 0;    // accumulated points
     let lastScore = 0, lastRound = 1, lastLevel = 0; // for gameover screen
+    let sessionCheckpoint = 0; // furthest level reached this session
     let frodo, wraiths=[], gollum=null, balrog=null, shelob=null, particles=[], eye=null, shake={x:0,y:0}, timers={elapsed:0};
     let spiderlings = [];
     let blessingPickup = null;
@@ -930,7 +934,7 @@
 
         // Level clear
         if (Math.hypot(frodo.x-GOAL.x, frodo.y-GOAL.y) < frodo.r + GOAL.r) {
-          if (currentLevel < 8) { state='levelwin'; levelTransTimer=0; sndLevelWin(); }
+          if (currentLevel < 8) { state='levelwin'; levelTransTimer=0; sndLevelWin(); sessionCheckpoint=Math.max(sessionCheckpoint,currentLevel+1); }
           else { state='win'; sndLevelWin(); updateProgress(); }
         }
 
@@ -1729,7 +1733,7 @@
         drawTitleScreen(ctx,W,H,t);
       }
       if(state==='levelwin') drawLevelWin(ctx,W,H,def,currentLevel,t,levelTransTimer);
-      if(state==='gameover') drawGameOver(ctx,W,H,t,lastScore,lastRound,lastLevel);
+      if(state==='gameover') drawGameOver(ctx,W,H,t,lastScore,lastRound,lastLevel,sessionCheckpoint);
       if(state==='win')      drawFinalWin(ctx,W,H,t,round,score);
 
       ctx.restore();
@@ -4004,7 +4008,7 @@
     }
   }
 
-  function drawGameOver(ctx,W,H,t,score,rnd,lvl) {
+  function drawGameOver(ctx,W,H,t,score,rnd,lvl,checkpoint=0) {
     ctx.fillStyle='rgba(0,0,0,0.88)'; ctx.fillRect(0,0,W,H);
     // Dark red eye glow
     const dg=ctx.createRadialGradient(W/2,H*0.3,0,W/2,H*0.3,W*0.5);
@@ -4046,7 +4050,16 @@
     });
     if(Math.sin(t*2.2)>0){
       ctx.fillStyle='rgba(180,80,40,0.85)'; ctx.font='bold 14px serif';
-      ctx.fillText('— Press SPACE to try again from the beginning —',W/2,H/2+82);
+      const lvlNames2=['Shire','Moria','Lorien','Marshes','Black Gate','Shelob','Morgul','Pelennor','Mt.Doom'];
+      if(checkpoint>0){
+        ctx.fillStyle='rgba(180,140,60,0.9)'; ctx.font='bold 13px serif';
+        ctx.fillText(`C — Continue from ${lvlNames2[checkpoint]}`,W/2,H/2+68);
+        ctx.fillStyle='rgba(140,100,40,0.65)'; ctx.font='11px serif';
+        ctx.fillText('SPACE — Start over from The Shire',W/2,H/2+86);
+      } else {
+        ctx.fillStyle='rgba(180,100,40,0.85)'; ctx.font='bold 13px serif';
+        ctx.fillText('— SPACE to try again —',W/2,H/2+82);
+      }
     }
   }
 
