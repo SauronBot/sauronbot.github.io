@@ -404,9 +404,9 @@
       roadCol: 'rgba(30,20,10,0.95)', horizon: '#0d0a0a',
       glow: [180,80,20], glowAlpha: 0.35, destGlow: [200,90,10],
       initWraiths:4, maxWraiths:8, wraithSpeed:1.3, eyeIdleBase:15, eyeActiveDur:7, spawnMin:3.5,
-      hasGollum:false, hasBlindFlash:false, hasShelob:false, hasBalrog:true,
+      hasGollum:true, hasBlindFlash:false, hasShelob:false, hasBalrog:true,
       companion: 'gandalf',
-      flavour:['The darkness is absolute...','Something stirs in the deep...','The drums... drums in the deep...','The bridge is ahead!'],
+      flavour:['The darkness is absolute...','Something stirs in the deep...','Gollum’s eyes glow in the dark...','The drums... drums in the deep...','The bridge is ahead!'],
       winMsg:'You have crossed Khazad-dûm.', winQuote:'"You cannot pass!"',
       progressLabel:'THE MINES OF MORIA',
     },
@@ -419,9 +419,9 @@
       roadCol: 'rgba(20,50,20,0.85)', horizon: '#0a1e0a',
       glow: [160,255,180], glowAlpha: 0.15, destGlow: [160,255,180],
       initWraiths:2, maxWraiths:4, wraithSpeed:1.0, eyeIdleBase:28, eyeActiveDur:4, spawnMin:6,
-      hasGollum:false, hasBlindFlash:false, hasShelob:false, hasBalrog:false,
+      hasGollum:true, hasBlindFlash:false, hasShelob:false, hasBalrog:false,
       companion: 'galadriel',
-      flavour:['The wood breathes...','Light flows between the leaves...','The Mirror calls...','Do not look into it!'],
+      flavour:['The wood breathes...','Light flows between the leaves...','Something follows at the forest’s edge...','The Mirror calls...','Do not look into it!'],
       winMsg:"Galadriel's gift is yours.", winQuote:'"Even the smallest person can change the course of the future."',
       progressLabel:'THE GOLDEN WOOD',
     },
@@ -1243,13 +1243,29 @@
           // Morgul Wight: always drifts toward Frodo
           if (w.type === 'wight') {
             w.capePhase += dt * 1.5;
+            w.wanderTimer = (w.wanderTimer || 0) - dt;
             const d2f = dist(frodo, w);
             w.sense = Math.max(0, Math.min(1, 1 - d2f / SENSE_RADIUS));
-            const burstMult = d2f < 40 ? 2.5 : 1.0;
-            const a = Math.atan2(frodo.y - w.y, frodo.x - w.x);
             const wSpd = w.speed * enemySpeedMult;
-            w.x += Math.cos(a) * wSpd * burstMult * 60 * dt;
-            w.y += Math.sin(a) * wSpd * burstMult * 60 * dt;
+            if (eyeActive || d2f < SENSE_RADIUS * 0.55) {
+              // Drawn to Frodo when Eye is open or very close — burst on contact
+              const burstMult = d2f < 40 ? 2.2 : 1.0;
+              const a = Math.atan2(frodo.y - w.y, frodo.x - w.x);
+              w.x += Math.cos(a) * wSpd * burstMult * 60 * dt;
+              w.y += Math.sin(a) * wSpd * burstMult * 60 * dt;
+            } else {
+              // Unsummoned: drift aimlessly like restless dead — slow, eerie, semi-random
+              if (w.wanderTimer <= 0) {
+                // Occasionally drift vaguely toward Frodo, mostly just wander
+                const toFrodo = Math.atan2(frodo.y - w.y, frodo.x - w.x);
+                w.wanderAngle = Math.random() < 0.2
+                  ? toFrodo + (Math.random() - 0.5) * Math.PI
+                  : w.wanderAngle + (Math.random() - 0.5) * Math.PI * 0.8;
+                w.wanderTimer = 1.5 + Math.random() * 3;
+              }
+              w.x += Math.cos(w.wanderAngle) * wSpd * 0.45 * 60 * dt;
+              w.y += Math.sin(w.wanderAngle) * wSpd * 0.35 * 60 * dt;
+            }
             if(w.x<-80||w.x>WORLD_W+80||w.y<-80||w.y>H+80){
               w.wanderAngle=Math.atan2(H*0.55-w.y,(frodo?frodo.x:W/2)-w.x)+(Math.random()-0.5)*0.6; w.wanderTimer=2;
             }
