@@ -1636,17 +1636,27 @@
           ctx.fillRect(0, 0, W, H);
         }
         // Torch darkness (Moria + Shelob)
+        // Eye opening/open: darkness lifts so player can see and react
         if(def.hasBalrog||def.hasShelob){
-          const fsx=frodo.x-cameraX, fsy=frodo.y;
-          // Moria gets wider reach; Shelob stays claustrophobic
-          const torchR = def.hasBalrog
-            ? (160 - progress()*40) * (1 + Math.sin(t*2.1)*0.04) // flicker
-            : 90 - progress()*20;
-          const dark=ctx.createRadialGradient(fsx,fsy,torchR*0.18,fsx,fsy,torchR*2.2);
-          dark.addColorStop(0,'rgba(0,0,0,0)');
-          dark.addColorStop(0.45,'rgba(0,0,0,0.55)');
-          dark.addColorStop(1,'rgba(0,0,0,0.97)');
-          ctx.fillStyle=dark; ctx.fillRect(0,0,W,H);
+          const eyePhase = eye ? eye.phase : 'idle';
+          const eyeOpen  = eye ? (eye.open||0) : 0;
+          // When Eye is warning/active, fade darkness out proportionally
+          const eyeSuppression = eyePhase==='active' ? eyeOpen
+            : eyePhase==='warning' ? eyeOpen*0.6
+            : 0;
+          if(eyeSuppression < 0.99){
+            const fsx=frodo.x-cameraX, fsy=frodo.y;
+            const torchR = def.hasBalrog
+              ? (160 - progress()*40) * (1 + Math.sin(t*2.1)*0.04)
+              : 90 - progress()*20;
+            // Scale darkness strength down as Eye opens
+            const darkStr = 1 - eyeSuppression;
+            const dark=ctx.createRadialGradient(fsx,fsy,torchR*0.18,fsx,fsy,torchR*2.2);
+            dark.addColorStop(0,'rgba(0,0,0,0)');
+            dark.addColorStop(0.45,`rgba(0,0,0,${0.55*darkStr})`);
+            dark.addColorStop(1,`rgba(0,0,0,${0.97*darkStr})`);
+            ctx.fillStyle=dark; ctx.fillRect(0,0,W,H);
+          }
         }
         // Blessing halo (Lothlorien)
         if (blessingActive > 0) {
