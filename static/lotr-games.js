@@ -55,6 +55,8 @@
   // ── AUDIO ENGINE ─────────────────────────────────────────────────────
   let _audioCtx = null, _audioEnabled = false;
   let _titleStartBtnRect = null; // set each frame by drawTitleScreen, hit-tested in handlePointerDown
+  let _titleBtnHover = false;  // true when mouse is over Begin button
+  let _titleBtnPress = false;  // true while mouse button held on Begin button
   let _musicEnabled = true;  // ambient drones
   let _sfxEnabled   = true;  // hit/dash/pickup/eye etc
   let _onAudioReEnable = null; // callback set by game to restart drones
@@ -674,7 +676,10 @@
             const pt = e.touches ? e.changedTouches[0] : e;
             const {x, y} = getCanvasXY(pt.clientX, pt.clientY);
             const r = _titleStartBtnRect;
-            if (x >= r.x && x <= r.x+r.w && y >= r.y && y <= r.y+r.h) startLevel(0);
+            if (x >= r.x && x <= r.x+r.w && y >= r.y && y <= r.y+r.h) {
+              _titleBtnPress = true;
+              setTimeout(() => { _titleBtnPress = false; startLevel(0); }, 120);
+            }
           }
           return;
         }
@@ -734,7 +739,18 @@
     canvas.addEventListener('touchmove',  handlePointerMove, {passive:false});
     canvas.addEventListener('touchend',   handlePointerUp,   {passive:false});
     canvas.addEventListener('mousedown',  handlePointerDown);
-    canvas.addEventListener('mousemove',  (e) => { if(e.buttons) handlePointerMove(e); });
+    canvas.addEventListener('mousemove',  (e) => {
+      if (state === 'title' && _titleStartBtnRect) {
+        const r = _titleStartBtnRect;
+        const {x, y} = getCanvasXY(e.clientX, e.clientY);
+        const over = x >= r.x && x <= r.x+r.w && y >= r.y && y <= r.y+r.h;
+        _titleBtnHover = over;
+        canvas.style.cursor = over ? 'pointer' : 'default';
+      } else {
+        _titleBtnHover = false;
+      }
+      if(e.buttons) handlePointerMove(e);
+    });
     canvas.addEventListener('mouseup',    handlePointerUp);
 
     // ── Keyboard input ──────────────────────────────────────────────────────
@@ -5037,22 +5053,32 @@
       const btnW = Math.min(Math.round(S * 0.42), 220);
       const btnH = Math.min(Math.round(S * 0.068), 44);
       const btnX = Math.round(W/2 - btnW/2);
-      const btnY = Math.round(H * 0.88 - btnH/2);
-      _titleStartBtnRect = {x: btnX, y: btnY, w: btnW, h: btnH};
+      // Hover: lift 3px; Press: sink 1px below normal
+      const liftY = _titleBtnPress ? 1 : _titleBtnHover ? -3 : 0;
+      const btnY = Math.round(H * 0.88 - btnH/2) + liftY;
+      _titleStartBtnRect = {x: btnX, y: Math.round(H * 0.88 - btnH/2), w: btnW, h: btnH};
 
       // Button glow / pulse
-      const pulse = 0.5 + Math.sin(t * 2.0) * 0.15;
+      const pulse = _titleBtnHover ? 0.9 : (0.5 + Math.sin(t * 2.0) * 0.15);
+      const glowExtra = _titleBtnHover ? 10 : 0;
       ctx.save();
-      ctx.shadowColor = '#d4a020'; ctx.shadowBlur = 12 + pulse * 8;
+      // Drop shadow for lift effect
+      if (!_titleBtnPress) {
+        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+        ctx.shadowBlur = _titleBtnHover ? 10 : 4;
+        ctx.shadowOffsetY = _titleBtnHover ? 4 : 2;
+      }
+      ctx.shadowColor = '#d4a020'; ctx.shadowBlur = 12 + pulse * 8 + glowExtra;
       const grad = ctx.createLinearGradient(btnX, btnY, btnX, btnY + btnH);
-      grad.addColorStop(0, `rgba(90,64,14,${0.88 + pulse * 0.08})`);
-      grad.addColorStop(1, `rgba(55,38,8,${0.88 + pulse * 0.08})`);
+      const darken = _titleBtnPress ? 0.7 : 1;
+      grad.addColorStop(0, `rgba(${Math.round(90*darken)},${Math.round(64*darken)},${Math.round(14*darken)},${0.88 + pulse * 0.08})`);
+      grad.addColorStop(1, `rgba(${Math.round(55*darken)},${Math.round(38*darken)},${Math.round(8*darken)},${0.88 + pulse * 0.08})`);
       ctx.fillStyle = grad;
       ctx.beginPath();
       if (ctx.roundRect) ctx.roundRect(btnX, btnY, btnW, btnH, 6); else ctx.rect(btnX, btnY, btnW, btnH);
       ctx.fill();
       ctx.strokeStyle = `rgba(212,160,32,${0.7 + pulse * 0.25})`;
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = _titleBtnHover ? 2 : 1.5;
       ctx.stroke();
       const btnFontSize = Math.min(Math.round(S * 0.034), 20);
       ctx.font = `bold ${btnFontSize}px "Palatino Linotype",Palatino,Georgia,serif`;
