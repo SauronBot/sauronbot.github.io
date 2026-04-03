@@ -934,6 +934,7 @@
 
         // Wraiths
         const SENSE_RADIUS = Math.round(120 * areaScale); // scales with canvas size
+        let nearMiss = false;
         wraiths.forEach(w=>{
           // Cave Troll: slow stomp, ground-bound
           if (w.type === 'troll') {
@@ -1047,10 +1048,18 @@
             w.wanderAngle=Math.atan2(ty-w.y,tx-w.x)+(Math.random()-0.5)*0.6;
             w.wanderTimer=2;
           }
-          if(!frodo.invincible&&dist(frodo,w)<frodo.r+w.r){
+          const d2frodo2 = dist(frodo, w);
+          if(!frodo.invincible&&d2frodo2<frodo.r+w.r){
             hitFrodo();
+          } else if(!frodo.invincible && d2frodo2 < frodo.r+w.r+22 && d2frodo2 >= frodo.r+w.r) {
+            nearMiss = true;
           }
         });
+        if(nearMiss && shake.dur <= 0){
+          shake = {x:0,y:0,dur:0.18,intensity:3};
+          // Brief Ring hum on near-miss
+          playTone(740,'sine',0.025,0.15,true,0);
+        }
 
         // Gollum
         if (gollum) {
