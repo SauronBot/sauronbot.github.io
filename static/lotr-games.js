@@ -1121,6 +1121,15 @@
             w.x += 60 * dt * 1.5; // drift back out
             return; // skip all AI/collision this frame
           }
+          // Galadriel's phial: enemies flee Frodo
+          if (blessingActive > 0 && frodo) {
+            const fleeA = Math.atan2(w.y - frodo.y, w.x - frodo.x);
+            const fleeDist = dist(frodo, w);
+            const fleeSpd = w.speed * (fleeDist < 120 ? 2.5 : 1.2);
+            w.x += Math.cos(fleeA) * fleeSpd * 60 * dt;
+            w.y += Math.sin(fleeA) * fleeSpd * 60 * dt;
+            return;
+          }
           // Cave Troll: slow stomp, ground-bound
           if (w.type === 'troll') {
             w.capePhase += dt;
@@ -1262,7 +1271,11 @@
         if (gollum) {
           // Safe zone: Gollum slinks back
           if (gollum.x < SAFE_ZONE_X + gollum.r) { gollum.x += 60*dt*1.2; }
-          else {
+          else if (blessingActive > 0 && frodo) {
+            const fa=Math.atan2(gollum.y-frodo.y,gollum.x-frodo.x);
+            gollum.x+=Math.cos(fa)*gollum.speed*2*60*dt;
+            gollum.y+=Math.sin(fa)*gollum.speed*2*60*dt;
+          } else {
           gollum.capePhase += dt*3;
           gollum.dartTimer -= dt;
           gollum.jumpCD -= dt;
@@ -1437,7 +1450,13 @@
           if (frodo && frodo.x < SAFE_ZONE_X) {
             shelob.x = Math.max(shelob.x, SAFE_ZONE_X + shelob.r + 20);
             shelob.phase = 'lurk';
-            shelob.dropTimer = Math.max(shelob.dropTimer, 2); // reset countdown
+            shelob.dropTimer = Math.max(shelob.dropTimer, 2);
+          } else if (blessingActive > 0 && frodo) {
+            // Flee from Frodo
+            const fa=Math.atan2(shelob.y-frodo.y,shelob.x-frodo.x);
+            shelob.x+=Math.cos(fa)*3*60*dt;
+            shelob.y=Math.max(-80,shelob.y-shelob.returnSpeed*1.5*60*dt);
+            shelob.phase='return';
           } else {
           shelob.dropTimer -= dt;
           if (shelob.phase === 'lurk') {
@@ -1594,7 +1613,11 @@
                 life:0.8+Math.random()*0.4,size:4+Math.random()*4,color:'#c0d8ff'});}
           }
         }
-        if (blessingActive > 0) blessingActive -= dt;
+        if (blessingActive > 0) {
+          blessingActive -= dt;
+          // Phial active: Frodo is protected
+          if (frodo) { frodo.invincible = true; frodo.invTimer = 0.5; }
+        }
 
         // Ambient particles (level atmosphere)
         ambientSpawnTimer -= dt;
