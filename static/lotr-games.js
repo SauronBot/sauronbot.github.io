@@ -923,11 +923,15 @@
           shelob.firePhase += dt*3;
           shelob.dropTimer -= dt;
           if (shelob.phase === 'lurk') {
-            // Track Frodo's X
+            // Track Frodo's X when nearly aligned
             const targetX = frodo ? frodo.x : W;
             const sdx = targetX - shelob.x;
             shelob.x += Math.sign(sdx)*Math.min(Math.abs(sdx), 2.5*60*dt);
             shelob.y = Math.max(-80, shelob.y - shelob.returnSpeed*60*dt);
+            // Telegraph: when dropTimer < 1.2s, Shelob aligns faster and shadow pulses
+            if (shelob.dropTimer < 1.2) {
+              shelob.x += Math.sign(sdx)*Math.min(Math.abs(sdx), 4.5*60*dt);
+            }
             if (shelob.dropTimer <= 0) {
               shelob.phase = 'drop';
               shelob.dropTimer = 5 + Math.random()*3;
@@ -1060,7 +1064,17 @@
         if(dashRefill) drawDashRefill(ctx,dashRefill,t);
         if (gollum) drawGollum(ctx,gollum,eye,frodo);
         if (balrog && balrog.active) drawBalrog(ctx,balrog,H);
-        if (shelob) drawShelob(ctx,shelob,eye);
+        if (shelob) {
+          // Shelob telegraph shadow on ground when about to drop
+          if (shelob.phase==='lurk' && shelob.dropTimer<1.5) {
+            const sAlpha=Math.max(0,(1.5-shelob.dropTimer)/1.5)*0.4;
+            const sg=ctx.createRadialGradient(shelob.x,H*0.7,0,shelob.x,H*0.7,40);
+            sg.addColorStop(0,`rgba(80,0,100,${sAlpha})`);
+            sg.addColorStop(1,'rgba(0,0,0,0)');
+            ctx.fillStyle=sg; ctx.fillRect(shelob.x-40,H*0.5,80,H*0.4);
+          }
+          drawShelob(ctx,shelob,eye);
+        }
         drawWraiths1(ctx,wraiths,eye,H,SKY_Y,!!(def.hasBalrog||def.hasShelob));
         if (frodo) drawFrodo1(ctx,frodo,progress(),timers.elapsed);
         // Eagle particles (Pelennor distraction)
