@@ -2843,11 +2843,13 @@
       // Far background: volcanic sky glow (screen-space)
       ctx.save();
       ctx.setTransform(1,0,0,1,0,0);
-      const skyGlow=ctx.createLinearGradient(0,0,0,H*0.5);
-      skyGlow.addColorStop(0,'rgba(0,0,0,0)');
-      skyGlow.addColorStop(0.7,`rgba(180,40,0,${0.12+Math.sin(t*0.4)*0.04})`);
+      // Volcanic sky -- full width, covers entire sky area
+      const skyGlow=ctx.createLinearGradient(0,0,0,H*0.58);
+      skyGlow.addColorStop(0,`rgba(120,20,0,${0.18+Math.sin(t*0.3)*0.05})`);
+      skyGlow.addColorStop(0.4,`rgba(180,40,0,${0.22+Math.sin(t*0.4)*0.06})`);
+      skyGlow.addColorStop(0.75,`rgba(140,30,0,${0.12+Math.sin(t*0.5)*0.04})`);
       skyGlow.addColorStop(1,'rgba(0,0,0,0)');
-      ctx.fillStyle=skyGlow; ctx.fillRect(0,0,W,H*0.5);
+      ctx.fillStyle=skyGlow; ctx.fillRect(0,0,W,H*0.58);
       ctx.restore(); // back to parallax
 
       // Ground dust clouds
