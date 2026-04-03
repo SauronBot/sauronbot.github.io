@@ -1665,6 +1665,24 @@
           ctx.setLineDash([]);
           ctx.restore();
         }
+        // Breadcrumb trail: faint theme-colored circles from safe zone to goal
+        {
+          const [gr,gg,gb] = def.destGlow;
+          const trailY = H * 0.72; // just above ground
+          const trailStart = WORLD_W * 0.15;
+          const trailEnd = GOAL.x - 40;
+          const steps = 14;
+          ctx.save();
+          for (let i = 0; i < steps; i++) {
+            const tx = trailStart + (trailEnd - trailStart) * (i / (steps - 1));
+            // Vary size and opacity slightly for organic feel
+            const sz = 3.5 + Math.sin(i * 1.7) * 1.2;
+            const alpha = 0.06 + Math.sin(i * 0.9) * 0.02;
+            ctx.fillStyle = `rgba(${gr},${gg},${gb},${alpha})`;
+            ctx.beginPath(); ctx.arc(tx, trailY, sz, 0, Math.PI * 2); ctx.fill();
+          }
+          ctx.restore();
+        }
         ctx.restore(); // end world-space
         // Screen-space overlays (no camera offset)
         if(eye&&eye.open>0.02) drawEye1(ctx,W,eye);
