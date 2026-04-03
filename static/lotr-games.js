@@ -1773,13 +1773,32 @@
         ctx.fillStyle=mg; ctx.fillRect(mx-6,my-6,12,12);
       }
     } else if (def === LEVEL_DEFS[3]) {
-      // Dead Marshes: eerie lights spread across world
+      // Dead Marshes: eerie lights + face glimmers beneath the water
       for(let i=0;i<10;i++){
         const mx=80+i*185, my=H*0.6+Math.sin(t*0.6+i)*6;
-        const mg=ctx.createRadialGradient(mx,my,0,mx,my,18);
-        mg.addColorStop(0,`rgba(100,180,80,${0.12+Math.sin(t+i)*0.06})`);
+        const mg=ctx.createRadialGradient(mx,my,0,mx,my,22);
+        mg.addColorStop(0,`rgba(100,180,80,${0.14+Math.sin(t+i)*0.07})`);
         mg.addColorStop(1,'rgba(0,0,0,0)');
-        ctx.fillStyle=mg; ctx.fillRect(mx-18,my-18,36,36);
+        ctx.fillStyle=mg; ctx.fillRect(mx-22,my-22,44,44);
+        // Dead face glimmer (one per 3 lights)
+        if(i%3===0){
+          ctx.save(); ctx.globalAlpha=Math.max(0,0.18+Math.sin(t*0.9+i*2.1)*0.14);
+          ctx.fillStyle='rgba(180,200,160,0.6)';
+          ctx.beginPath(); ctx.ellipse(mx,my+6,8,6,0,0,Math.PI*2); ctx.fill();
+          // Eyes
+          ctx.fillStyle='rgba(120,180,100,0.7)';
+          ctx.beginPath(); ctx.arc(mx-3,my+5,2,0,Math.PI*2); ctx.fill();
+          ctx.beginPath(); ctx.arc(mx+3,my+5,2,0,Math.PI*2); ctx.fill();
+          ctx.restore();
+        }
+      }
+      // Fog wisps on water surface
+      for(let i=0;i<7;i++){
+        const fx=40+i*265, fy=H*0.58+Math.sin(t*0.5+i)*5;
+        const fg=ctx.createRadialGradient(fx,fy,0,fx,fy,40);
+        fg.addColorStop(0,`rgba(80,120,60,${0.08+Math.sin(t*0.7+i)*0.04})`);
+        fg.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=fg; ctx.fillRect(fx-40,fy-15,80,25);
       }
     } else if (def === LEVEL_DEFS[4]) {
       // Black Gate: fortress walls + forge fires
