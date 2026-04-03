@@ -54,6 +54,7 @@
 
   // ── AUDIO ENGINE ─────────────────────────────────────────────────────
   let _audioCtx = null, _audioEnabled = false;
+  let _titleStartBtnRect = null; // set each frame by drawTitleScreen, hit-tested in handlePointerDown
   let _musicEnabled = true;  // ambient drones
   let _sfxEnabled   = true;  // hit/dash/pickup/eye etc
   let _onAudioReEnable = null; // callback set by game to restart drones
@@ -792,7 +793,6 @@
     }).observe(document.body, {childList:true});
 
     let state = 'title';
-    let _titleStartBtnRect = null; // set by drawTitleScreen, checked in handlePointerDown
     let currentLevel = 0;
     let round = 1;    // increments after completing all 3 levels
     let score = 0;    // accumulated points
