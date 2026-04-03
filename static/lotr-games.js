@@ -2576,7 +2576,16 @@
         ctx.fillStyle=fg; ctx.fillRect(fx-40,fy-15,80,25);
       }
     } else if (def === LEVEL_DEFS[4]) {
-      // Black Gate: fortress walls + forge fires + orc patrol dust
+      // Black Gate: multi-layered fortress, lava rivers, orc army silhouettes
+      // Far background: volcanic sky glow
+      ctx.restore(); // end parallax transform
+      const skyGlow=ctx.createLinearGradient(0,0,0,H*0.5);
+      skyGlow.addColorStop(0,'rgba(0,0,0,0)');
+      skyGlow.addColorStop(0.7,`rgba(180,40,0,${0.12+Math.sin(t*0.4)*0.04})`);
+      skyGlow.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=skyGlow; ctx.fillRect(0,0,W,H*0.5);
+      ctx.save(); ctx.translate(-cameraX*0.45, 0); // restore parallax
+
       // Ground dust clouds
       for(let i=0;i<8;i++){
         const dx=60+i*240+Math.sin(t*0.4+i)*30, dy=H*0.56;
@@ -2585,29 +2594,66 @@
         dg.addColorStop(1,'rgba(0,0,0,0)');
         ctx.fillStyle=dg; ctx.fillRect(dx-30,dy-12,60,20);
       }
-      // Battlements (parallax 0.2x via translate above)
-      ctx.save(); ctx.translate(-cameraX*(0.2-0.45), 0); // adjust for outer translate
-      const battleH = H*0.32;
+      // Orc army silhouettes marching (far background)
+      for(let i=0;i<24;i++){
+        const ox=i*85+((t*18)%85), oy=H*0.50+Math.sin(i*0.7)*4;
+        ctx.fillStyle='rgba(10,5,3,0.55)';
+        // Body
+        ctx.beginPath(); ctx.ellipse(ox,oy,4,7,0,0,Math.PI*2); ctx.fill();
+        // Head
+        ctx.beginPath(); ctx.arc(ox,oy-9,3.5,0,Math.PI*2); ctx.fill();
+        // Spear
+        ctx.strokeStyle='rgba(10,5,3,0.45)'; ctx.lineWidth=1;
+        ctx.beginPath(); ctx.moveTo(ox+3,oy-14); ctx.lineTo(ox+3,oy+6); ctx.stroke();
+      }
+      // Battlements (deeper parallax)
+      ctx.save(); ctx.translate(-cameraX*(0.2-0.45), 0);
+      const battleH = H*0.28;
+      // Second wall layer (farther back, lighter)
+      ctx.fillStyle='#120a06';
+      for(let i=0;i<7;i++){
+        const bx=i*290-60;
+        ctx.fillRect(bx,battleH+H*0.05,240,H*0.18);
+        for(let j=0;j<6;j++) ctx.fillRect(bx+j*36,battleH+H*0.05-18,22,18);
+      }
+      // Main front wall
+      ctx.fillStyle='#1a0c08';
       for(let i=0;i<6;i++){
         const bx=i*320-80;
-        ctx.fillStyle='#1a0c08'; ctx.fillRect(bx,battleH,280,H*0.2);
-        // Battlements
-        for(let j=0;j<7;j++) ctx.fillRect(bx+j*38,battleH-22,24,22);
-        // Arrow slits
-        ctx.save(); ctx.globalAlpha=0.35; ctx.fillStyle='rgba(200,60,0,0.5)';
-        for(let j=0;j<3;j++) ctx.fillRect(bx+50+j*80,battleH+10,6,16);
+        ctx.fillRect(bx,battleH,280,H*0.22);
+        // Battlements top
+        for(let j=0;j<7;j++) ctx.fillRect(bx+j*38,battleH-24,24,24);
+        // Lava rivers down wall face
+        ctx.save(); ctx.shadowColor='#ff4400'; ctx.shadowBlur=6;
+        const lv=ctx.createLinearGradient(bx+120,battleH,bx+120,battleH+H*0.12);
+        lv.addColorStop(0,`rgba(255,80,0,${0.35+Math.sin(t*1.5+i)*0.12})`);
+        lv.addColorStop(1,'rgba(200,40,0,0.1)');
+        ctx.fillStyle=lv; ctx.fillRect(bx+115,battleH,10,H*0.12);
+        ctx.restore();
+        // Arrow slits with red glow
+        ctx.save(); ctx.shadowColor='#cc2200'; ctx.shadowBlur=4;
+        ctx.fillStyle=`rgba(200,60,0,${0.4+Math.sin(t*1.2+i)*0.1})`;
+        for(let j=0;j<3;j++) ctx.fillRect(bx+50+j*80,battleH+14,6,18);
         ctx.restore();
       }
       ctx.restore();
-      // Forge fires / smokestacks
+      // Forge fires with smoke
       for(let i=0;i<8;i++){
         const fx=100+i*248;
-        ctx.fillStyle='#1a0c08'; ctx.fillRect(fx,H*0.36,12,H*0.16); // stack
+        ctx.fillStyle='#1a0c08'; ctx.fillRect(fx,H*0.33,14,H*0.18);
+        // Smoke column
+        for(let s=0;s<5;s++){
+          const sy=H*0.33-s*22, sw=6+s*4;
+          const sg=ctx.createRadialGradient(fx+7+Math.sin(t*0.5+i+s)*8,sy,0,fx+7,sy,sw);
+          sg.addColorStop(0,`rgba(40,30,25,${0.15-s*0.025})`);
+          sg.addColorStop(1,'rgba(0,0,0,0)');
+          ctx.fillStyle=sg; ctx.fillRect(fx+7-sw,sy-sw,sw*2,sw*2);
+        }
         // Fire glow at top
-        const fg=ctx.createRadialGradient(fx+6,H*0.36,0,fx+6,H*0.36,28);
-        fg.addColorStop(0,`rgba(255,120,0,${0.4+Math.sin(t*2.5+i)*0.15})`);
+        const fg=ctx.createRadialGradient(fx+7,H*0.33,0,fx+7,H*0.33,32);
+        fg.addColorStop(0,`rgba(255,130,0,${0.5+Math.sin(t*2.5+i)*0.18})`);
         fg.addColorStop(1,'rgba(0,0,0,0)');
-        ctx.fillStyle=fg; ctx.fillRect(fx-22,H*0.2,56,H*0.2);
+        ctx.fillStyle=fg; ctx.fillRect(fx-18,H*0.14,50,H*0.22);
       }
     } else if (def === LEVEL_DEFS[5]) {
       // Shelob's Lair: webs + bioluminescence (pure darkness handled by torch overlay)
@@ -2635,79 +2681,125 @@
         ctx.fillStyle=bg; ctx.fillRect(bx-22,by-22,44,44);
       }
     } else if (def === LEVEL_DEFS[6]) {
-      // Minas Morgul: undead city, green-lit towers, pulsing light-beam
-      // City walls (parallax adjustment)
+      // Minas Morgul: undead city, corrupted green sky, wights drifting
+      // Ground-level green mist
+      for(let i=0;i<12;i++){
+        const mx=i*165+Math.sin(t*0.3+i)*30, my=H*0.56;
+        const mg=ctx.createRadialGradient(mx,my,0,mx,my,55);
+        mg.addColorStop(0,`rgba(20,120,40,${0.12+Math.sin(t*0.5+i)*0.05})`);
+        mg.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=mg; ctx.fillRect(mx-55,my-20,110,35);
+      }
+      // City walls (deeper parallax)
       ctx.save(); ctx.translate(-cameraX*(0.2-0.45), 0);
       for(let i=0;i<5;i++){
         const cx=i*400-100, cw=200;
-        ctx.fillStyle='#060e06';
-        ctx.fillRect(cx,H*0.28,cw,H*0.25);
-        // Towers
-        ctx.fillStyle='#040c04';
-        ctx.fillRect(cx-12,H*0.18,28,H*0.35);
-        ctx.fillRect(cx+cw-16,H*0.20,28,H*0.32);
+        // Wall gradient
+        const wg=ctx.createLinearGradient(cx,H*0.28,cx,H*0.55);
+        wg.addColorStop(0,'#08140a'); wg.addColorStop(1,'#040c06');
+        ctx.fillStyle=wg;
+        ctx.fillRect(cx,H*0.28,cw,H*0.27);
+        // Crenellations
+        for(let j=0;j<8;j++) ctx.fillRect(cx+j*24,H*0.28-16,16,16);
+        // Tall spires
+        [cx-12, cx+cw-14].forEach((sx,si)=>{
+          ctx.fillStyle='#050e06';
+          ctx.fillRect(sx,H*0.14+si*H*0.03,26,H*0.37);
+          // Spire tip
+          ctx.beginPath(); ctx.moveTo(sx,H*0.14+si*H*0.03); ctx.lineTo(sx+13,H*0.06+si*H*0.03); ctx.lineTo(sx+26,H*0.14+si*H*0.03); ctx.closePath(); ctx.fill();
+          // Spire glow
+          ctx.save(); ctx.shadowColor='#40ff80'; ctx.shadowBlur=8;
+          ctx.fillStyle=`rgba(40,200,80,${0.4+Math.sin(t*1.2+i+si)*0.2})`;
+          ctx.beginPath(); ctx.arc(sx+13,H*0.06+si*H*0.03,3,0,Math.PI*2); ctx.fill();
+          ctx.restore();
+        });
         // Green-lit windows
-        for(let j=0;j<4;j++){
-          const wx=cx+30+j*40, wy=H*0.30+Math.floor(j/2)*20;
-          ctx.save(); ctx.shadowColor='#40ff80'; ctx.shadowBlur=6;
-          ctx.fillStyle=`rgba(40,200,80,${0.3+Math.sin(t*1.5+i+j)*0.15})`;
-          ctx.fillRect(wx,wy,6,10); ctx.restore();
+        for(let j=0;j<6;j++){
+          const wx=cx+18+j*28, wy=H*0.34+Math.floor(j/3)*22;
+          ctx.save(); ctx.shadowColor='#40ff80'; ctx.shadowBlur=8;
+          ctx.fillStyle=`rgba(40,200,80,${0.4+Math.sin(t*1.5+i+j)*0.2})`;
+          ctx.fillRect(wx,wy,7,12); ctx.restore();
         }
-        // Tower beam of light (like the Morgul beacon)
+        // Morgul beacon
         if(i===2){
-          ctx.save(); ctx.shadowColor='#40ff80'; ctx.shadowBlur=14;
-          const bAlpha=0.15+Math.sin(t*0.5)*0.08;
-          const bg=ctx.createLinearGradient(cx+cw*0.5,H*0.18,cx+cw*0.5+H*0.25,0);
-          bg.addColorStop(0,`rgba(40,200,80,${bAlpha})`);
-          bg.addColorStop(1,'rgba(0,0,0,0)');
+          ctx.save(); ctx.shadowColor='#40ff80'; ctx.shadowBlur=20;
+          const bAlpha=0.2+Math.sin(t*0.5)*0.1;
+          const bg=ctx.createLinearGradient(cx+cw*0.5,H*0.1,cx+cw*0.5+W*0.4,0);
+          bg.addColorStop(0,`rgba(40,200,80,${bAlpha})`); bg.addColorStop(1,'rgba(0,0,0,0)');
           ctx.fillStyle=bg;
-          ctx.beginPath(); ctx.moveTo(cx+cw*0.5,H*0.18); ctx.lineTo(cx+cw*0.5+30,0); ctx.lineTo(cx+cw*0.5+H*0.35,0); ctx.lineTo(cx+cw*0.5+H*0.2,H*0.18); ctx.closePath(); ctx.fill();
+          ctx.beginPath(); ctx.moveTo(cx+cw*0.5,H*0.1); ctx.lineTo(cx+cw*0.5+40,0); ctx.lineTo(cx+cw*0.5+W*0.45,0); ctx.lineTo(cx+cw*0.5+W*0.28,H*0.1); ctx.closePath(); ctx.fill();
           ctx.restore();
         }
       }
       ctx.restore();
-      // Constant green glow
-      ctx.restore(); // end parallax
-      const gg=ctx.createRadialGradient(W,H*0.45,0,W,H*0.45,W*0.8);
-      gg.addColorStop(0,`rgba(40,200,80,${0.18+Math.sin(t*0.8)*0.05})`);
+      // Constant green glow from city
+      ctx.restore();
+      const gg=ctx.createRadialGradient(W*0.6,H*0.4,0,W*0.6,H*0.4,W*0.75);
+      gg.addColorStop(0,`rgba(40,200,80,${0.20+Math.sin(t*0.8)*0.06})`);
       gg.addColorStop(1,'rgba(0,0,0,0)');
       ctx.fillStyle=gg; ctx.fillRect(0,0,W,H);
-      return; // already restored
+      return;
     } else if (def === LEVEL_DEFS[7]) {
-      // Pelennor Fields: battlefield smoke + fires + siege engines
+      // Pelennor: massive war -- army clash, oliphaunts silhouette, fires everywhere
+      // War glow on horizon
+      ctx.restore();
+      const warGlow=ctx.createLinearGradient(0,H*0.35,0,H*0.55);
+      warGlow.addColorStop(0,'rgba(0,0,0,0)');
+      warGlow.addColorStop(0.5,`rgba(200,80,0,${0.10+Math.sin(t*0.3)*0.04})`);
+      warGlow.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=warGlow; ctx.fillRect(0,0,W,H);
+      ctx.save(); ctx.translate(-cameraX*0.45, 0);
+
+      // Distant infantry lines (far background)
+      ctx.save(); ctx.translate(-cameraX*(0.08-0.45), 0);
+      for(let row=0;row<3;row++){
+        for(let i=0;i<40;i++){
+          const ix=i*48+row*16, iy=H*0.46+row*8;
+          ctx.fillStyle=`rgba(8,4,2,${0.4-row*0.1})`;
+          ctx.fillRect(ix,iy-10,3,12); // body
+          ctx.beginPath(); ctx.arc(ix+1.5,iy-12,2.5,0,Math.PI*2); ctx.fill(); // head
+        }
+      }
+      // Oliphaunt silhouette (one huge beast in background)
+      ctx.save(); ctx.globalAlpha=0.35; ctx.fillStyle='#100606';
+      const ox2=W*0.55, oy2=H*0.41;
+      ctx.beginPath(); ctx.ellipse(ox2,oy2,55,30,0,0,Math.PI*2); ctx.fill(); // body
+      ctx.beginPath(); ctx.ellipse(ox2+65,oy2-5,18,22,0.3,0,Math.PI*2); ctx.fill(); // head
+      ctx.strokeStyle='#100606'; ctx.lineWidth=8; ctx.lineCap='round';
+      ctx.beginPath(); ctx.moveTo(ox2+72,oy2+8); ctx.quadraticCurveTo(ox2+85,oy2+30,ox2+78,oy2+45); ctx.stroke(); // trunk
+      [-35,-15,15,35].forEach(lx=>{ // legs
+        ctx.beginPath(); ctx.moveTo(ox2+lx,oy2+25); ctx.lineTo(ox2+lx,oy2+50); ctx.stroke();
+      });
+      ctx.restore(); ctx.restore();
+
       // Distant battle fires
       ctx.save(); ctx.translate(-cameraX*(0.15-0.45), 0);
       for(let i=0;i<18;i++){
-        const fx=50+i*110, fy=H*0.48+Math.sin(i*1.3)*H*0.04;
-        const fg=ctx.createRadialGradient(fx,fy,0,fx,fy,14+Math.sin(t*2+i)*4);
-        fg.addColorStop(0,`rgba(255,100,0,${0.3+Math.sin(t*2+i)*0.12})`);
+        const fx=50+i*110, fy=H*0.47+Math.sin(i*1.3)*H*0.04;
+        const fg=ctx.createRadialGradient(fx,fy,0,fx,fy,16+Math.sin(t*2+i)*5);
+        fg.addColorStop(0,`rgba(255,110,0,${0.35+Math.sin(t*2+i)*0.14})`);
         fg.addColorStop(1,'rgba(0,0,0,0)');
-        ctx.fillStyle=fg; ctx.fillRect(fx-18,fy-18,36,36);
+        ctx.fillStyle=fg; ctx.fillRect(fx-20,fy-20,40,38);
       }
-      // Siege engine silhouettes (catapults)
+      // Siege engines (catapults)
       [200,550,980,1400].forEach(sx=>{
         ctx.fillStyle='#1a0a08';
-        // Arm
         ctx.save(); ctx.translate(sx,H*0.49);
         ctx.rotate(-0.6+Math.sin(t*0.3+sx*0.003)*0.15);
-        ctx.fillRect(-3,-35,6,40);
-        ctx.fillRect(-12,-3,24,6); // beam
+        ctx.fillRect(-3,-35,6,40); ctx.fillRect(-12,-3,24,6);
         ctx.restore();
-        // Base
-        ctx.fillStyle='#120806';
-        ctx.fillRect(sx-18,H*0.49,36,12);
-        // Wheels
+        ctx.fillStyle='#120806'; ctx.fillRect(sx-18,H*0.49,36,12);
         ctx.strokeStyle='#1a0e0a'; ctx.lineWidth=3;
-        [-10,10].forEach(ox=>{ ctx.beginPath(); ctx.arc(sx+ox,H*0.51,6,0,Math.PI*2); ctx.stroke(); });
+        [-10,10].forEach(lx=>{ ctx.beginPath(); ctx.arc(sx+lx,H*0.51,6,0,Math.PI*2); ctx.stroke(); });
       });
       ctx.restore();
-      // Smoke wisps on ground
-      for(let i=0;i<10;i++){
-        const sx=100+i*200, sy=H*0.56+Math.sin(t*0.6+i)*8;
-        const sg=ctx.createRadialGradient(sx,sy,0,sx,sy,35);
-        sg.addColorStop(0,`rgba(60,50,50,${0.12+Math.sin(t*0.4+i)*0.05})`);
+      // Ground smoke
+      for(let i=0;i<12;i++){
+        const sx=80+i*165, sy=H*0.56+Math.sin(t*0.6+i)*8;
+        const sg=ctx.createRadialGradient(sx,sy,0,sx,sy,42);
+        sg.addColorStop(0,`rgba(55,45,40,${0.14+Math.sin(t*0.4+i)*0.05})`);
         sg.addColorStop(1,'rgba(0,0,0,0)');
-        ctx.fillStyle=sg; ctx.fillRect(sx-35,sy-20,70,35);
+        ctx.fillStyle=sg; ctx.fillRect(sx-42,sy-18,84,30);
       }
     } else {
       // Mount Doom: ash rain + intensifying doom glow
