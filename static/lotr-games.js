@@ -746,6 +746,7 @@
     let lastScore = 0, lastRound = 1, lastLevel = 0; // for gameover screen
     let sessionCheckpoint = 0; // furthest level reached this session
     let frodo, wraiths=[], gollum=null, balrog=null, shelob=null, particles=[], eye=null, shake={x:0,y:0}, timers={elapsed:0};
+    let sam = null; // Sam follows in Book I (levels 0-2)
     let spiderlings = [];
     let blessingPickup = null;
     let blessingActive = 0;
@@ -838,6 +839,8 @@
       comboTimer = 0; comboMult = 1; comboFlash = 0;
       ringPullTimer = 8 + Math.random()*8; ringPullActive = 0;
       ringWorn = 0; ringWornCooldown = 0;
+      // Sam follows in Book I
+      sam = lvl <= 2 ? { x: (frodo?.x||200) - 28, y: (frodo?.y||H*0.6), trail: [], bobPhase: Math.random()*Math.PI*2 } : null;
       state = 'playing';
       startLevelDrone(lvl);
     }
@@ -1293,6 +1296,18 @@
           playTone(740,'sine',0.025,0.15,true,0);
         }
 
+        // Sam (Book I companion)
+        if (sam && frodo) {
+          sam.bobPhase += dt * 2.8;
+          // Record Frodo's trail
+          sam.trail = sam.trail || [];
+          sam.trail.push({x: frodo.x, y: frodo.y});
+          if (sam.trail.length > 38) sam.trail.shift(); // ~0.6s lag
+          const target = sam.trail[0] || {x: frodo.x - 28, y: frodo.y};
+          sam.x += (target.x - sam.x) * Math.min(1, dt * 5);
+          sam.y += (target.y - sam.y) * Math.min(1, dt * 5);
+        }
+
         // Gollum
         if (gollum) {
           // Safe zone: Gollum slinks back
@@ -1736,6 +1751,8 @@
         spiderlings.forEach(sp => drawSpiderling(ctx, sp));
         // Blessing pickup
         if (blessingPickup && !blessingPickup.collected) drawBlessingPickup(ctx, blessingPickup, t);
+        // Sam (draw before Frodo so Frodo is in front)
+        if (sam) drawSam(ctx, sam, timers.elapsed);
         drawWraiths1(ctx,wraiths,eye,H,SKY_Y,!!(def.hasBalrog||def.hasShelob));
         {
           const stingDist = wraiths.length
@@ -4312,6 +4329,56 @@
       }
       ctx.restore();
     });
+  }
+
+  function drawSam(ctx, sam, elapsed) {
+    const r = 13; // slightly smaller than Frodo
+    ctx.save(); ctx.translate(sam.x, sam.y);
+    const bob = Math.sin(sam.bobPhase) * 1.2;
+    ctx.translate(0, bob);
+    // Ground shadow
+    ctx.save(); ctx.globalAlpha=0.15;
+    const sg=ctx.createRadialGradient(0,r*1.4,0,0,r*1.4,r*1.8);
+    sg.addColorStop(0,'rgba(0,0,0,0.7)'); sg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=sg; ctx.beginPath(); ctx.ellipse(0,r*1.4,r*1.4,r*0.35,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+    // Warm glow
+    const bg=ctx.createRadialGradient(0,0,0,0,0,r*3);
+    bg.addColorStop(0,'rgba(180,140,60,0.12)'); bg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=bg; ctx.fillRect(-r*3,-r*3,r*6,r*6);
+    // Big hobbit feet
+    ctx.fillStyle='hsl(20,45%,22%)';
+    ctx.beginPath(); ctx.ellipse(-r*0.4,r*1.05,r*0.5,r*0.26,Math.PI*0.1,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(r*0.4,r*1.05,r*0.5,r*0.26,-Math.PI*0.1,0,Math.PI*2); ctx.fill();
+    // Cloak (warmer brown -- Sam's gardener clothes)
+    ctx.fillStyle='hsl(28,42%,26%)';
+    ctx.beginPath();
+    ctx.moveTo(-r*0.55,-r*0.4); ctx.bezierCurveTo(-r*1.0,-r*0.1,-r*1.0,r*0.55,-r*0.45,r*0.9);
+    ctx.lineTo(r*0.45,r*0.9); ctx.bezierCurveTo(r*1.0,r*0.55,r*1.0,-r*0.1,r*0.55,-r*0.4);
+    ctx.closePath(); ctx.fill();
+    // Head (rounder, more cheerful)
+    ctx.fillStyle='hsl(28,52%,42%)';
+    ctx.beginPath(); ctx.arc(0,-r*0.8,r*0.8,0,Math.PI*2); ctx.fill();
+    // Curly hair
+    ctx.fillStyle='hsl(22,50%,30%)';
+    ctx.beginPath(); ctx.arc(0,-r*1.35,r*0.62,Math.PI,0); ctx.fill();
+    [-r*0.5,-r*0.22,0,r*0.22,r*0.5].forEach((hx,i)=>{
+      ctx.beginPath(); ctx.arc(hx,-r*1.33+Math.sin(i)*r*0.04,r*0.21,0,Math.PI*2); ctx.fill();
+    });
+    // Eyes (friendly, slightly wide)
+    ctx.fillStyle='#1a0a00';
+    ctx.beginPath(); ctx.ellipse(-r*0.2,-r*0.82,r*0.11,r*0.09,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(r*0.2,-r*0.82,r*0.11,r*0.09,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(255,240,220,0.85)';
+    ctx.beginPath(); ctx.ellipse(-r*0.2,-r*0.83,r*0.06,r*0.055,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(r*0.2,-r*0.83,r*0.06,r*0.055,0,0,Math.PI*2); ctx.fill();
+    // Frying pan (Sam's weapon) on back
+    ctx.save();
+    ctx.strokeStyle='rgba(120,100,60,0.6)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(-r*0.6,-r*0.2); ctx.lineTo(-r*1.1,-r*0.6); ctx.stroke();
+    ctx.fillStyle='rgba(80,70,60,0.5)';
+    ctx.beginPath(); ctx.arc(-r*1.15,-r*0.65,r*0.28,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+    ctx.restore();
   }
 
   function drawFrodo1(ctx,frodo,prog,elapsed,lvl=0,ringWorn=false,stingDist=9999){
