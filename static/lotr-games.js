@@ -1697,7 +1697,7 @@
             ctx.restore();
           }
         }
-        drawUILevel(ctx,W,H,frodo,progress(),eye,timers.elapsed,currentLevel,def,dashCharges,score,round,GOD_MODE,maxLives(),maxDash());
+        drawUILevel(ctx,W,H,frodo,progress(),eye,timers.elapsed,currentLevel,def,dashCharges,score,round,GOD_MODE,maxLives(),maxDash(),comboMult,comboFlash,comboTimer);
         // Cinematic level intro (4.5s total)
         if(timers.elapsed < 4.5) {
           const el = timers.elapsed;
@@ -3500,7 +3500,7 @@
   }
 
   // ── UI (shared) ───────────────────────────────────────────────────────
-  function drawUILevel(ctx,W,H,frodo,prog,eye,elapsed,lvl,def,dashCharges=0,score=0,round=1,godMode=false,maxL=3,maxD=3){
+  function drawUILevel(ctx,W,H,frodo,prog,eye,elapsed,lvl,def,dashCharges=0,score=0,round=1,godMode=false,maxL=3,maxD=3,comboMult=1,comboFlash=0,comboTimer=0){
     // Progress bar -- grows heavier/darker with level number
     const ringHeaviness = lvl / 8; // 0 at Shire, 1.0 at Mount Doom
     ctx.fillStyle=`rgba(0,0,0,${0.55+ringHeaviness*0.25})`; ctx.fillRect(10,10,210,18);
