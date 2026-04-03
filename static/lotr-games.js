@@ -1737,7 +1737,12 @@
         // Blessing pickup
         if (blessingPickup && !blessingPickup.collected) drawBlessingPickup(ctx, blessingPickup, t);
         drawWraiths1(ctx,wraiths,eye,H,SKY_Y,!!(def.hasBalrog||def.hasShelob));
-        if (frodo) drawFrodo1(ctx,frodo,progress(),timers.elapsed,currentLevel,ringWorn>0);
+        {
+          const stingDist = wraiths.length
+            ? Math.min(...wraiths.map(w=>Math.hypot(frodo.x-w.x,frodo.y-w.y)))
+            : 9999;
+          drawFrodo1(ctx,frodo,progress(),timers.elapsed,currentLevel,ringWorn>0,stingDist);
+        }
         // Eagle particles (Pelennor distraction)
         eagleParticles.forEach(ep=>{
           ctx.save(); ctx.globalAlpha=Math.min(1,ep.life*0.5);
@@ -4309,7 +4314,7 @@
     });
   }
 
-  function drawFrodo1(ctx,frodo,prog,elapsed,lvl=0,ringWorn=false){
+  function drawFrodo1(ctx,frodo,prog,elapsed,lvl=0,ringWorn=false,stingDist=9999){
     ctx.save(); ctx.translate(frodo.x,frodo.y);
     // Corruption: lean forward more with each book, cloak darkens
     const corruption = lvl / 8;  // 0 = Shire, 1.0 = Mount Doom
@@ -4388,6 +4393,32 @@
       ctx.beginPath(); ctx.arc(rx,ry,9+prog*2.5,0,Math.PI*2); ctx.stroke(); }
     ctx.fillStyle=`rgba(255,240,100,${0.7+prog*0.2})`;
     ctx.beginPath(); ctx.arc(rx-2,ry-2,1.5,0,Math.PI*2); ctx.fill(); ctx.restore();
+    // Sting -- blue glow on Frodo's side, intensifies when orcs are near (within 200px)
+    const stingRange = 200;
+    const stingIntensity = Math.max(0, 1 - stingDist / stingRange); // 0=far, 1=touching
+    if (stingIntensity > 0.05) {
+      const stingX = r * 0.55, stingY = r * 0.1;
+      ctx.save();
+      ctx.shadowColor = `rgba(80,160,255,${stingIntensity * 0.9})`;
+      ctx.shadowBlur = 8 + stingIntensity * 12;
+      // Blade
+      const stingGrad = ctx.createLinearGradient(stingX, stingY-r*0.5, stingX, stingY+r*0.6);
+      stingGrad.addColorStop(0, `rgba(200,230,255,${0.6+stingIntensity*0.4})`);
+      stingGrad.addColorStop(0.5, `rgba(80,160,255,${0.5+stingIntensity*0.4})`);
+      stingGrad.addColorStop(1, `rgba(40,80,200,${0.2+stingIntensity*0.3})`);
+      ctx.fillStyle = stingGrad;
+      ctx.beginPath();
+      ctx.moveTo(stingX, stingY - r*0.55);
+      ctx.lineTo(stingX + r*0.14, stingY + r*0.5);
+      ctx.lineTo(stingX - r*0.14, stingY + r*0.5);
+      ctx.closePath(); ctx.fill();
+      // Halo pulse
+      const sg2 = ctx.createRadialGradient(stingX, stingY, 0, stingX, stingY, r*1.2*stingIntensity);
+      sg2.addColorStop(0, `rgba(100,180,255,${stingIntensity*0.35})`);
+      sg2.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = sg2; ctx.fillRect(stingX-r*1.5, stingY-r*1.5, r*3, r*3);
+      ctx.restore();
+    }
     // Hit flash (level-tinted)
     const HIT_FLASH_COLS=['80,200,80','255,120,0','160,200,255','100,160,60','200,30,0','160,60,200','60,200,100','255,160,40','220,20,0'];
     const hfc = HIT_FLASH_COLS[lvl]||'255,50,0';
