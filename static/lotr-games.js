@@ -90,13 +90,74 @@
   }
   // Sound events
   function sndHit()      { playTone(120,'sawtooth',0.18,0.35); playNoise(0.06,0.25,300); }
-  function sndDash()     { playTone(440,'sine',0.08,0.12); playTone(660,'sine',0.05,0.08,true,0.08); }
+  function sndDash()     {
+    // Whoosh: descending sweep + brief invincibility zing
+    const ac = getAudioCtx(); if (!ac || !_audioEnabled) return;
+    try {
+      const osc = ac.createOscillator(), g = ac.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(900, ac.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(200, ac.currentTime + 0.22);
+      g.gain.setValueAtTime(0.12, ac.currentTime);
+      g.gain.linearRampToValueAtTime(0, ac.currentTime + 0.22);
+      osc.connect(g); g.connect(ac.destination);
+      osc.start(); osc.stop(ac.currentTime + 0.23);
+    } catch(e){}
+    playTone(1200,'sine',0.04,0.08);
+  }
   function sndPickup()   { playTone(880,'sine',0.07,0.08); playTone(1100,'sine',0.05,0.08,true,0.06); }
   function sndKey()      { [440,550,660,880].forEach((f,i)=>playTone(f,'sine',0.06,0.12,true,i*0.06)); }
   function sndLevelWin() { [523,659,784,1047].forEach((f,i)=>playTone(f,'sine',0.07,0.25,true,i*0.1)); }
   function sndEyeOpen()  { playTone(55,'sawtooth',0.12,1.2); playTone(80,'sawtooth',0.08,1.5,true,0.2); }
   function sndBalrog()   { playTone(40,'sawtooth',0.2,1.8); playNoise(0.1,1.5,200); }
   function sndHorn()     { playTone(220,'square',0.1,0.4); playTone(174,'square',0.08,0.6,true,0.35); }
+
+  // ── AMBIENT DRONE ENGINE ──────────────────────────────────────────────────
+  let _droneNodes = [];  // {osc, gain} pairs currently playing
+  function stopDrones() {
+    _droneNodes.forEach(({osc,gain}) => {
+      try { gain.gain.linearRampToValueAtTime(0, getAudioCtx().currentTime+1.5); osc.stop(getAudioCtx().currentTime+1.6); } catch(e){}
+    });
+    _droneNodes = [];
+  }
+  function startDroneLayer(freq, type, gainVal, detune=0) {
+    const ac = getAudioCtx(); if (!ac || !_audioEnabled) return;
+    try {
+      const osc = ac.createOscillator(), g = ac.createGain();
+      osc.type = type; osc.frequency.value = freq;
+      if (detune) osc.detune.value = detune;
+      g.gain.setValueAtTime(0, ac.currentTime);
+      g.gain.linearRampToValueAtTime(gainVal, ac.currentTime+2);
+      osc.connect(g); g.connect(ac.destination);
+      osc.start();
+      _droneNodes.push({osc, gain:g});
+    } catch(e){}
+  }
+  // Level-specific ambient drones
+  const LEVEL_DRONES = [
+    // L0 Shire: warm soft hum (morning birds feel)
+    () => { startDroneLayer(220,'sine',0.025); startDroneLayer(330,'sine',0.015,5); },
+    // L1 Moria: deep ominous pulse + distant drums sim
+    () => { startDroneLayer(55,'sawtooth',0.035); startDroneLayer(110,'sawtooth',0.02,-8); startDroneLayer(82,'square',0.012); },
+    // L2 Lothl: ethereal silver hum
+    () => { startDroneLayer(528,'sine',0.018); startDroneLayer(792,'sine',0.010,10); },
+    // L3 Marshes: low eerie moan
+    () => { startDroneLayer(80,'sawtooth',0.022,-5); startDroneLayer(120,'sine',0.012,7); },
+    // L4 Black Gate: industrial grind
+    () => { startDroneLayer(55,'sawtooth',0.04); startDroneLayer(73,'sawtooth',0.025,-12); },
+    // L5 Shelob: high tense buzz + low rumble
+    () => { startDroneLayer(60,'sawtooth',0.03); startDroneLayer(440,'sine',0.008,15); },
+    // L6 Morgul: undead whine
+    () => { startDroneLayer(90,'sawtooth',0.025); startDroneLayer(135,'sine',0.015,-6); },
+    // L7 Pelennor: war bass
+    () => { startDroneLayer(65,'sawtooth',0.038); startDroneLayer(97,'sawtooth',0.02,8); },
+    // L8 Mt Doom: volcanic deep rumble
+    () => { startDroneLayer(40,'sawtooth',0.045); startDroneLayer(60,'sawtooth',0.03,-15); startDroneLayer(80,'sine',0.018); },
+  ];
+  function startLevelDrone(lvl) {
+    stopDrones();
+    if (_audioEnabled && LEVEL_DRONES[lvl]) LEVEL_DRONES[lvl]();
+  }
 
   // ── OVERLAY HELPERS ───────────────────────────────────────────────────
   function makeOverlay(bgColor) {
@@ -411,7 +472,7 @@
     const ctx = canvas.getContext('2d');
 
     let alive = true;
-    function close() { alive = false; ov.remove(); }
+    function close() { alive = false; stopDrones(); ov.remove(); }
     const pauseCtrl = makeCloseBtn(ov, close, () => state);
 
     // ── Mobile dash button ─────────────────────────────────────────────────────────
@@ -463,6 +524,7 @@
       sndBtn.textContent = _audioEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07';
       sndBtn.style.color = _audioEnabled ? 'rgba(200,160,60,0.9)' : 'rgba(100,80,40,0.5)';
       if (_audioEnabled) { const ac = getAudioCtx(); if (ac && ac.state==='suspended') ac.resume(); }
+      else stopDrones();
     });
     ov.appendChild(sndBtn);
 
@@ -674,6 +736,7 @@
       comboTimer = 0; comboMult = 1; comboFlash = 0;
       ringPullTimer = 8 + Math.random()*8; ringPullActive = 0;
       state = 'playing';
+      startLevelDrone(lvl);
     }
 
     function makeGollum() {
