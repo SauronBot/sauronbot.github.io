@@ -2,17 +2,22 @@
  * LOTR Easter-Egg — Carry the Ring
  * Triggered by: ↑↑↓↓←→←→BA (Konami code)
  *
- * A 3-level dodge game across a scrolling 2× world with parallax backgrounds.
+ * A 9-level dodge game across a scrolling 2× world with parallax backgrounds.
  *
- * Level 1 — The Fellowship of the Ring
- *   Shire → Rivendell. 3–5 Nazgûl. Gentle Eye. Green palette.
+ * Book I — The Fellowship of the Ring
+ *   Ch.1: Shire → Rivendell. 3–5 Nazgûl. Gentle Eye. Green palette.
+ *   Ch.2: Mines of Moria. Balrog boss, torch darkness, no sky.
+ *   Ch.3: Lothlórien. Ethereal rest — Mirror of Galadriel tempts.
  *
- * Level 2 — The Two Towers
- *   Emyn Muil / Dead Marshes. 4–7 Nazgûl + Gollum. Eye wakes often.
+ * Book II — The Two Towers
+ *   Ch.4: Emyn Muil / Dead Marshes. 4–7 Nazgûl + Gollum. Eye wakes often.
+ *   Ch.5: The Black Gate. Heavy orc patrols, industrial Mordor.
+ *   Ch.6: Shelob's Lair. Spider boss, absolute darkness.
  *
- * Level 3 — The Return of the King
- *   Full Mordor. 6–10 Nazgûl + Gollum. Eye barely rests.
- *   Ring corruption causes random blind flashes at high progress.
+ * Book III — The Return of the King
+ *   Ch.7: Minas Morgul. Undead city, permanent Eye.
+ *   Ch.8: Pelennor Fields. Battle rages, Eye distracted.
+ *   Ch.9: Mount Doom. Full chaos, Ring corruption, final climb.
  *
  * Mechanics:
  *   - WASD / Arrow keys to move Frodo
@@ -207,83 +212,145 @@
   // GAME 1: CARRY THE RING  (3 levels)
   // ─────────────────────────────────────────────────────────────────────
   const LEVEL_DEFS = [
+    // ── BOOK I ───────────────────────────────────────────────────────────
     {
-      // Level 1 — The Fellowship of the Ring
+      book: 'I', chapter: 1,
       title:       'The Fellowship of the Ring',
       subtitle:    '"Even the smallest person can change the course of the future."',
       destination: 'Rivendell',
-      bgSky:   ['#05060a','#0c1218'],
-      bgGnd:   ['#142010','#0c180a'],
-      roadCol: 'rgba(55,70,30,0.9)',
-      horizon: '#1a280e',
-      glow:    [80,160,40],  // RGB of the horizon glow
-      glowAlpha: 0.18,
-      destGlow:[80,160,40],
-      initWraiths: 3,
-      maxWraiths:  5,
-      wraithSpeed: 1.2,
-      eyeIdleBase: 18,
-      eyeActiveDur: 6,
-      spawnMin: 4,
-      hasGollum: false,
-      hasBlindFlash: false,
-      flavour: ['The Shire grows distant...','The Road goes ever on...','Rivendell is near...','Almost there...'],
-      winMsg:  'The Fellowship is complete.',
-      winQuote:'"One ring to rule them all..."',
-      progressLabel: 'THE ROAD TO RIVENDELL',
+      bgSky:   ['#05060a','#0c1218'], bgGnd: ['#142010','#0c180a'],
+      roadCol: 'rgba(55,70,30,0.9)', horizon: '#1a280e',
+      glow: [80,160,40], glowAlpha: 0.18, destGlow: [80,160,40],
+      initWraiths:3, maxWraiths:5, wraithSpeed:1.1, eyeIdleBase:22, eyeActiveDur:5, spawnMin:4.5,
+      hasGollum:false, hasBlindFlash:false, hasShelob:false, hasBalrog:false,
+      companion: 'fellowship', // Gandalf + Aragorn silhouettes at goal
+      flavour:['The Shire grows distant...','The Road goes ever on...','Rivendell is near...','Almost there...'],
+      winMsg:'The Fellowship is formed.', winQuote:'"One ring to rule them all..."',
+      progressLabel:'THE ROAD TO RIVENDELL',
     },
     {
-      // Level 2 — The Two Towers
-      title:       'The Two Towers',
-      subtitle:    '"There is some good in this world, and it\'s worth fighting for."',
+      book: 'I', chapter: 2,
+      title:       'The Mines of Moria',
+      subtitle:    '"Fly, you fools!"',
+      destination: 'Bridge of Khazad-dûm',
+      bgSky:   ['#000000','#040208'], bgGnd: ['#0a0608','#060404'],
+      roadCol: 'rgba(30,20,10,0.95)', horizon: '#0d0a0a',
+      glow: [180,80,20], glowAlpha: 0.35, destGlow: [200,90,10],
+      initWraiths:4, maxWraiths:8, wraithSpeed:1.3, eyeIdleBase:15, eyeActiveDur:7, spawnMin:3.5,
+      hasGollum:false, hasBlindFlash:false, hasShelob:false, hasBalrog:true,
+      companion: 'gandalf',
+      flavour:['The darkness is absolute...','Something stirs in the deep...','The drums... drums in the deep...','The bridge is ahead!'],
+      winMsg:'You have crossed Khazad-dûm.', winQuote:'"You cannot pass!"',
+      progressLabel:'THE MINES OF MORIA',
+    },
+    {
+      book: 'I', chapter: 3,
+      title:       'Lothlórien',
+      subtitle:    '"Even the smallest light can be found in the darkest of times."',
+      destination: 'The Mirror of Galadriel',
+      bgSky:   ['#020508','#060c10'], bgGnd: ['#081408','#040c04'],
+      roadCol: 'rgba(20,50,20,0.85)', horizon: '#0a1e0a',
+      glow: [160,255,180], glowAlpha: 0.15, destGlow: [160,255,180],
+      initWraiths:2, maxWraiths:4, wraithSpeed:1.0, eyeIdleBase:28, eyeActiveDur:4, spawnMin:6,
+      hasGollum:false, hasBlindFlash:false, hasShelob:false, hasBalrog:false,
+      companion: 'galadriel',
+      flavour:['The wood breathes...','Light flows between the leaves...','The Mirror calls...','Do not look into it!'],
+      winMsg:"Galadriel's gift is yours.", winQuote:'"Even the smallest person can change the course of the future."',
+      progressLabel:'THE GOLDEN WOOD',
+    },
+    // ── BOOK II ──────────────────────────────────────────────────────────
+    {
+      book: 'II', chapter: 4,
+      title:       'The Dead Marshes',
+      subtitle:    '"There are dead things... faces in the water."',
       destination: 'Emyn Muil',
-      bgSky:   ['#080610','#0e0c18'],
-      bgGnd:   ['#1a1508','#100e06'],
-      roadCol: 'rgba(60,50,20,0.9)',
-      horizon: '#1e1a0a',
-      glow:    [160,120,40],
-      glowAlpha: 0.22,
-      destGlow:[200,100,20],
-      initWraiths: 4,
-      maxWraiths:  7,
-      wraithSpeed: 1.55,
-      eyeIdleBase: 12,
-      eyeActiveDur: 8,
-      spawnMin: 2.8,
-      hasGollum: true,
-      hasBlindFlash: false,
-      flavour: ['Gollum circles in the shadows...','The marshes pull at every step...','Something precious is near...','We musst go on, yess...'],
-      winMsg:  'You have escaped the Emyn Muil.',
-      winQuote:'"Not all those who wander are lost."',
-      progressLabel: 'THE MARSHES OF EMYN MUIL',
+      bgSky:   ['#080610','#0e0c18'], bgGnd: ['#1a1508','#100e06'],
+      roadCol: 'rgba(60,50,20,0.9)', horizon: '#1e1a0a',
+      glow: [160,120,40], glowAlpha: 0.22, destGlow: [200,100,20],
+      initWraiths:4, maxWraiths:7, wraithSpeed:1.4, eyeIdleBase:14, eyeActiveDur:7, spawnMin:3.2,
+      hasGollum:true, hasBlindFlash:false, hasShelob:false, hasBalrog:false,
+      companion: null,
+      flavour:['Gollum circles in the shadows...','The marshes pull at every step...','The faces glow beneath the water...','We musst go on, yess...'],
+      winMsg:'The Emyn Muil is behind you.', winQuote:'"Not all those who wander are lost."',
+      progressLabel:'THE DEAD MARSHES',
     },
     {
-      // Level 3 — The Return of the King
+      book: 'II', chapter: 5,
+      title:       'The Black Gate',
+      subtitle:    '"The Gate is shut. There is no way in."',
+      destination: 'The Secret Stair',
+      bgSky:   ['#040208','#080410'], bgGnd: ['#140808','#0a0404'],
+      roadCol: 'rgba(50,20,10,0.95)', horizon: '#160808',
+      glow: [200,30,10], glowAlpha: 0.38, destGlow: [220,40,0],
+      initWraiths:5, maxWraiths:9, wraithSpeed:1.65, eyeIdleBase:10, eyeActiveDur:9, spawnMin:2.5,
+      hasGollum:true, hasBlindFlash:false, hasShelob:false, hasBalrog:false,
+      companion: null,
+      flavour:['The armies of Mordor mass at the gate...','No way through the front...','Gollum knows another path...','The stair is close!'],
+      winMsg:'You found the secret stair.', winQuote:'"There is another way... Gollum knows it."',
+      progressLabel:'THE ROAD TO CIRITH UNGOL',
+    },
+    {
+      book: 'II', chapter: 6,
+      title:       "Shelob's Lair",
+      subtitle:    '"She hunts by feel, by smell."',
+      destination: 'The Pass of Cirith Ungol',
+      bgSky:   ['#000000','#020004'], bgGnd: ['#040002','#020001'],
+      roadCol: 'rgba(10,0,10,0.98)', horizon: '#060004',
+      glow: [100,0,120], glowAlpha: 0.3, destGlow: [120,20,140],
+      initWraiths:3, maxWraiths:6, wraithSpeed:1.5, eyeIdleBase:12, eyeActiveDur:8, spawnMin:3.5,
+      hasGollum:true, hasBlindFlash:true, hasShelob:true, hasBalrog:false,
+      companion: null,
+      flavour:['The darkness is absolute...','Something enormous moves above...','She is close...','The light of Eärendil!'],
+      winMsg:'You have passed through the lair.', winQuote:'"In the darkness bind them."',
+      progressLabel:"SHELOB'S LAIR",
+    },
+    // ── BOOK III ─────────────────────────────────────────────────────────
+    {
+      book: 'III', chapter: 7,
+      title:       'Minas Morgul',
+      subtitle:    '"The tower of the dead."',
+      destination: 'The Morgul Road',
+      bgSky:   ['#010308','#020410'], bgGnd: ['#060a06','#040804'],
+      roadCol: 'rgba(10,30,10,0.95)', horizon: '#081008',
+      glow: [40,200,60], glowAlpha: 0.28, destGlow: [60,220,80],
+      initWraiths:6, maxWraiths:10, wraithSpeed:1.8, eyeIdleBase:8, eyeActiveDur:11, spawnMin:2.2,
+      hasGollum:true, hasBlindFlash:true, hasShelob:false, hasBalrog:false,
+      companion: null,
+      flavour:['The dead city pulses with green light...','The Nazgûl Lord rides out...','The Ring screams to be used...','Keep moving!'],
+      winMsg:'Minas Morgul is behind you.', winQuote:'"The power of the Ring could not be hidden."',
+      progressLabel:'THE MORGUL ROAD',
+    },
+    {
+      book: 'III', chapter: 8,
+      title:       'The Pelennor Fields',
+      subtitle:    '"I am no man!"',
+      destination: 'The Crack of Doom',
+      bgSky:   ['#060208','#0c040e'], bgGnd: ['#180808','#0e0404'],
+      roadCol: 'rgba(60,20,10,0.9)', horizon: '#1a0808',
+      glow: [255,120,20], glowAlpha: 0.35, destGlow: [255,140,0],
+      initWraiths:7, maxWraiths:12, wraithSpeed:1.9, eyeIdleBase:6, eyeActiveDur:12, spawnMin:2.0,
+      hasGollum:true, hasBlindFlash:true, hasShelob:false, hasBalrog:false,
+      companion: null,
+      flavour:['The battle rages all around...','Eagles! The eagles are coming!','The Eye is distracted by war...','Almost to Mordor!'],
+      winMsg:'The battle is won. Mordor awaits.', winQuote:'"I cannot carry it for you... but I can carry you!"',
+      progressLabel:'ACROSS PELENNOR',
+    },
+    {
+      book: 'III', chapter: 9,
       title:       'The Return of the King',
-      subtitle:    '"I can\'t carry it for you... but I can carry you!"',
+      subtitle:    '"I cannot carry it for you... but I can carry you!"',
       destination: 'Mount Doom',
-      bgSky:   ['#04020a','#0e0408'],
-      bgGnd:   ['#1c0a04','#0c0602'],
-      roadCol: 'rgba(65,30,10,0.9)',
-      horizon: '#1e0a04',
-      glow:    [255,50,5],
-      glowAlpha: 0.45,
-      destGlow:[255,60,0],
-      initWraiths: 6,
-      maxWraiths:  10,
-      wraithSpeed: 2.0,
-      eyeIdleBase: 7,
-      eyeActiveDur: 12,
-      spawnMin: 1.8,
-      hasGollum: true,
-      hasBlindFlash: true,
-      flavour: ['Every step is agony...','The Eye sees all...','The Ring commands you to stop...','Throw it in the fire!'],
-      winMsg:  'It is done.',
-      winQuote:'"My precious..."',
-      progressLabel: 'THE ROAD TO MOUNT DOOM',
+      bgSky:   ['#04020a','#0e0408'], bgGnd: ['#1c0a04','#0c0602'],
+      roadCol: 'rgba(65,30,10,0.9)', horizon: '#1e0a04',
+      glow: [255,50,5], glowAlpha: 0.45, destGlow: [255,60,0],
+      initWraiths:8, maxWraiths:14, wraithSpeed:2.2, eyeIdleBase:5, eyeActiveDur:14, spawnMin:1.6,
+      hasGollum:true, hasBlindFlash:true, hasShelob:false, hasBalrog:false,
+      companion: null,
+      flavour:['Every step is agony...','The Eye sees all...','The Ring commands you to stop...','Throw it in the fire!'],
+      winMsg:'It is done.', winQuote:'"My precious..."',
+      progressLabel:'THE ROAD TO MOUNT DOOM',
     },
   ];
-
   function launchCarryTheRing() {
     // God mode: ?god=chema — infinite lives and infinite dash
     const GOD_MODE = new URLSearchParams(window.location.search).get('god') === 'chema';
@@ -406,7 +473,8 @@
     let round = 1;    // increments after completing all 3 levels
     let score = 0;    // accumulated points
     let lastScore = 0, lastRound = 1, lastLevel = 0; // for gameover screen
-    let frodo, wraiths=[], gollum=null, particles=[], eye=null, shake={x:0,y:0}, timers={elapsed:0};
+    let frodo, wraiths=[], gollum=null, balrog=null, shelob=null, particles=[], eye=null, shake={x:0,y:0}, timers={elapsed:0};
+    let eyeDistracted=false, eyeDistractTimer=15, eyeEagleTimer=0, eagleParticles=[];
     let blindFlash = 0, levelTransTimer = 0;
     let lifePickup = null;  // {x,y,r,pulse}
     let keyPickup = null;   // {x,y,r,pulse} — must collect before goal unlocks
@@ -437,6 +505,9 @@
       const initCount  = Math.min(scaledInit + (round - 1), scaledMax);
       for (let i = 0; i < initCount; i++) spawnWraith(def, i, initCount);
       gollum = def.hasGollum ? makeGollum() : null;
+      balrog = def.hasBalrog ? makeBalrog() : null;
+      shelob = def.hasShelob ? makeShelob() : null;
+      eyeDistracted=false; eyeDistractTimer=15+Math.random()*5; eyeEagleTimer=0; eagleParticles=[];
       particles = [];
       eye = {
         phase: 'idle', timer: 0, open: 0,
@@ -471,9 +542,26 @@
         phase: 'lurk', // 'lurk' | 'dart' | 'jump'
         dartTimer: 0, dartCD: 5 + Math.random()*4,
         capePhase: 0,
-        jumpCD: 5 + Math.random()*3,   // cooldown between leaps
+        jumpCD: 5 + Math.random()*3,
         jumpTimer: 0, jumpDuration: 0, jumpGroundY: 0, jumpPeakY: 0, jumpStartX: 0,
-        jumpAttemptsLeft: 0,           // how many leaps remain in current burst
+        jumpAttemptsLeft: 0,
+      };
+    }
+
+    function makeBalrog() {
+      return {
+        x: -400, y: H*0.6, r: 38,
+        firePhase: 0, active: false,
+        whipTimer: 0, activationShown: false,
+      };
+    }
+
+    function makeShelob() {
+      return {
+        x: W*0.5, y: -80, r: 35,
+        firePhase: 0, phase: 'lurk',
+        dropTimer: 4 + Math.random()*3,
+        returnSpeed: 3.5,
       };
     }
 
@@ -522,9 +610,15 @@
     const SKY_Y = H * 0.46;
 
     const GOAL_Y_BY_LEVEL = [
-      Math.round(H * 0.58), // L1: ground level — enter Rivendell's gates
-      Math.round(H * 0.28), // L2: elevated — climb the Emyn Muil
-      Math.round(H * 0.12), // L3: near top — summit of Mount Doom
+      Math.round(H * 0.62), // 1: Rivendell — valley floor
+      Math.round(H * 0.70), // 2: Moria bridge — ground level (no sky)
+      Math.round(H * 0.55), // 3: Lothlórien — mid height (in the trees)
+      Math.round(H * 0.30), // 4: Emyn Muil — elevated cliff
+      Math.round(H * 0.48), // 5: Black Gate — road level
+      Math.round(H * 0.55), // 6: Shelob's Lair — ground (darkness)
+      Math.round(H * 0.40), // 7: Minas Morgul — mid sky, eerie
+      Math.round(H * 0.35), // 8: Pelennor — mid-high
+      Math.round(H * 0.12), // 9: Mount Doom — summit
     ];
     const GOAL = { x: WORLD_W - 120, y: GOAL_Y_BY_LEVEL[0], r: 22 };
     // Scale enemy counts with canvas area (square root — linear spread, not quadratic)
@@ -540,7 +634,10 @@
       if (!frodo) return;
       cameraX = Math.max(0, Math.min(WORLD_W - W, frodo.x - W * 0.4));
     }
-    const frodoSpd = (def) => (3.4 - progress()*2.2) * (currentLevel===2 ? 0.82 : 1);
+    const frodoSpd = (def) => {
+      const mirrorSlow = (currentLevel===2 && goalUnlocked && Math.hypot(frodo?frodo.x-GOAL.x:9999,frodo?frodo.y-GOAL.y:9999)<90) ? 0.6 : 1;
+      return (3.4 - progress()*2.2) * (currentLevel===8 ? 0.82 : 1) * mirrorSlow;
+    };
     const dist = (a,b) => Math.hypot(a.x-b.x,a.y-b.y);
     const lerp  = (a,b,t) => a+(b-a)*t;
 
@@ -577,7 +674,7 @@
 
         // Level clear
         if (Math.hypot(frodo.x-GOAL.x, frodo.y-GOAL.y) < frodo.r + GOAL.r) {
-          if (currentLevel < 2) { state='levelwin'; levelTransTimer=0; }
+          if (currentLevel < 8) { state='levelwin'; levelTransTimer=0; }
           else { state='win'; }
         }
 
@@ -649,7 +746,7 @@
           const orcMinY = w.type==='orc' ? SKY_Y : 0;
           const targetY = w.type==='orc' ? Math.max(frodo.y, SKY_Y) : frodo.y;
           // Nazgûl on Fell Beast (sky) get +10% speed
-          const skyBoost = (w.type==='wraith' && w.y < SKY_Y) ? 1.1 : 1.0;
+          const skyBoost = (w.type==='wraith' && w.y < SKY_Y && !def.hasBalrog && !def.hasShelob) ? 1.1 : 1.0;
 
           if(eyeActive || sensing){
             // Eye active or sensing: hunt
@@ -783,6 +880,93 @@
           }
         }
 
+        // Balrog
+        if (balrog) {
+          balrog.firePhase += dt*2.5;
+          if (!balrog.active && progress() > 0.52) {
+            balrog.active = true;
+            shake = {x:0,y:0,dur:1.8,intensity:14};
+            for(let i=0;i<28;i++){const a=(i/28)*Math.PI*2,s=3+Math.random()*4;
+              particles.push({x:balrog.x,y:balrog.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-2,
+                              life:0.8+Math.random()*0.5,size:5+Math.random()*6,color:Math.random()>0.4?'#ff6600':'#ff2200'});}
+          }
+          if (balrog.active) {
+            const bspd = (2.0 + progress()*1.2) * diffMult() * 0.55;
+            const ba = Math.atan2(frodo.y - balrog.y, frodo.x - balrog.x);
+            balrog.x += Math.cos(ba)*bspd*60*dt;
+            balrog.y += Math.sin(ba)*bspd*60*dt;
+            balrog.y = Math.max(H*0.3, Math.min(H*0.85, balrog.y));
+            // Fire trail
+            if (Math.random()<0.5) {
+              particles.push({x:balrog.x+(Math.random()-0.5)*30,y:balrog.y+(Math.random()-0.5)*20,
+                vx:(Math.random()-0.5)*1.5,vy:-1-Math.random()*2,
+                life:0.3+Math.random()*0.3,size:6+Math.random()*8,color:Math.random()>0.3?'#ff4400':'#ff8800'});
+            }
+            if (!frodo.invincible && Math.hypot(frodo.x-balrog.x,frodo.y-balrog.y) < frodo.r+balrog.r) {
+              frodo.lives = Math.max(0, frodo.lives - 2);
+              frodo.invincible=true; frodo.invTimer=3.5; frodo.hitFlash=1;
+              shake={x:0,y:0,dur:0.8,intensity:18};
+              // Reset balrog 400px behind Frodo
+              const backA = Math.atan2(frodo.y-balrog.y,frodo.x-balrog.x)+Math.PI;
+              balrog.x = frodo.x + Math.cos(backA)*400;
+              balrog.y = frodo.y;
+              if (frodo.lives <= 0) { lastScore=score;lastRound=round;lastLevel=currentLevel; state='gameover'; }
+              for(let i=0;i<18;i++){const a=(i/18)*Math.PI*2,s=2+Math.random()*3;
+                particles.push({x:frodo.x,y:frodo.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1.5,
+                  life:0.6+Math.random()*0.4,size:4+Math.random()*4,color:Math.random()>0.5?'#ff4400':'#903010'});}
+            }
+          }
+        }
+
+        // Shelob
+        if (shelob) {
+          shelob.firePhase += dt*3;
+          shelob.dropTimer -= dt;
+          if (shelob.phase === 'lurk') {
+            // Track Frodo's X
+            const targetX = frodo ? frodo.x : W;
+            const sdx = targetX - shelob.x;
+            shelob.x += Math.sign(sdx)*Math.min(Math.abs(sdx), 2.5*60*dt);
+            shelob.y = Math.max(-80, shelob.y - shelob.returnSpeed*60*dt);
+            if (shelob.dropTimer <= 0) {
+              shelob.phase = 'drop';
+              shelob.dropTimer = 5 + Math.random()*3;
+            }
+          } else if (shelob.phase === 'drop') {
+            shelob.y += 5.5*60*dt;
+            if (!frodo.invincible && Math.hypot(frodo.x-shelob.x,frodo.y-shelob.y) < frodo.r+shelob.r) {
+              hitFrodo();
+              shelob.phase = 'return';
+            }
+            if (shelob.y > H*0.75) shelob.phase = 'return';
+          } else { // return
+            shelob.y -= shelob.returnSpeed*60*dt;
+            if (shelob.y <= -60) { shelob.y=-60; shelob.phase='lurk'; }
+          }
+        }
+
+        // Pelennor Eye distraction mechanic
+        if (currentLevel === 7) {
+          eyeDistractTimer -= dt;
+          if (eyeEagleTimer > 0) {
+            eyeEagleTimer -= dt;
+            eagleParticles.forEach(ep=>{ ep.x -= 3.5*60*dt; ep.life-=dt; });
+            eagleParticles = eagleParticles.filter(ep=>ep.life>0);
+          }
+          if (!eyeDistracted && eyeDistractTimer <= 0) {
+            eyeDistracted = true; eyeDistractTimer = 8;
+            eyeEagleTimer = 6;
+            eagleParticles = Array.from({length:3},(_, i)=>({x:W+60+i*80, y:H*0.25+i*30, life:6}));
+          } else if (eyeDistracted && eyeDistractTimer <= 0) {
+            eyeDistracted = false; eyeDistractTimer = 15 + Math.random()*8;
+          }
+          if (eyeDistracted) { eye.idleDur=15; eye.activeDur=2; }
+          else { eye.idleDur=Math.max(6,(LEVEL_DEFS[7].eyeIdleBase+3+Math.random()*6)/diffMult()); eye.activeDur=LEVEL_DEFS[7].eyeActiveDur; }
+        }
+
+        // Minas Morgul — Eye never fully closes
+        if (currentLevel === 6 && eye.open < 0.22) eye.open = 0.22;
+
         // Spawn more wraiths
         timers.spawnCD-=dt;
         const scaledInit2 = Math.round(def.initWraiths * areaScale);
@@ -873,8 +1057,17 @@
         if(lifePickup) drawLifePickup(ctx,lifePickup,t);
         if(dashRefill) drawDashRefill(ctx,dashRefill,t);
         if (gollum) drawGollum(ctx,gollum,eye,frodo);
-        drawWraiths1(ctx,wraiths,eye,H,SKY_Y);
+        if (balrog && balrog.active) drawBalrog(ctx,balrog,H);
+        if (shelob) drawShelob(ctx,shelob,eye);
+        drawWraiths1(ctx,wraiths,eye,H,SKY_Y,!!(def.hasBalrog||def.hasShelob));
         if (frodo) drawFrodo1(ctx,frodo,progress(),timers.elapsed);
+        // Eagle particles (Pelennor distraction)
+        eagleParticles.forEach(ep=>{
+          ctx.save(); ctx.globalAlpha=Math.min(1,ep.life*0.5);
+          ctx.fillStyle='#c8a030'; ctx.font='18px serif';
+          ctx.textAlign='center'; ctx.textBaseline='middle';
+          ctx.fillText('🦅',ep.x-cameraX,ep.y); ctx.restore();
+        });
         ctx.globalAlpha=1;
         particles.forEach(p=>{ctx.globalAlpha=Math.min(1,p.life*2.5);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();});
         ctx.globalAlpha=1;
@@ -884,6 +1077,24 @@
         if(eye&&eye.phase==='active'){ctx.fillStyle=`rgba(160,0,0,${eye.open*0.16})`;ctx.fillRect(0,0,W,H);}
         if(eye&&eye.phase==='warning'&&Math.random()>0.65){ctx.fillStyle=`rgba(200,50,0,${Math.random()*0.09})`;ctx.fillRect(0,0,W,H);}
         if(blindFlash>0){ctx.fillStyle=`rgba(255,200,50,${blindFlash*0.92})`;ctx.fillRect(0,0,W,H);}
+        // Torch darkness (Moria + Shelob)
+        if(def.hasBalrog||def.hasShelob){
+          const fsx=frodo.x-cameraX, fsy=frodo.y;
+          const torchR=90-progress()*20;
+          const dark=ctx.createRadialGradient(fsx,fsy,torchR*0.25,fsx,fsy,torchR*2.8);
+          dark.addColorStop(0,'rgba(0,0,0,0)');
+          dark.addColorStop(0.55,'rgba(0,0,0,0.65)');
+          dark.addColorStop(1,'rgba(0,0,0,0.97)');
+          ctx.fillStyle=dark; ctx.fillRect(0,0,W,H);
+        }
+        // Pelennor — Eye distracted banner
+        if(currentLevel===7&&eyeDistracted&&Math.sin(timers.elapsed*3)>0){
+          ctx.save(); ctx.shadowColor='#80c030'; ctx.shadowBlur=8;
+          ctx.fillStyle='rgba(120,200,40,0.85)'; ctx.font='bold 11px serif';
+          ctx.textAlign='center';
+          ctx.fillText('THE EYE TURNS TO WAR',W/2,32);
+          ctx.restore();
+        }
         drawUILevel(ctx,W,H,frodo,progress(),eye,timers.elapsed,currentLevel,def,dashCharges,score,round,GOD_MODE,maxLives(),maxDash());
         // Level intro overlay (first 3.5s)
         if(timers.elapsed < 3.5) {
@@ -892,9 +1103,9 @@
           ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.fillRect(0,H/2-70,W,130);
           ctx.globalAlpha = fade;
           ctx.textAlign='center'; ctx.textBaseline='middle';
-          const badge=['I','II','III'][currentLevel];
+          const badge=def.book||['I','II','III'][currentLevel]||'I';
           ctx.fillStyle='rgba(200,160,50,0.8)'; ctx.font='bold 11px serif';
-          ctx.fillText(`BOOK ${badge}`,W/2,H/2-42);
+          ctx.fillText(`BOOK ${badge} · CH.${def.chapter||'?'}`,W/2,H/2-42);
           ctx.fillStyle='#e8d060'; ctx.font=`bold 26px "Palatino Linotype",Palatino,Georgia,serif`;
           ctx.fillText(def.title,W/2,H/2-16);
           ctx.fillStyle='rgba(180,140,60,0.75)'; ctx.font=`italic 12px serif`;
@@ -1093,8 +1304,145 @@
       ctx.restore();
     }
 
-    // Level 2: Emyn Muil — jagged rock columns flanking the goal
+    // Level 2: Moria Bridge — narrow span over fiery chasm
     if (lvl === 1) {
+      ctx.save();
+      // Fiery abyss below
+      const abyss=ctx.createLinearGradient(x,y+r,x,H);
+      abyss.addColorStop(0,`rgba(255,100,0,${0.5+Math.sin(t*1.8)*0.1})`);
+      abyss.addColorStop(0.3,'rgba(180,40,0,0.4)');
+      abyss.addColorStop(1,'rgba(20,0,0,0.2)');
+      ctx.fillStyle=abyss; ctx.fillRect(x-r*4,y+r,r*8,H-y-r);
+      // Bridge
+      ctx.fillStyle='#2a1e14';
+      ctx.fillRect(x-r*2,y+r*0.5,r*4,r*0.45);
+      ctx.fillRect(x-r*1.8,y+r*0.95,r*3.6,r*0.25);
+      // Bridge edge glow
+      ctx.save(); ctx.shadowColor='#ff6600'; ctx.shadowBlur=12;
+      ctx.strokeStyle='rgba(255,120,0,0.35)'; ctx.lineWidth=1.5;
+      ctx.strokeRect(x-r*2,y+r*0.5,r*4,r*0.7);
+      ctx.restore();
+      // Stone pillars
+      [x-r*2.8,x+r*2.2].forEach(px=>{
+        ctx.fillStyle='#221812';
+        ctx.fillRect(px,y,r*0.6,H-y);
+        ctx.fillStyle='#2e2018'; ctx.fillRect(px-r*0.1,y-r*0.3,r*0.8,r*0.35);
+      });
+      // Lava glow from chasm
+      const lg=ctx.createRadialGradient(x,H*0.8,0,x,H*0.8,r*5);
+      lg.addColorStop(0,`rgba(255,80,0,${0.3+Math.sin(t*2)*0.1})`);
+      lg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=lg; ctx.fillRect(x-r*5,y,r*10,H-y);
+      ctx.restore();
+    }
+
+    // Level 3: Lothlórien Mirror
+    if (lvl === 2) {
+      ctx.save();
+      // Galadriel silhouette beside the mirror
+      const gx=x+r*3.5, gy=y-r*2;
+      const gg=ctx.createRadialGradient(gx,gy,0,gx,gy,r*3);
+      gg.addColorStop(0,`rgba(220,240,255,${0.35+Math.sin(t*1.2)*0.1})`);
+      gg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=gg; ctx.fillRect(gx-r*3,gy-r*2,r*6,r*6);
+      // Tall figure
+      ctx.fillStyle='rgba(220,240,255,0.45)';
+      ctx.beginPath(); ctx.ellipse(gx,gy,r*0.3,r*1.4,0,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='rgba(240,250,255,0.55)';
+      ctx.beginPath(); ctx.arc(gx,gy-r*1.6,r*0.28,0,Math.PI*2); ctx.fill();
+      // Stone basin
+      ctx.fillStyle='#2a3830';
+      ctx.beginPath(); ctx.ellipse(x,y+r*0.5,r*1.6,r*0.4,0,0,Math.PI*2); ctx.fill();
+      // Still water
+      const wg=ctx.createRadialGradient(x,y+r*0.5,0,x,y+r*0.5,r*1.5);
+      wg.addColorStop(0,`rgba(180,220,255,${0.5+Math.sin(t*0.8)*0.12})`);
+      wg.addColorStop(0.7,'rgba(120,180,220,0.2)');
+      wg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=wg; ctx.beginPath(); ctx.ellipse(x,y+r*0.5,r*1.4,r*0.32,0,0,Math.PI*2); ctx.fill();
+      // Silver upward glow
+      ctx.save(); ctx.shadowColor='rgba(200,220,255,0.6)'; ctx.shadowBlur=20;
+      const sg2=ctx.createLinearGradient(x,y+r,x,y-r*3);
+      sg2.addColorStop(0,`rgba(200,220,255,${0.3+Math.sin(t*1.5)*0.08})`);
+      sg2.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=sg2; ctx.fillRect(x-r,y-r*3,r*2,r*4);
+      ctx.restore();
+      ctx.restore();
+    }
+
+    // Level 5: Black Gate
+    if (lvl === 4) {
+      ctx.save();
+      // Two massive pylons
+      const pyl=r*1.8;
+      [x-pyl*1.2,x+pyl*0.2].forEach((px,i)=>{
+        ctx.fillStyle='#1a0a06';
+        ctx.fillRect(px,y-r*1.5,pyl,H-y+r*1.5);
+        // Rivets
+        ctx.fillStyle='rgba(80,40,20,0.5)';
+        for(let j=0;j<5;j++) for(let k=0;k<3;k++)
+          ctx.fillRect(px+8+k*18,y-r*1.2+j*22,4,4);
+        // Orc banner
+        ctx.fillStyle='#800000';
+        ctx.fillRect(px+pyl*0.3,y-r*2.5,pyl*0.35,r*1.2);
+        ctx.fillStyle='#400000';
+        ctx.fillText(i===0?'☠':'️',px+pyl*0.38,y-r*2.1);
+      });
+      // Red-orange crack between gates
+      const cg=ctx.createLinearGradient(x,y-r,x,y+r);
+      cg.addColorStop(0,'rgba(255,100,0,0.6)');
+      cg.addColorStop(0.5,`rgba(255,60,0,${0.5+Math.sin(t*3)*0.15})`);
+      cg.addColorStop(1,'rgba(180,30,0,0.4)');
+      ctx.fillStyle=cg; ctx.fillRect(x-r*0.08,y-r*1.5,r*0.16,H-y+r*1.5);
+      ctx.restore();
+    }
+
+    // Level 6: Shelob's Lair exit — light of Eärendil
+    if (lvl === 5) {
+      ctx.save();
+      ctx.shadowColor='rgba(220,240,255,0.8)'; ctx.shadowBlur=30;
+      const lg=ctx.createRadialGradient(x,y,0,x,y,r*4);
+      lg.addColorStop(0,`rgba(220,240,255,${0.7+Math.sin(t*1.8)*0.15})`);
+      lg.addColorStop(0.3,'rgba(180,200,240,0.4)');
+      lg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=lg; ctx.fillRect(x-r*4,y-r*3,r*8,r*7);
+      ctx.restore();
+    }
+
+    // Level 7: Minas Morgul road arch
+    if (lvl === 6) {
+      ctx.save();
+      // Green stone arch
+      const aw=r*2.2, ah=r*1.8;
+      ctx.shadowColor='#40ff80'; ctx.shadowBlur=16;
+      ctx.strokeStyle=`rgba(40,200,80,${0.5+Math.sin(t*1.5)*0.2})`; ctx.lineWidth=r*0.22;
+      ctx.beginPath();
+      ctx.moveTo(x-aw,y+ah); ctx.lineTo(x-aw,y);
+      ctx.quadraticCurveTo(x,y-ah*0.55,x+aw,y);
+      ctx.lineTo(x+aw,y+ah); ctx.stroke();
+      // Skull motifs
+      ctx.fillStyle=`rgba(40,180,70,${0.5+Math.sin(t*2)*0.2})`;
+      ctx.font=`${Math.round(r*0.7)}px serif`;
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('💀',x,y-ah*0.2);
+      ctx.restore();
+    }
+
+    // Level 8: Pelennor — way to Mordor
+    if (lvl === 7) {
+      ctx.save();
+      // Dark mountain silhouette
+      ctx.fillStyle='#120608';
+      ctx.beginPath(); ctx.moveTo(x-r*5,y+r); ctx.lineTo(x-r*2,y-r*1.5); ctx.lineTo(x,y-r*0.5); ctx.lineTo(x+r*2.5,y-r*2); ctx.lineTo(x+r*5,y+r); ctx.fill();
+      // Mount Doom glow on right
+      const dg=ctx.createRadialGradient(x+r*4,y-r*1.5,0,x+r*4,y-r*1.5,r*3);
+      dg.addColorStop(0,`rgba(255,80,0,${0.4+Math.sin(t*1.8)*0.1})`);
+      dg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=dg; ctx.fillRect(x,y-r*4,r*8,r*7);
+      ctx.restore();
+    }
+
+    // Level 4: Emyn Muil — jagged rock columns flanking the goal
+    if (lvl === 3) {
       ctx.save();
       const rockBase = H; // columns rise from bottom toward goal
       const rockTop  = y + r * 2;
@@ -1152,8 +1500,8 @@
       ctx.restore();
     }
 
-    // Level 3: Mount Doom mountain below the goal
-    if (lvl === 2) {
+    // Level 9: Mount Doom mountain below the goal
+    if (lvl === 8) {
       ctx.save();
       // Mountain body
       const mw = r*5, mh = H - y - r*2; // extends from goal down to ground
@@ -1211,28 +1559,29 @@
       ctx.fillText('LOCKED', x, y + r + 10);
     } else {
       // Unlocked: full bright beacon
-      ctx.shadowColor = lvl===0 ? '#80e0ff' : lvl===1 ? '#a0c840' : '#ff6000';
-      ctx.shadowBlur  = 28 * pulse;
+      const GOAL_HEX=['#80e0ff','#ff8030','#b0ffd0','#a0c840','#c04020','#c060ff','#40ff80','#ff8040','#ff6000'];
+      const GOAL_RGB=[[140,210,255],[255,130,50],[170,255,200],[130,200,60],[200,80,40],[200,100,255],[60,220,120],[255,150,80],[255,90,10]];
+      const GOAL_ICON=['★','🌉','✶','▲','⚔','🕯','💫','⚔','🔥'];
+      const GOAL_STROKE=[`rgba(180,230,255,`,`rgba(255,160,60,`,`rgba(170,255,200,`,`rgba(160,210,80,`,`rgba(220,80,40,`,`rgba(200,110,255,`,`rgba(60,220,120,`,`rgba(255,160,80,`,`rgba(255,120,20,`];
+      const gHex = GOAL_HEX[lvl]||GOAL_HEX[0];
+      const [cr,cg2,cb] = GOAL_RGB[lvl]||GOAL_RGB[0];
       const ringAlpha = 0.6 + Math.sin(t*3)*0.3;
-      ctx.strokeStyle = lvl===0 ? `rgba(180,230,255,${ringAlpha})` :
-                        lvl===1 ? `rgba(160,210,80,${ringAlpha})` :
-                                  `rgba(255,120,20,${ringAlpha})`;
+      ctx.shadowColor = gHex;
+      ctx.shadowBlur  = 28 * pulse;
+      ctx.strokeStyle = (GOAL_STROKE[lvl]||GOAL_STROKE[0])+`${ringAlpha})`;
       ctx.lineWidth = 3;
       ctx.beginPath(); ctx.arc(x, y, r * pulse, 0, Math.PI*2); ctx.stroke();
       ctx.lineWidth = 1.5; ctx.globalAlpha = 0.5;
       ctx.beginPath(); ctx.arc(x, y, r * 0.6, 0, Math.PI*2); ctx.stroke();
       ctx.globalAlpha = 1;
       const cg = ctx.createRadialGradient(x, y, 0, x, y, r * 2);
-      const [cr,cg2,cb] = lvl===0 ? [140,210,255] : lvl===1 ? [130,200,60] : [255,90,10];
       cg.addColorStop(0, `rgba(${cr},${cg2},${cb},0.6)`);
       cg.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = cg; ctx.fillRect(x-r*2.5, y-r*2.5, r*5, r*5);
-      ctx.fillStyle = lvl===0 ? 'rgba(200,235,255,0.95)' :
-                      lvl===1 ? 'rgba(180,220,80,0.95)' :
-                                `rgba(255,${140+Math.floor(Math.sin(t*4)*30)},0,0.95)`;
+      ctx.fillStyle = `rgba(${cr},${cg2},${cb},0.95)`;
       ctx.font = `bold ${Math.round(r*0.9)}px serif`;
       ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillText(lvl===0 ? '★' : lvl===1 ? '▲' : '🔥', x, y);
+      ctx.fillText(GOAL_ICON[lvl]||'★', x, y);
       ctx.shadowBlur = 0;
       ctx.fillStyle = 'rgba(200,160,60,0.85)';
       ctx.font = 'bold 9px serif';
@@ -1284,7 +1633,9 @@
     ctx.fillStyle=sky; ctx.fillRect(0,0,W,H*0.55);
 
     // Stars: parallax 0.08x (nearly fixed, like distant sky)
+    const noStars = def===LEVEL_DEFS[1]||def===LEVEL_DEFS[5]; // Moria + Shelob: no stars
     STARS.forEach(s=>{
+      if(noStars) return;
       const base = def===LEVEL_DEFS[0] ? 0.15 : 0.4;
       const alpha = base + Math.sin(t*0.8+s.twinkle)*0.2;
       ctx.fillStyle=`rgba(255,250,220,${alpha})`;
@@ -1344,6 +1695,82 @@
         ctx.fillStyle='#162808'; ctx.fillRect(tx-3,H*0.46,6,14);
       });
     } else if (def === LEVEL_DEFS[1]) {
+      // Moria: stone columns + lava fissures + stalactites
+      // Lava fissures on ground
+      ctx.save(); ctx.shadowColor='#ff4400'; ctx.shadowBlur=8;
+      for(let i=0;i<12;i++){
+        const fx=80+i*165, fy=H*0.58;
+        const lg=ctx.createLinearGradient(fx,fy,fx,fy+20);
+        lg.addColorStop(0,`rgba(255,100,0,${0.5+Math.sin(t*1.8+i)*0.15})`);
+        lg.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=lg; ctx.fillRect(fx,fy,3+Math.sin(i)*2,20+Math.random()*8);
+      }
+      ctx.restore();
+      // Stone columns
+      for(let i=0;i<8;i++){
+        const cx=120+i*240, cw=32;
+        const cg=ctx.createLinearGradient(cx,H*0.35,cx+cw,H*0.35);
+        cg.addColorStop(0,'#1a1210'); cg.addColorStop(0.5,'#2a1e18'); cg.addColorStop(1,'#141008');
+        ctx.fillStyle=cg; ctx.fillRect(cx,H*0.35,cw,H*0.65);
+        // Column cap
+        ctx.fillStyle='#221a14'; ctx.fillRect(cx-4,H*0.35,cw+8,8);
+      }
+      // Stalactites (top of screen)
+      for(let i=0;i<20;i++){
+        const sx=60+i*190+Math.sin(i*1.3)*30;
+        const sl=H*0.08+Math.sin(i*0.7)*H*0.06;
+        const drip=Math.sin(t*1.2+i)*3;
+        ctx.fillStyle='#1e1814';
+        ctx.beginPath();
+        ctx.moveTo(sx-12,0); ctx.lineTo(sx+12,0);
+        ctx.lineTo(sx+5,sl+drip); ctx.lineTo(sx,sl+drip+8);
+        ctx.lineTo(sx-5,sl+drip); ctx.closePath(); ctx.fill();
+        // Drip drop
+        ctx.save(); ctx.shadowColor='rgba(100,80,60,0.4)'; ctx.shadowBlur=4;
+        ctx.fillStyle=`rgba(100,80,60,${0.3+Math.sin(t*1.5+i)*0.2})`;
+        ctx.beginPath(); ctx.arc(sx,sl+drip+12,2,0,Math.PI*2); ctx.fill();
+        ctx.restore();
+      }
+    } else if (def === LEVEL_DEFS[2]) {
+      // Lothlórien: golden trees + silver stream + floating motes
+      // Silver stream on ground
+      ctx.save(); ctx.shadowColor='rgba(200,220,255,0.4)'; ctx.shadowBlur=8;
+      const sg=ctx.createLinearGradient(0,H*0.6,W*2,H*0.6);
+      sg.addColorStop(0,'rgba(180,220,240,0.12)'); sg.addColorStop(0.5,'rgba(200,230,255,0.22)'); sg.addColorStop(1,'rgba(180,220,240,0.1)');
+      ctx.strokeStyle=sg; ctx.lineWidth=6;
+      ctx.beginPath(); ctx.moveTo(0,H*0.62);
+      for(let i=0;i<8;i++) ctx.bezierCurveTo(i*280+70,H*0.6+Math.sin(t*0.5+i)*8,i*280+150,H*0.62+Math.cos(t*0.4+i)*6,(i+1)*280,H*0.62);
+      ctx.stroke(); ctx.restore();
+      // Golden trees
+      [80,320,580,840,1100,1360,1620,1880].forEach((tx,i)=>{
+        // Trunk
+        const tg=ctx.createLinearGradient(tx,H*0.35,tx+14,H*0.35);
+        tg.addColorStop(0,'#5a4020'); tg.addColorStop(1,'#3a2810');
+        ctx.fillStyle=tg; ctx.fillRect(tx,H*0.38,14,H*0.25);
+        // Canopy layers
+        [0,1,2].forEach(tier=>{
+          const cr=38-tier*8, cy=H*0.38-tier*30;
+          const cg=ctx.createRadialGradient(tx+7,cy,0,tx+7,cy,cr);
+          cg.addColorStop(0,`rgba(180,200,80,${0.7-tier*0.1})`);
+          cg.addColorStop(0.6,`rgba(120,160,40,0.55)`);
+          cg.addColorStop(1,'rgba(0,0,0,0)');
+          ctx.fillStyle=cg; ctx.beginPath(); ctx.arc(tx+7,cy,cr,0,Math.PI*2); ctx.fill();
+          // Shimmer
+          ctx.save(); ctx.globalAlpha=0.1+Math.sin(t*0.9+i+tier)*0.07;
+          ctx.fillStyle='rgba(255,255,160,1)';
+          ctx.beginPath(); ctx.arc(tx+cr*0.35,cy-cr*0.25,cr*0.22,0,Math.PI*2); ctx.fill();
+          ctx.restore();
+        });
+      });
+      // Floating silver motes
+      for(let i=0;i<14;i++){
+        const mx=((t*18+i*140)%(W*2)), my=H*0.3+Math.sin(t*0.6+i)*H*0.25-((t*8+i*20)%H*0.4);
+        const mg=ctx.createRadialGradient(mx,my,0,mx,my,6);
+        mg.addColorStop(0,`rgba(220,240,255,${0.5+Math.sin(t*1.2+i)*0.25})`);
+        mg.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=mg; ctx.fillRect(mx-6,my-6,12,12);
+      }
+    } else if (def === LEVEL_DEFS[3]) {
       // Dead Marshes: eerie lights spread across world
       for(let i=0;i<10;i++){
         const mx=80+i*185, my=H*0.6+Math.sin(t*0.6+i)*6;
@@ -1352,8 +1779,107 @@
         mg.addColorStop(1,'rgba(0,0,0,0)');
         ctx.fillStyle=mg; ctx.fillRect(mx-18,my-18,36,36);
       }
+    } else if (def === LEVEL_DEFS[4]) {
+      // Black Gate: fortress walls + forge fires
+      // Battlements (parallax 0.2x via translate above)
+      ctx.save(); ctx.translate(-cameraX*(0.2-0.45), 0); // adjust for outer translate
+      const battleH = H*0.32;
+      for(let i=0;i<6;i++){
+        const bx=i*320-80;
+        ctx.fillStyle='#1a0c08'; ctx.fillRect(bx,battleH,280,H*0.2);
+        // Battlements
+        for(let j=0;j<7;j++) ctx.fillRect(bx+j*38,battleH-22,24,22);
+        // Arrow slits
+        ctx.save(); ctx.globalAlpha=0.35; ctx.fillStyle='rgba(200,60,0,0.5)';
+        for(let j=0;j<3;j++) ctx.fillRect(bx+50+j*80,battleH+10,6,16);
+        ctx.restore();
+      }
+      ctx.restore();
+      // Forge fires / smokestacks
+      for(let i=0;i<8;i++){
+        const fx=100+i*248;
+        ctx.fillStyle='#1a0c08'; ctx.fillRect(fx,H*0.36,12,H*0.16); // stack
+        // Fire glow at top
+        const fg=ctx.createRadialGradient(fx+6,H*0.36,0,fx+6,H*0.36,28);
+        fg.addColorStop(0,`rgba(255,120,0,${0.4+Math.sin(t*2.5+i)*0.15})`);
+        fg.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=fg; ctx.fillRect(fx-22,H*0.2,56,H*0.2);
+      }
+    } else if (def === LEVEL_DEFS[5]) {
+      // Shelob's Lair: webs + bioluminescence (pure darkness handled by torch overlay)
+      // Web strands
+      ctx.save(); ctx.globalAlpha=0.2; ctx.strokeStyle='rgba(220,220,200,0.7)'; ctx.lineWidth=1;
+      for(let i=0;i<16;i++){
+        const wx=i*120, wy=0;
+        ctx.beginPath();
+        ctx.moveTo(wx,0); ctx.bezierCurveTo(wx+60,H*0.08+Math.sin(i)*H*0.04,wx+80,H*0.12,wx+160,H*0.05+Math.cos(i)*H*0.03);
+        ctx.stroke();
+        // Radial strands
+        for(let j=0;j<5;j++){
+          const a=(j/5)*Math.PI;
+          ctx.beginPath(); ctx.moveTo(wx+60,H*0.08);
+          ctx.lineTo(wx+60+Math.cos(a)*80, H*0.08+Math.sin(a)*70); ctx.stroke();
+        }
+      }
+      ctx.restore();
+      // Bioluminescent patches
+      for(let i=0;i<8;i++){
+        const bx=60+i*220, by=H*0.55+Math.sin(i*1.7)*H*0.1;
+        const bg=ctx.createRadialGradient(bx,by,0,bx,by,22);
+        bg.addColorStop(0,`rgba(80,180,60,${0.15+Math.sin(t*0.8+i)*0.07})`);
+        bg.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=bg; ctx.fillRect(bx-22,by-22,44,44);
+      }
+    } else if (def === LEVEL_DEFS[6]) {
+      // Minas Morgul: undead city, green-lit towers
+      // City walls (parallax adjustment)
+      ctx.save(); ctx.translate(-cameraX*(0.2-0.45), 0);
+      for(let i=0;i<5;i++){
+        const cx=i*400-100, cw=200;
+        ctx.fillStyle='#060e06';
+        ctx.fillRect(cx,H*0.28,cw,H*0.25);
+        // Towers
+        ctx.fillStyle='#040c04';
+        ctx.fillRect(cx-12,H*0.18,28,H*0.35);
+        ctx.fillRect(cx+cw-16,H*0.20,28,H*0.32);
+        // Green-lit windows
+        for(let j=0;j<4;j++){
+          const wx=cx+30+j*40, wy=H*0.30+Math.floor(j/2)*20;
+          ctx.save(); ctx.shadowColor='#40ff80'; ctx.shadowBlur=6;
+          ctx.fillStyle=`rgba(40,200,80,${0.3+Math.sin(t*1.5+i+j)*0.15})`;
+          ctx.fillRect(wx,wy,6,10); ctx.restore();
+        }
+      }
+      ctx.restore();
+      // Constant green glow from right
+      ctx.restore(); // end parallax
+      const gg=ctx.createRadialGradient(W,H*0.45,0,W,H*0.45,W*0.8);
+      gg.addColorStop(0,`rgba(40,200,80,${0.18+Math.sin(t*0.8)*0.05})`);
+      gg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=gg; ctx.fillRect(0,0,W,H);
+      return; // already restored
+    } else if (def === LEVEL_DEFS[7]) {
+      // Pelennor Fields: battlefield smoke, distant fires
+      // Distant battle fires (parallax 0.15x via adjustment)
+      ctx.save(); ctx.translate(-cameraX*(0.15-0.45), 0);
+      for(let i=0;i<18;i++){
+        const fx=50+i*110, fy=H*0.48+Math.sin(i*1.3)*H*0.04;
+        const fg=ctx.createRadialGradient(fx,fy,0,fx,fy,14+Math.sin(t*2+i)*4);
+        fg.addColorStop(0,`rgba(255,100,0,${0.3+Math.sin(t*2+i)*0.12})`);
+        fg.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=fg; ctx.fillRect(fx-18,fy-18,36,36);
+      }
+      ctx.restore();
+      // Smoke wisps on ground
+      for(let i=0;i<10;i++){
+        const sx=100+i*200, sy=H*0.56+Math.sin(t*0.6+i)*8;
+        const sg=ctx.createRadialGradient(sx,sy,0,sx,sy,35);
+        sg.addColorStop(0,`rgba(60,50,50,${0.12+Math.sin(t*0.4+i)*0.05})`);
+        sg.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=sg; ctx.fillRect(sx-35,sy-20,70,35);
+      }
     } else {
-      // Mordor: restore parallax transform first, then doom glow screen-space
+      // Mordor (Mount Doom): restore parallax transform first, then doom glow screen-space
       ctx.restore();
       if(prog>0){
         const g2=ctx.createRadialGradient(W,H*0.2,0,W,H*0.2,300+prog*120);
@@ -1507,6 +2033,134 @@
     ctx.restore();
   }
 
+  // ── BALROG ─────────────────────────────────────────────────────────────
+  function drawBalrog(ctx, b, H) {
+    ctx.save(); ctx.translate(b.x, b.y);
+    const t = b.firePhase;
+    const r = b.r;
+    // Aura glow
+    const ag=ctx.createRadialGradient(0,0,0,0,0,r*5);
+    ag.addColorStop(0,'rgba(255,80,0,0.45)'); ag.addColorStop(0.4,'rgba(200,40,0,0.2)'); ag.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=ag; ctx.fillRect(-r*5,-r*4,r*10,r*9);
+    // Shadow mass body
+    const flapA = Math.sin(t*1.2)*0.18;
+    // Wings
+    ['left','right'].forEach((side,si)=>{
+      const sign=si===0?-1:1;
+      ctx.fillStyle='#0a0006';
+      ctx.beginPath();
+      ctx.moveTo(sign*r*0.5,-r*0.5);
+      ctx.bezierCurveTo(sign*r*2,-r*(1.8+flapA),sign*r*3.5,-r*(0.6+flapA),sign*r*3.2,r*(0.8-flapA));
+      ctx.bezierCurveTo(sign*r*2.5,r*1.0,sign*r*1.5,r*0.4,sign*r*0.5,r*0.4);
+      ctx.closePath(); ctx.fill();
+      // Fire rim on wings
+      ctx.save(); ctx.shadowColor='#ff4400'; ctx.shadowBlur=12;
+      ctx.strokeStyle=`rgba(255,${80+Math.floor(Math.sin(t*2+si)*40)},0,0.5)`; ctx.lineWidth=2.5;
+      ctx.beginPath();
+      ctx.moveTo(sign*r*0.5,-r*0.5);
+      ctx.bezierCurveTo(sign*r*2,-r*(1.8+flapA),sign*r*3.5,-r*(0.6+flapA),sign*r*3.2,r*(0.8-flapA));
+      ctx.stroke(); ctx.restore();
+    });
+    // Body
+    const bg=ctx.createLinearGradient(-r*0.8,0,r*0.8,0);
+    bg.addColorStop(0,'#1a0206'); bg.addColorStop(0.5,'#2e0408'); bg.addColorStop(1,'#1a0206');
+    ctx.fillStyle=bg;
+    ctx.beginPath(); ctx.ellipse(0,0,r*0.85,r*1.1,0,0,Math.PI*2); ctx.fill();
+    // Lava cracks on body
+    ctx.save(); ctx.shadowColor='#ff5500'; ctx.shadowBlur=8;
+    ctx.strokeStyle=`rgba(255,100,0,${0.6+Math.sin(t*3)*0.2})`; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(-r*0.3,-r*0.8); ctx.bezierCurveTo(-r*0.6,-r*0.3,-r*0.4,r*0.4,-r*0.5,r*0.8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(r*0.2,-r*0.6); ctx.bezierCurveTo(r*0.5,-r*0.2,r*0.3,r*0.5,r*0.4,r*0.9); ctx.stroke();
+    ctx.restore();
+    // Head with horns
+    ctx.fillStyle='#1e0408';
+    ctx.beginPath(); ctx.ellipse(0,-r*1.3,r*0.65,r*0.62,0,0,Math.PI*2); ctx.fill();
+    // Horns
+    ctx.fillStyle='#120206';
+    [[-1,1],[1,1]].forEach(([sx,sy])=>{
+      ctx.beginPath();
+      ctx.moveTo(sx*r*0.4,-r*1.7); ctx.lineTo(sx*r*0.6,-r*2.3); ctx.lineTo(sx*r*0.2,-r*2.5);
+      ctx.closePath(); ctx.fill();
+    });
+    // Eyes
+    ctx.save(); ctx.shadowColor='#ffcc00'; ctx.shadowBlur=14;
+    ctx.fillStyle='#ffcc00';
+    [-r*0.25,r*0.25].forEach(ex=>{
+      ctx.beginPath(); ctx.ellipse(ex,-r*1.3,r*0.16,r*0.14,0,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='rgba(255,200,0,0.5)'; ctx.beginPath(); ctx.ellipse(ex,-r*1.3,r*0.25,r*0.22,0,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#ffcc00';
+    }); ctx.restore();
+    // Fiery whip
+    ctx.save(); ctx.shadowColor='#ff4400'; ctx.shadowBlur=10;
+    ctx.strokeStyle=`rgba(255,${100+Math.floor(Math.sin(t*4)*50)},0,0.8)`; ctx.lineWidth=3;
+    ctx.beginPath();
+    ctx.moveTo(r*0.6,-r*0.2);
+    ctx.bezierCurveTo(r*1.5,r*0.3+Math.sin(t*3)*r*0.3, r*2.8,r*0.1+Math.sin(t*2.5)*r*0.4, r*3.5,r*(0.8+Math.sin(t*4)*0.3));
+    ctx.stroke();
+    ctx.lineWidth=1.5; ctx.strokeStyle='rgba(255,200,50,0.5)';
+    ctx.beginPath();
+    ctx.moveTo(r*0.6,-r*0.2);
+    ctx.bezierCurveTo(r*1.5,r*0.3+Math.sin(t*3)*r*0.3, r*2.8,r*0.1+Math.sin(t*2.5)*r*0.4, r*3.5,r*(0.8+Math.sin(t*4)*0.3));
+    ctx.stroke(); ctx.restore();
+    ctx.restore();
+  }
+
+  // ── SHELOB ─────────────────────────────────────────────────────────────
+  function drawShelob(ctx, s, eye) {
+    ctx.save(); ctx.translate(s.x, s.y);
+    const t = s.firePhase;
+    const r = s.r;
+    const ea = eye&&eye.phase==='active';
+    // Eerie aura
+    const ag=ctx.createRadialGradient(0,0,0,0,0,r*3.5);
+    ag.addColorStop(0,`rgba(80,0,100,${0.25+ea*0.1})`); ag.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=ag; ctx.fillRect(-r*3.5,-r*3.5,r*7,r*7);
+    // 8 legs
+    ctx.strokeStyle='#1a0820'; ctx.lineWidth=r*0.22; ctx.lineCap='round';
+    for(let i=0;i<8;i++){
+      const sign = i<4?-1:1;
+      const j = i<4?i:i-4;
+      const baseA = sign*(0.3+j*0.35);
+      const legBob = Math.sin(t*2+i)*r*0.15;
+      ctx.beginPath();
+      ctx.moveTo(sign*r*0.6,r*0.2*(j-1.5));
+      ctx.bezierCurveTo(
+        sign*(r*1.5+legBob), r*(-0.3+j*0.4)+legBob,
+        sign*(r*2.4+legBob*0.5), r*(0.1+j*0.5)+legBob,
+        sign*r*3.0, r*(-0.5+j*0.8)+legBob
+      );
+      ctx.stroke();
+    }
+    // Egg-sac abdomen
+    const ag2=ctx.createRadialGradient(-r*0.2,r*0.5,0,-r*0.2,r*0.5,r*1.2);
+    ag2.addColorStop(0,'#3a1840'); ag2.addColorStop(0.6,'#1e0c24'); ag2.addColorStop(1,'#0a0410');
+    ctx.fillStyle=ag2;
+    ctx.beginPath(); ctx.ellipse(-r*0.2,r*0.5,r*1.0,r*1.1,0.2,0,Math.PI*2); ctx.fill();
+    // Body
+    const bg=ctx.createRadialGradient(0,-r*0.1,0,0,-r*0.1,r*0.8);
+    bg.addColorStop(0,'#2e1035'); bg.addColorStop(1,'#160818');
+    ctx.fillStyle=bg;
+    ctx.beginPath(); ctx.ellipse(0,-r*0.1,r*0.75,r*0.72,0,0,Math.PI*2); ctx.fill();
+    // Hourglass marking
+    ctx.save(); ctx.globalAlpha=0.35; ctx.fillStyle='#ff0020';
+    ctx.beginPath(); ctx.moveTo(-r*0.18,-r*0.4); ctx.lineTo(r*0.18,-r*0.4); ctx.lineTo(0,-r*0.1); ctx.lineTo(r*0.18,r*0.25); ctx.lineTo(-r*0.18,r*0.25); ctx.lineTo(0,-r*0.1); ctx.closePath(); ctx.fill();
+    ctx.restore();
+    // Eye cluster
+    ctx.save(); ctx.shadowColor='#ff2020'; ctx.shadowBlur=6+ea*6;
+    const eyePositions=[[-r*0.2,-r*0.65],[r*0.2,-r*0.65],[-r*0.38,-r*0.45],[r*0.38,-r*0.45],[0,-r*0.8],[-r*0.12,-r*0.38],[r*0.12,-r*0.38],[0,-r*0.55]];
+    eyePositions.forEach(([ex,ey])=>{
+      ctx.fillStyle=ea?'#ff4040':'#cc1010';
+      ctx.beginPath(); ctx.arc(ex,ey,r*0.07,0,Math.PI*2); ctx.fill();
+    }); ctx.restore();
+    // Web trailing upward
+    ctx.save(); ctx.globalAlpha=0.3; ctx.strokeStyle='rgba(220,210,200,0.6)'; ctx.lineWidth=1;
+    for(let i=0;i<3;i++) {
+      ctx.beginPath(); ctx.moveTo((i-1)*r*0.5,0); ctx.lineTo((i-1)*r*0.3,-r*6); ctx.stroke();
+    }
+    ctx.restore();
+    ctx.restore();
+  }
+
   // ── LEVEL WIN SCREEN ─────────────────────────────────────────────────
   function drawLevelWin(ctx,W,H,def,lvl,t,timer) {
     ctx.fillStyle=`rgba(0,0,0,${Math.min(0.82,timer*1.2)})`; ctx.fillRect(0,0,W,H);
@@ -1514,7 +2168,7 @@
     ctx.textAlign='center'; ctx.textBaseline='middle';
     const fade=Math.min(1,(timer-0.5)*1.5);
     ctx.globalAlpha=fade;
-    const badge=['I','II','III'][lvl];
+    const badge=LEVEL_DEFS[lvl]?.book||['I','II','III'][lvl]||'I';
     ctx.fillStyle='#c8a838'; ctx.font=`bold 11px serif`;
     ctx.fillText(`BOOK ${badge} COMPLETE`,W/2,H/2-100);
     ctx.fillStyle='#e8d060'; ctx.font=`bold 28px "Palatino Linotype",Palatino,Georgia,serif`;
@@ -1523,16 +2177,16 @@
     ctx.fillText(def.winMsg,W/2,H/2-36);
     ctx.fillStyle='#a07830'; ctx.font=`italic 13px serif`;
     ctx.fillText(def.winQuote,W/2,H/2-8);
-    // Stars for completed level
+    // Stars for completed book (1 star = Book I done, etc.)
     for(let i=0;i<3;i++){
       const sx=W/2-44+i*44, sy=H/2+28;
-      const lit=i<=lvl;
+      const lit=i<=Math.floor(lvl/3);
       ctx.save(); ctx.shadowColor='#ffcc20'; ctx.shadowBlur=lit?14:0;
       ctx.fillStyle=lit?'#ffd030':'rgba(80,60,20,0.4)';
       ctx.font='26px serif'; ctx.fillText('★',sx,sy); ctx.restore();
     }
     ctx.fillStyle='rgba(180,140,60,0.85)'; ctx.font='bold 14px serif';
-    ctx.fillText(`SPACE → ${['Book II: The Two Towers','Book III: The Return of the King',''][lvl]}`,W/2,H/2+80);
+    const nextDef=LEVEL_DEFS[lvl+1]; ctx.fillText(nextDef?`SPACE → Book ${nextDef.book} Ch.${nextDef.chapter}: ${nextDef.title}`:'',W/2,H/2+80);
     ctx.globalAlpha=1;
   }
 
@@ -1583,7 +2237,7 @@
     ctx.fillStyle='rgba(200,160,70,0.85)'; ctx.font='9px serif'; ctx.textAlign='left';
     ctx.fillText(def.progressLabel,13,23);
     // Level badge + round + score
-    const badge=['I','II','III'][lvl]||'';
+    const badge=LEVEL_DEFS[lvl]?.book||['I','II','III'][lvl]||'';
     ctx.fillStyle='rgba(180,140,50,0.7)'; ctx.font='bold 11px serif';
     ctx.fillText(`BOOK ${badge}  ·  RND ${round}`, 10, 42);
     ctx.fillStyle='rgba(160,130,60,0.6)'; ctx.font='10px serif';
@@ -1810,14 +2464,12 @@
     ctx.restore();
   }
 
-  function drawWraiths1(ctx,wraiths,eye,H=580,SKY_Y=290){
+  function drawWraiths1(ctx,wraiths,eye,H=580,SKY_Y=290,noSky=false){
     const ea = eye&&eye.phase==='active';
     wraiths.forEach(w=>{
       ctx.save(); ctx.translate(w.x,w.y);
-      // Transition zone: SKY_Y to SKY_Y - r*4
-      // Fell Beast fades in as Nazgûl rises above SKY_Y
       const transitionRange = w.r * 6;
-      const skyRatio = w.type==='wraith'
+      const skyRatio = (w.type==='wraith' && !noSky)
         ? Math.max(0, Math.min(1, (SKY_Y - w.y) / transitionRange))
         : 0;
       if (w.type==='wraith' && skyRatio > 0) {
@@ -2076,12 +2728,12 @@
 
     // Level list
     ctx.textAlign='center'; ctx.font='11px serif'; ctx.fillStyle='rgba(160,120,50,0.55)';
-    const titles=LEVEL_DEFS.map((d,i)=>`${['I','II','III'][i]}: ${d.title}`);
+    const titles=LEVEL_DEFS.map((d,i)=>`Book ${d.book} Ch.${d.chapter}: ${d.title}`);
     ctx.fillText(titles.join('   ·   '),W/2,H/2+114);
 
     // Lives + dash summary
     ctx.fillStyle='rgba(160,120,50,0.5)'; ctx.font='10px serif';
-    ctx.fillText('3 lives + 3 dash charges (each +1 per round, max 5)  ·  carries between levels',W/2,H/2+134);
+    ctx.fillText('3 lives + 3 dash charges (each +1 per round, max 5)  ·  9 levels across 3 books',W/2,H/2+134);
 
     // Start prompt
     if(Math.sin(t*2.4)>0){
@@ -2100,7 +2752,7 @@
     // Stats box
     ctx.strokeStyle='rgba(140,60,30,0.4)'; ctx.lineWidth=1;
     ctx.strokeRect(W/2-160,H/2-52,320,110);
-    const book=['I','II','III'][lvl]||'?';
+    const book=LEVEL_DEFS[lvl]?.book||'?'; const chapter=LEVEL_DEFS[lvl]?.chapter||'?';
     const rows=[
       [`Book ${book} — Round ${rnd}`, 'rgba(200,140,60,0.9)', 'bold 14px serif'],
       [`Score: ${Math.floor(score).toLocaleString()}`, 'rgba(220,180,80,0.95)', 'bold 22px "Palatino Linotype",Palatino,Georgia,serif'],
