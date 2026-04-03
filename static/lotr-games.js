@@ -261,8 +261,60 @@
       modal.style.display = 'none';
     }
     const continueBtn = makeModalBtn('Continue', 'rgba(180,140,60,0.8)', hideModal);
+    const creditsBtn  = makeModalBtn('Credits', 'rgba(120,160,200,0.8)', showCredits);
     const exitBtn     = makeModalBtn('Exit game', 'rgba(180,60,60,0.8)', closeFn);
-    modal.append(title, sub, continueBtn, exitBtn);
+
+    // Credits panel (shown within pause overlay)
+    const creditsPanel = document.createElement('div');
+    Object.assign(creditsPanel.style, {
+      display: 'none', flexDirection: 'column', alignItems: 'center',
+      gap: '10px', textAlign: 'center', maxWidth: '420px',
+    });
+    const creditsHTML = [
+      ['<span style="color:#d4a020;font-size:20px;font-weight:bold">— Credits —</span>', ''],
+      ['<span style="color:rgba(180,140,60,0.7);font-size:13px;font-style:italic">"Not all those who wander are lost."</span>', ''],
+      ['', ''],
+      ['<span style="color:#c8a030;font-weight:bold">Game design & development</span>', ''],
+      ['<a href="https://chemaclass.com" target="_blank" style="color:#80c8ff;text-decoration:none">Jose Maria Valera Reales (Chemaclass)</a>', ''],
+      ['<a href="https://github.com/sponsors/Chemaclass" target="_blank" style="color:#80c8ff;font-size:12px;text-decoration:none">♥ Sponsor Chema on GitHub</a>', ''],
+      ['', ''],
+      ['<span style="color:#c8a030;font-weight:bold">Built by</span>', ''],
+      ['<a href="https://sauronbot.github.io" target="_blank" style="color:#80c8ff;text-decoration:none">Sauron (AI companion)</a>', ''],
+      ['<span style="color:rgba(160,120,50,0.6);font-size:11px">Powered by Claude · OpenClaw</span>', ''],
+      ['', ''],
+      ['<span style="color:rgba(180,140,60,0.5);font-size:11px">Based on J.R.R. Tolkien\'s <em>The Lord of the Rings</em></span>', ''],
+      ['<span style="color:rgba(160,120,50,0.5);font-size:11px">No affiliation with Middle-earth Enterprises.</span>', ''],
+      ['', ''],
+      ['<span style="color:#a0c080;font-size:13px">Thank you for playing. May your road go ever on. 🧙</span>', ''],
+    ].map(([html]) => {
+      const p = document.createElement('p');
+      p.innerHTML = html;
+      Object.assign(p.style, { margin: '0', color: 'rgba(200,160,80,0.85)', fontSize: '13px',
+        fontFamily: '"Palatino Linotype",Palatino,Georgia,serif' });
+      return p;
+    });
+    creditsPanel.append(...creditsHTML);
+    const backBtn = makeModalBtn('← Back', 'rgba(180,140,60,0.8)', hideCredits);
+    creditsPanel.appendChild(backBtn);
+
+    function showCredits() {
+      modal.querySelector('p').style.display = 'none'; // hide title
+      sub.style.display = 'none';
+      continueBtn.style.display = 'none';
+      creditsBtn.style.display = 'none';
+      exitBtn.style.display = 'none';
+      creditsPanel.style.display = 'flex';
+    }
+    function hideCredits() {
+      modal.querySelector('p').style.display = '';
+      sub.style.display = '';
+      continueBtn.style.display = '';
+      creditsBtn.style.display = '';
+      exitBtn.style.display = '';
+      creditsPanel.style.display = 'none';
+    }
+
+    modal.append(title, sub, continueBtn, creditsBtn, exitBtn, creditsPanel);
     ov.appendChild(modal);
 
     // Expose pause state so game loop can check it
