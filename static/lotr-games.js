@@ -792,7 +792,7 @@
       keyPickup = { x: kx, y: ky, r: 14, pulse: 0, spawned: false, spawnTimer: 1 };
       GOAL.y = GOAL_Y_BY_LEVEL[lvl] || GOAL_Y_BY_LEVEL[0];
       spiderlings = def.hasShelob ? Array.from({length:5},()=>({x:W*0.5+Math.random()*200-100, y:-80+Math.random()*40, r:5, angle:Math.random()*Math.PI*2, speed:2.5+Math.random()})) : [];
-      blessingPickup = (lvl === 2) ? {x: WORLD_W*0.5, y: H*0.4, r: 16, pulse: 0, collected: false} : null;
+      blessingPickup = (lvl === 2 || lvl === 5) ? {x: WORLD_W*0.5, y: H*0.45, r: 16, pulse: 0, collected: false} : null;
       blessingActive = 0;
       // blessingCount persists -- Galadriel's phials carry forward
       hornTimer = 20 + Math.random()*5;
@@ -2896,38 +2896,38 @@
       for(let i=0;i<7;i++){
         const ex=100+i*265, ey=H*0.42+Math.sin(i*1.3)*H*0.08;
         const fl=0.75+Math.sin(t*2.1+i*1.7)*0.18+Math.sin(t*5.3+i)*0.07;
-        // Wall glow halo
+        // Wall glow halo -- cool blue-white, like a lantern casting real visibility
         const eg=ctx.createRadialGradient(ex,ey,0,ex,ey,100);
-        eg.addColorStop(0,`rgba(160,220,80,${0.18*fl})`);
-        eg.addColorStop(0.5,`rgba(100,180,40,${0.09*fl})`);
+        eg.addColorStop(0,`rgba(180,220,255,${0.22*fl})`);
+        eg.addColorStop(0.5,`rgba(120,180,240,${0.10*fl})`);
         eg.addColorStop(1,'rgba(0,0,0,0)');
         ctx.fillStyle=eg; ctx.fillRect(ex-100,ey-100,200,200);
         // Central sac cluster (3 bulges)
         for(let s=0;s<3;s++){
           const sx=ex+(s-1)*14, sy=ey+(s===1?-6:0), sr=10+s*2;
           ctx.save();
-          ctx.shadowColor=`rgba(160,230,60,${0.7*fl})`; ctx.shadowBlur=12;
+          ctx.shadowColor=`rgba(160,210,255,${0.7*fl})`; ctx.shadowBlur=14;
           const sg=ctx.createRadialGradient(sx-3,sy-3,0,sx,sy,sr);
-          sg.addColorStop(0,`rgba(220,255,140,${0.85*fl})`);
-          sg.addColorStop(0.5,`rgba(140,210,60,${0.65*fl})`);
-          sg.addColorStop(1,`rgba(60,120,20,${0.3*fl})`);
+          sg.addColorStop(0,`rgba(230,245,255,${0.90*fl})`);
+          sg.addColorStop(0.5,`rgba(140,195,255,${0.65*fl})`);
+          sg.addColorStop(1,`rgba(60,100,180,${0.25*fl})`);
           ctx.fillStyle=sg;
           ctx.beginPath(); ctx.ellipse(sx,sy,sr,sr*1.1,Math.sin(i+s)*0.3,0,Math.PI*2); ctx.fill();
           ctx.restore();
         }
         // Web threads radiating from sac
-        ctx.save(); ctx.globalAlpha=0.25; ctx.strokeStyle=`rgba(180,220,100,${0.4*fl})`; ctx.lineWidth=0.8;
+        ctx.save(); ctx.globalAlpha=0.25; ctx.strokeStyle=`rgba(160,200,255,${0.4*fl})`; ctx.lineWidth=0.8;
         for(let r=0;r<6;r++){
           const ra=(r/6)*Math.PI*2;
           ctx.beginPath(); ctx.moveTo(ex,ey); ctx.lineTo(ex+Math.cos(ra)*55,ey+Math.sin(ra)*45); ctx.stroke();
         }
         ctx.restore();
       }
-      // Bioluminescent ground patches (kept, slightly brighter)
+      // Bioluminescent ground patches -- cool blue-white
       for(let i=0;i<10;i++){
         const bx=40+i*190, by=H*0.60+Math.sin(i*1.7)*H*0.06;
         const bg=ctx.createRadialGradient(bx,by,0,bx,by,28);
-        bg.addColorStop(0,`rgba(100,200,70,${0.22+Math.sin(t*0.8+i)*0.09})`);
+        bg.addColorStop(0,`rgba(160,210,255,${0.20+Math.sin(t*0.8+i)*0.08})`);
         bg.addColorStop(1,'rgba(0,0,0,0)');
         ctx.fillStyle=bg; ctx.fillRect(bx-28,by-28,56,56);
       }
