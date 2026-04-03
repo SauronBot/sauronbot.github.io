@@ -54,13 +54,15 @@
 
   // ── AUDIO ENGINE ─────────────────────────────────────────────────────
   let _audioCtx = null, _audioEnabled = false;
+  let _musicEnabled = true;  // ambient drones
+  let _sfxEnabled   = true;  // hit/dash/pickup/eye etc
   let _onAudioReEnable = null; // callback set by game to restart drones
   function getAudioCtx() {
     if (!_audioCtx) { try { _audioCtx = new (window.AudioContext||window.webkitAudioContext)(); } catch(e){} }
     return _audioCtx;
   }
   function playTone(freq, type, gainVal, duration, fadeOut=true, delay=0) {
-    if (!_audioEnabled) return;
+    if (!_audioEnabled || !_sfxEnabled) return;
     const ac = getAudioCtx(); if (!ac) return;
     try {
       const osc = ac.createOscillator(), g = ac.createGain();
@@ -73,7 +75,7 @@
     } catch(e){}
   }
   function playNoise(gainVal, duration, filterFreq=400) {
-    if (!_audioEnabled) return;
+    if (!_audioEnabled || !_sfxEnabled) return;
     const ac = getAudioCtx(); if (!ac) return;
     try {
       const bufLen = ac.sampleRate * duration;
@@ -126,7 +128,7 @@
     _droneNodes = [];
   }
   function startDroneLayer(freq, type, gainVal, detune=0) {
-    const ac = getAudioCtx(); if (!ac || !_audioEnabled) return;
+    const ac = getAudioCtx(); if (!ac || !_audioEnabled || !_musicEnabled) return;
     try {
       const osc = ac.createOscillator(), g = ac.createGain();
       osc.type = type; osc.frequency.value = freq;
@@ -568,34 +570,45 @@
     ov.appendChild(dashBtn);
     if ('ontouchstart' in window) dashBtn.style.display = 'flex';
 
-    // Sound toggle button (top-right corner)
-    _audioEnabled = true; // on by default
-    const sndBtn = document.createElement('button');
-    sndBtn.textContent = '\uD83D\uDD0A';
-    Object.assign(sndBtn.style, {
-      position:'absolute', bottom:'12px', left:'12px',
-      background:'rgba(0,0,0,0.4)', border:'1px solid rgba(180,140,60,0.4)',
-      color:'rgba(200,160,60,0.9)', fontSize:'16px', width:'32px', height:'32px',
-      borderRadius:'6px', cursor:'pointer', zIndex:'10', lineHeight:'1',
-    });
-    sndBtn.title = 'Toggle sound';
-    sndBtn.className = '__lotr-sndbtn';
-    function toggleAudio() {
-      _audioEnabled = !_audioEnabled;
-      const ac = getAudioCtx();
-      if (_audioEnabled) {
-        if (ac && ac.state === 'suspended') ac.resume();
-        if (_onAudioReEnable) _onAudioReEnable(); // restart drones
-      } else {
-        stopDrones();
-      }
-      document.querySelectorAll('.__lotr-sndbtn').forEach(b => {
-        b.textContent = _audioEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07';
-        b.style.color = _audioEnabled ? 'rgba(200,160,60,0.9)' : 'rgba(100,80,40,0.5)';
+    // Sound controls (bottom-left): two buttons — music | sfx
+    _audioEnabled = true;
+    function makeSndBtn(icon, title, left) {
+      const b = document.createElement('button');
+      b.textContent = icon;
+      Object.assign(b.style, {
+        position:'absolute', bottom:'12px', left: left+'px',
+        background:'rgba(0,0,0,0.45)', border:'1px solid rgba(180,140,60,0.4)',
+        color:'rgba(200,160,60,0.9)', fontSize:'14px', width:'30px', height:'30px',
+        borderRadius:'6px', cursor:'pointer', zIndex:'10', lineHeight:'1',
+        display:'flex', alignItems:'center', justifyContent:'center',
       });
+      b.title = title;
+      ov.appendChild(b);
+      return b;
     }
-    sndBtn.addEventListener('click', toggleAudio);
-    ov.appendChild(sndBtn);
+    const musicBtn = makeSndBtn('\uD83C\uDFB5', 'Toggle music (ambient drones)', 12);
+    const sfxBtn   = makeSndBtn('\uD83D\uDD0A', 'Toggle sound effects', 46);
+    function updateSndBtns() {
+      musicBtn.textContent = _musicEnabled ? '\uD83C\uDFB5' : '\uD83D\uDD07';
+      musicBtn.style.color = _musicEnabled ? 'rgba(200,160,60,0.9)' : 'rgba(100,80,40,0.4)';
+      sfxBtn.textContent   = _sfxEnabled   ? '\uD83D\uDD0A' : '\uD83D\uDD07';
+      sfxBtn.style.color   = _sfxEnabled   ? 'rgba(200,160,60,0.9)' : 'rgba(100,80,40,0.4)';
+    }
+    musicBtn.addEventListener('click', () => {
+      if (!_audioEnabled) { _audioEnabled = true; const ac=getAudioCtx(); if(ac&&ac.state==='suspended')ac.resume(); }
+      _musicEnabled = !_musicEnabled;
+      if (_musicEnabled) { if (_onAudioReEnable) _onAudioReEnable(); }
+      else { stopDrones(); }
+      updateSndBtns();
+    });
+    sfxBtn.addEventListener('click', () => {
+      if (!_audioEnabled) { _audioEnabled = true; const ac=getAudioCtx(); if(ac&&ac.state==='suspended')ac.resume(); }
+      _sfxEnabled = !_sfxEnabled;
+      updateSndBtns();
+    });
+    updateSndBtns();
+    // Legacy: keep sndBtn alias so nothing else breaks
+    const sndBtn = sfxBtn;
 
 
 
