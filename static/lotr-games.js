@@ -489,8 +489,8 @@
       title:       'The Pelennor Fields',
       subtitle:    '"I am no man!"',
       destination: 'The Crack of Doom',
-      bgSky:   ['#060208','#0c040e'], bgGnd: ['#180808','#0e0404'],
-      roadCol: 'rgba(60,20,10,0.9)', horizon: '#1a0808',
+      bgSky:   ['#1a0804','#280c06'], bgGnd: ['#180808','#0e0404'],
+      roadCol: 'rgba(60,20,10,0.9)', horizon: '#200a06',
       glow: [255,120,20], glowAlpha: 0.35, destGlow: [255,140,0],
       initWraiths:7, maxWraiths:12, wraithSpeed:1.9, eyeIdleBase:6, eyeActiveDur:12, spawnMin:2.0,
       hasGollum:true, hasBlindFlash:true, hasShelob:false, hasBalrog:false,
@@ -3074,11 +3074,11 @@
       // War glow on horizon (screen-space)
       ctx.save();
       ctx.setTransform(1,0,0,1,0,0);
-      const warGlow=ctx.createLinearGradient(0,H*0.35,0,H*0.55);
-      warGlow.addColorStop(0,'rgba(0,0,0,0)');
-      warGlow.addColorStop(0.5,`rgba(200,80,0,${0.10+Math.sin(t*0.3)*0.04})`);
+      const warGlow=ctx.createLinearGradient(0,0,0,H*0.58);
+      warGlow.addColorStop(0,`rgba(80,20,0,${0.10+Math.sin(t*0.3)*0.03})`);
+      warGlow.addColorStop(0.5,`rgba(120,40,0,${0.12+Math.sin(t*0.4)*0.04})`);
       warGlow.addColorStop(1,'rgba(0,0,0,0)');
-      ctx.fillStyle=warGlow; ctx.fillRect(0,0,W,H);
+      ctx.fillStyle=warGlow; ctx.fillRect(0,0,W,H*0.58);
       ctx.restore(); // back to parallax transform
 
       // Distant infantry lines (far background)
