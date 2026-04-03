@@ -1882,7 +1882,7 @@
         ctx.fillStyle=bg; ctx.fillRect(bx-22,by-22,44,44);
       }
     } else if (def === LEVEL_DEFS[6]) {
-      // Minas Morgul: undead city, green-lit towers
+      // Minas Morgul: undead city, green-lit towers, pulsing light-beam
       // City walls (parallax adjustment)
       ctx.save(); ctx.translate(-cameraX*(0.2-0.45), 0);
       for(let i=0;i<5;i++){
@@ -1900,9 +1900,20 @@
           ctx.fillStyle=`rgba(40,200,80,${0.3+Math.sin(t*1.5+i+j)*0.15})`;
           ctx.fillRect(wx,wy,6,10); ctx.restore();
         }
+        // Tower beam of light (like the Morgul beacon)
+        if(i===2){
+          ctx.save(); ctx.shadowColor='#40ff80'; ctx.shadowBlur=14;
+          const bAlpha=0.15+Math.sin(t*0.5)*0.08;
+          const bg=ctx.createLinearGradient(cx+cw*0.5,H*0.18,cx+cw*0.5+H*0.25,0);
+          bg.addColorStop(0,`rgba(40,200,80,${bAlpha})`);
+          bg.addColorStop(1,'rgba(0,0,0,0)');
+          ctx.fillStyle=bg;
+          ctx.beginPath(); ctx.moveTo(cx+cw*0.5,H*0.18); ctx.lineTo(cx+cw*0.5+30,0); ctx.lineTo(cx+cw*0.5+H*0.35,0); ctx.lineTo(cx+cw*0.5+H*0.2,H*0.18); ctx.closePath(); ctx.fill();
+          ctx.restore();
+        }
       }
       ctx.restore();
-      // Constant green glow from right
+      // Constant green glow
       ctx.restore(); // end parallax
       const gg=ctx.createRadialGradient(W,H*0.45,0,W,H*0.45,W*0.8);
       gg.addColorStop(0,`rgba(40,200,80,${0.18+Math.sin(t*0.8)*0.05})`);
