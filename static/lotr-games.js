@@ -1957,12 +1957,27 @@
         ctx.fillStyle=sg; ctx.fillRect(sx-35,sy-20,70,35);
       }
     } else {
-      // Mordor (Mount Doom): restore parallax transform first, then doom glow screen-space
-      ctx.restore();
-      if(prog>0){
-        const g2=ctx.createRadialGradient(W,H*0.2,0,W,H*0.2,300+prog*120);
-        g2.addColorStop(0,`rgba(255,60,0,${prog*0.28})`); g2.addColorStop(1,'rgba(0,0,0,0)');
-        ctx.fillStyle=g2; ctx.fillRect(0,0,W,H);
+      // Mount Doom: ash rain + intensifying doom glow
+      // Ash particles raining down (screen-space, draw before restoring)
+      ctx.restore(); // end parallax early
+      if(prog>0.2){
+        ctx.save(); ctx.globalAlpha=prog*0.3;
+        for(let i=0;i<15;i++){
+          const ax=((t*22+i*130)%W), ay=((t*35+i*60)%H);
+          ctx.fillStyle=`rgba(80,60,50,${0.3+Math.sin(t+i)*0.15})`;
+          ctx.beginPath(); ctx.arc(ax,ay,1.5,0,Math.PI*2); ctx.fill();
+        }
+        ctx.restore();
+      }
+      // Doom glow — intensifies with progress
+      const g2=ctx.createRadialGradient(W*0.7,H*0.15,0,W*0.7,H*0.15,350+prog*200);
+      g2.addColorStop(0,`rgba(255,80,0,${prog*0.38})`);
+      g2.addColorStop(0.5,`rgba(200,30,0,${prog*0.18})`);
+      g2.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=g2; ctx.fillRect(0,0,W,H);
+      // Lava eruption flashes near summit (progress > 0.8)
+      if(prog>0.8&&Math.random()<0.04){
+        ctx.fillStyle=`rgba(255,150,0,${(prog-0.8)*0.6})`; ctx.fillRect(0,0,W,H);
       }
       return; // already restored
     }
