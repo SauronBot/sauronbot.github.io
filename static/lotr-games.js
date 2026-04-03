@@ -1604,19 +1604,12 @@
         {
           const szX = WORLD_W * 0.12;
           const szScreenX = szX; // already in world-space (camera translate applied)
-          const lineAlpha = frodo && frodo.x < szX + 80 ? 0.55 : 0.18; // brighter when Frodo is near
           ctx.save();
-          ctx.setLineDash([6,7]);
-          ctx.strokeStyle = `rgba(160,220,140,${lineAlpha})`;
-          ctx.lineWidth = 1.5;
+          ctx.setLineDash([5,9]);
+          ctx.strokeStyle = 'rgba(160,220,140,0.20)';
+          ctx.lineWidth = 1;
           ctx.beginPath(); ctx.moveTo(szX, SKY_Y); ctx.lineTo(szX, H); ctx.stroke();
           ctx.setLineDash([]);
-          // Small label at mid-height
-          if (lineAlpha > 0.2) {
-            ctx.fillStyle = `rgba(140,200,120,${lineAlpha})`;
-            ctx.font = '8px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText('safe', szX, SKY_Y + (H - SKY_Y) * 0.35);
-          }
           ctx.restore();
         }
         ctx.restore(); // end world-space
