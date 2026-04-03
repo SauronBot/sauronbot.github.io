@@ -3732,8 +3732,19 @@
     ctx.fillStyle='#8c0010'; ctx.font=`bold 40px "Palatino Linotype",Palatino,Georgia,serif`;
     ctx.fillText('The Ring is Lost',W/2,H/2-115);
     ctx.restore();
+    const DEATH_QUOTES = [
+      '"I wish the Ring had never come to me."',
+      '"You cannot pass -- and yet you did not."',
+      '"Do not look into the Mirror again."',
+      '"The lights have taken you."',
+      '"The Gate is shut. There is no way in."',
+      '"She hunts by feel, by smell. She found you."',
+      '"The Ring screamed to be used. You hesitated."',
+      '"The war is lost. The Eye turns south."',
+      '"So close. So close to the fire."',
+    ];
     ctx.fillStyle='rgba(160,80,40,0.8)'; ctx.font=`italic 13px serif`;
-    ctx.fillText('"All hope is gone. The Dark Lord has won."',W/2,H/2-80);
+    ctx.fillText(DEATH_QUOTES[lvl]||'"All hope is gone."',W/2,H/2-80);
     // Journey map showing how far they got
     ctx.fillStyle='rgba(80,40,20,0.3)'; ctx.fillRect(W/2-200,H/2-62,400,20);
     drawJourneyMap(ctx,W,H/2-52,lvl);
