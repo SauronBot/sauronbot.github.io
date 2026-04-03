@@ -681,12 +681,15 @@
         x: W + 40, y: H*0.58,
         r: 9, speed: 2.4,
         wanderAngle: Math.PI, wanderTimer: 0,
-        phase: 'lurk', // 'lurk' | 'dart' | 'jump'
+        phase: 'lurk', // 'lurk' | 'dart' | 'jump' | 'fixate' | 'lunge'
         dartTimer: 0, dartCD: 5 + Math.random()*4,
         capePhase: 0,
         jumpCD: 5 + Math.random()*3,
         jumpTimer: 0, jumpDuration: 0, jumpGroundY: 0, jumpPeakY: 0, jumpStartX: 0,
         jumpAttemptsLeft: 0,
+        whisperCD: 8 + Math.random()*6, // precious whisper cooldown
+        fixateTimer: 0,                 // holds still, stares
+        lungeCD: 20 + Math.random()*10, // rare goal lunge
       };
     }
 
@@ -1086,9 +1089,44 @@
           gollum.capePhase += dt*3;
           gollum.dartTimer -= dt;
           gollum.jumpCD -= dt;
+          gollum.whisperCD -= dt;
+          gollum.lungeCD -= dt;
           const frodoInSky = frodo.y < SKY_Y;
           // Gollum is always slightly slower than Frodo (never catches him by speed alone)
           const gollumTopSpeed = frodoSpd(def) * 0.82;
+          // Precious whisper
+          if (gollum.whisperCD <= 0) {
+            gollum.whisperCD = 8 + Math.random()*8;
+            const lines = ['My precious...','Yess, precious, yess...','We wants it!','Sneaky little hobbitses...','Gollum! Gollum!','It\'s ours, precious, ours!'];
+            whisperText = lines[Math.floor(Math.random()*lines.length)];
+            whisperTimer = 2.5; whisperCooldown = 5;
+            playTone(280,'sawtooth',0.03,0.3);
+          }
+          // Rare lunge at goal when progress > 0.7
+          if (gollum.lungeCD <= 0 && progress() > 0.7 && goalUnlocked) {
+            gollum.lungeCD = 25 + Math.random()*15;
+            gollum.phase = 'lunge';
+            gollum.dartTimer = 1.2;
+          }
+          if (gollum.phase === 'lunge') {
+            // Sprint toward goal
+            const a = Math.atan2(GOAL.y - gollum.y, GOAL.x - gollum.x);
+            gollum.x += Math.cos(a)*gollumTopSpeed*2.2*60*dt;
+            gollum.y += Math.sin(a)*gollumTopSpeed*2.2*60*dt;
+            // If Gollum reaches goal zone: block briefly, particles
+            if (Math.hypot(gollum.x-GOAL.x, gollum.y-GOAL.y) < 40) {
+              gollum.phase = 'lurk';
+              for(let i=0;i<10;i++){const a2=(i/10)*Math.PI*2;
+                particles.push({x:GOAL.x,y:GOAL.y,vx:Math.cos(a2)*2,vy:Math.sin(a2)*2,
+                  life:0.5,size:4,color:'#c8a030'});}
+              whisperText = 'Mine! MINE!';
+              whisperTimer = 2.0; whisperCooldown = 4;
+            }
+            if (gollum.dartTimer <= 0) gollum.phase = 'lurk';
+            gollum.y = Math.max(SKY_Y, Math.min(H, gollum.y));
+            if (!frodo.invincible && dist(frodo, gollum) < frodo.r+gollum.r) hitFrodo();
+            return; // skip rest of gollum AI this frame
+          }
 
           if (gollum.phase === 'jump') {
             // Parabolic leap from SKY_Y boundary
