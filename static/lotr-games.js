@@ -1921,8 +1921,8 @@
       ctx.fillStyle=gg; ctx.fillRect(0,0,W,H);
       return; // already restored
     } else if (def === LEVEL_DEFS[7]) {
-      // Pelennor Fields: battlefield smoke, distant fires
-      // Distant battle fires (parallax 0.15x via adjustment)
+      // Pelennor Fields: battlefield smoke + fires + siege engines
+      // Distant battle fires
       ctx.save(); ctx.translate(-cameraX*(0.15-0.45), 0);
       for(let i=0;i<18;i++){
         const fx=50+i*110, fy=H*0.48+Math.sin(i*1.3)*H*0.04;
@@ -1931,6 +1931,22 @@
         fg.addColorStop(1,'rgba(0,0,0,0)');
         ctx.fillStyle=fg; ctx.fillRect(fx-18,fy-18,36,36);
       }
+      // Siege engine silhouettes (catapults)
+      [200,550,980,1400].forEach(sx=>{
+        ctx.fillStyle='#1a0a08';
+        // Arm
+        ctx.save(); ctx.translate(sx,H*0.49);
+        ctx.rotate(-0.6+Math.sin(t*0.3+sx*0.003)*0.15);
+        ctx.fillRect(-3,-35,6,40);
+        ctx.fillRect(-12,-3,24,6); // beam
+        ctx.restore();
+        // Base
+        ctx.fillStyle='#120806';
+        ctx.fillRect(sx-18,H*0.49,36,12);
+        // Wheels
+        ctx.strokeStyle='#1a0e0a'; ctx.lineWidth=3;
+        [-10,10].forEach(ox=>{ ctx.beginPath(); ctx.arc(sx+ox,H*0.51,6,0,Math.PI*2); ctx.stroke(); });
+      });
       ctx.restore();
       // Smoke wisps on ground
       for(let i=0;i<10;i++){
