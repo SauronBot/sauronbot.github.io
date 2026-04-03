@@ -1672,15 +1672,20 @@
             : 0;
           if(eyeSuppression < 0.99){
             const fsx=frodo.x-cameraX, fsy=frodo.y;
-            const torchR = def.hasBalrog
+            // Galadriel's phial: massive light radius
+            const phialBoost = blessingActive > 0 ? Math.min(1, blessingActive / 2) : 0; // fade in over 2s
+            const baseTorchR = def.hasBalrog
               ? (160 - progress()*40) * (1 + Math.sin(t*2.1)*0.04)
-              : (140 - progress()*30) * (1 + Math.sin(t*3.1)*0.05); // Shelob: wide but shrinks with dread
+              : (140 - progress()*30) * (1 + Math.sin(t*3.1)*0.05);
+            const torchR = baseTorchR + phialBoost * (W * 0.55 - baseTorchR); // up to 55% screen width
             const darkStr = 1 - eyeSuppression;
             // Offscreen mask: fill black, punch light holes with destination-out
             const oc = document.createElement('canvas');
             oc.width=W; oc.height=H;
             const ox = oc.getContext('2d');
-            const maxDark = 0.97; // both Moria and Shelob -- light sources punch the holes
+            const maxDark = blessingActive > 0
+              ? Math.max(0.15, 0.97 - phialBoost * 0.75) // phial: near-full visibility
+              : 0.97;
             ox.fillStyle=`rgba(0,0,0,${maxDark*darkStr})`;
             ox.fillRect(0,0,W,H);
             ox.globalCompositeOperation='destination-out';
