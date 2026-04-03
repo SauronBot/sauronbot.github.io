@@ -1680,7 +1680,7 @@
             const oc = document.createElement('canvas');
             oc.width=W; oc.height=H;
             const ox = oc.getContext('2d');
-            const maxDark = def.hasBalrog ? 0.97 : 0.80; // Shelob: less total darkness
+            const maxDark = 0.97; // both Moria and Shelob -- light sources punch the holes
             ox.fillStyle=`rgba(0,0,0,${maxDark*darkStr})`;
             ox.fillRect(0,0,W,H);
             ox.globalCompositeOperation='destination-out';
@@ -1690,7 +1690,7 @@
             fg.addColorStop(0.55,`rgba(0,0,0,${0.6*darkStr})`);
             fg.addColorStop(1,'rgba(0,0,0,0)');
             ox.fillStyle=fg; ox.fillRect(0,0,W,H);
-            // Holes: column torches (Moria only, parallax 0.45x)
+            // Holes: column torches (Moria, parallax 0.45x)
             if(def.hasBalrog){
               for(let ci=0;ci<8;ci++){
                 const ctx_x=(120+ci*240+16)-cameraX*0.45;
@@ -1700,6 +1700,20 @@
                 cg.addColorStop(0,`rgba(0,0,0,${darkStr})`);
                 cg.addColorStop(0.3,`rgba(0,0,0,${0.85*darkStr})`);
                 cg.addColorStop(0.65,`rgba(0,0,0,${0.4*darkStr})`);
+                cg.addColorStop(1,'rgba(0,0,0,0)');
+                ox.fillStyle=cg; ox.fillRect(0,0,W,H);
+              }
+            }
+            // Holes: egg sac clusters (Shelob, parallax 0.45x)
+            if(def.hasShelob){
+              for(let ci=0;ci<7;ci++){
+                const ctx_x=(100+ci*265)-cameraX*0.45;
+                const ctx_y=H*0.42+Math.sin(ci*1.3)*H*0.08;
+                const fl=0.75+Math.sin(t*2.1+ci*1.7)*0.18+Math.sin(t*5.3+ci)*0.07;
+                const cg=ox.createRadialGradient(ctx_x,ctx_y,0,ctx_x,ctx_y,200*fl);
+                cg.addColorStop(0,`rgba(0,0,0,${darkStr})`);
+                cg.addColorStop(0.3,`rgba(0,0,0,${0.85*darkStr})`);
+                cg.addColorStop(0.65,`rgba(0,0,0,${0.35*darkStr})`);
                 cg.addColorStop(1,'rgba(0,0,0,0)');
                 ox.fillStyle=cg; ox.fillRect(0,0,W,H);
               }
@@ -2801,13 +2815,44 @@
         }
       }
       ctx.restore();
-      // Bioluminescent patches
-      for(let i=0;i<8;i++){
-        const bx=60+i*220, by=H*0.55+Math.sin(i*1.7)*H*0.1;
-        const bg=ctx.createRadialGradient(bx,by,0,bx,by,22);
-        bg.addColorStop(0,`rgba(80,180,60,${0.15+Math.sin(t*0.8+i)*0.07})`);
+      // Egg sac clusters -- large glowing light sources on the walls (spider theme)
+      for(let i=0;i<7;i++){
+        const ex=100+i*265, ey=H*0.42+Math.sin(i*1.3)*H*0.08;
+        const fl=0.75+Math.sin(t*2.1+i*1.7)*0.18+Math.sin(t*5.3+i)*0.07;
+        // Wall glow halo
+        const eg=ctx.createRadialGradient(ex,ey,0,ex,ey,100);
+        eg.addColorStop(0,`rgba(160,220,80,${0.18*fl})`);
+        eg.addColorStop(0.5,`rgba(100,180,40,${0.09*fl})`);
+        eg.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=eg; ctx.fillRect(ex-100,ey-100,200,200);
+        // Central sac cluster (3 bulges)
+        for(let s=0;s<3;s++){
+          const sx=ex+(s-1)*14, sy=ey+(s===1?-6:0), sr=10+s*2;
+          ctx.save();
+          ctx.shadowColor=`rgba(160,230,60,${0.7*fl})`; ctx.shadowBlur=12;
+          const sg=ctx.createRadialGradient(sx-3,sy-3,0,sx,sy,sr);
+          sg.addColorStop(0,`rgba(220,255,140,${0.85*fl})`);
+          sg.addColorStop(0.5,`rgba(140,210,60,${0.65*fl})`);
+          sg.addColorStop(1,`rgba(60,120,20,${0.3*fl})`);
+          ctx.fillStyle=sg;
+          ctx.beginPath(); ctx.ellipse(sx,sy,sr,sr*1.1,Math.sin(i+s)*0.3,0,Math.PI*2); ctx.fill();
+          ctx.restore();
+        }
+        // Web threads radiating from sac
+        ctx.save(); ctx.globalAlpha=0.25; ctx.strokeStyle=`rgba(180,220,100,${0.4*fl})`; ctx.lineWidth=0.8;
+        for(let r=0;r<6;r++){
+          const ra=(r/6)*Math.PI*2;
+          ctx.beginPath(); ctx.moveTo(ex,ey); ctx.lineTo(ex+Math.cos(ra)*55,ey+Math.sin(ra)*45); ctx.stroke();
+        }
+        ctx.restore();
+      }
+      // Bioluminescent ground patches (kept, slightly brighter)
+      for(let i=0;i<10;i++){
+        const bx=40+i*190, by=H*0.60+Math.sin(i*1.7)*H*0.06;
+        const bg=ctx.createRadialGradient(bx,by,0,bx,by,28);
+        bg.addColorStop(0,`rgba(100,200,70,${0.22+Math.sin(t*0.8+i)*0.09})`);
         bg.addColorStop(1,'rgba(0,0,0,0)');
-        ctx.fillStyle=bg; ctx.fillRect(bx-22,by-22,44,44);
+        ctx.fillStyle=bg; ctx.fillRect(bx-28,by-28,56,56);
       }
       ctx.restore(); // end Shelob parallax
     } else if (def === LEVEL_DEFS[6]) {
