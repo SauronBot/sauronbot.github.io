@@ -2776,7 +2776,8 @@
       [-35,-15,15,35].forEach(lx=>{ // legs
         ctx.beginPath(); ctx.moveTo(ox2+lx,oy2+25); ctx.lineTo(ox2+lx,oy2+50); ctx.stroke();
       });
-      ctx.restore(); ctx.restore();
+      ctx.restore(); // end oliphaunt save
+      ctx.restore(); // end infantry save
 
       // Distant battle fires
       ctx.save(); ctx.translate(-cameraX*(0.15-0.45), 0);
