@@ -52,6 +52,52 @@
   // Exposed for testing
   window.__lotrLaunch = () => launchCarryTheRing();
 
+  // ── AUDIO ENGINE ─────────────────────────────────────────────────────
+  let _audioCtx = null, _audioEnabled = false;
+  function getAudioCtx() {
+    if (!_audioCtx) { try { _audioCtx = new (window.AudioContext||window.webkitAudioContext)(); } catch(e){} }
+    return _audioCtx;
+  }
+  function playTone(freq, type, gainVal, duration, fadeOut=true, delay=0) {
+    if (!_audioEnabled) return;
+    const ac = getAudioCtx(); if (!ac) return;
+    try {
+      const osc = ac.createOscillator(), g = ac.createGain();
+      osc.type = type; osc.frequency.value = freq;
+      g.gain.setValueAtTime(0, ac.currentTime+delay);
+      g.gain.linearRampToValueAtTime(gainVal, ac.currentTime+delay+0.05);
+      if (fadeOut) g.gain.linearRampToValueAtTime(0, ac.currentTime+delay+duration);
+      osc.connect(g); g.connect(ac.destination);
+      osc.start(ac.currentTime+delay); osc.stop(ac.currentTime+delay+duration+0.05);
+    } catch(e){}
+  }
+  function playNoise(gainVal, duration, filterFreq=400) {
+    if (!_audioEnabled) return;
+    const ac = getAudioCtx(); if (!ac) return;
+    try {
+      const bufLen = ac.sampleRate * duration;
+      const buf = ac.createBuffer(1, bufLen, ac.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i=0;i<bufLen;i++) data[i]=(Math.random()*2-1);
+      const src = ac.createBufferSource();
+      const filt = ac.createBiquadFilter(); filt.type='lowpass'; filt.frequency.value=filterFreq;
+      const g = ac.createGain();
+      g.gain.setValueAtTime(gainVal, ac.currentTime);
+      g.gain.linearRampToValueAtTime(0, ac.currentTime+duration);
+      src.buffer=buf; src.connect(filt); filt.connect(g); g.connect(ac.destination);
+      src.start(); src.stop(ac.currentTime+duration+0.05);
+    } catch(e){}
+  }
+  // Sound events
+  function sndHit()      { playTone(120,'sawtooth',0.18,0.35); playNoise(0.06,0.25,300); }
+  function sndDash()     { playTone(440,'sine',0.08,0.12); playTone(660,'sine',0.05,0.08,true,0.08); }
+  function sndPickup()   { playTone(880,'sine',0.07,0.08); playTone(1100,'sine',0.05,0.08,true,0.06); }
+  function sndKey()      { [440,550,660,880].forEach((f,i)=>playTone(f,'sine',0.06,0.12,true,i*0.06)); }
+  function sndLevelWin() { [523,659,784,1047].forEach((f,i)=>playTone(f,'sine',0.07,0.25,true,i*0.1)); }
+  function sndEyeOpen()  { playTone(55,'sawtooth',0.12,1.2); playTone(80,'sawtooth',0.08,1.5,true,0.2); }
+  function sndBalrog()   { playTone(40,'sawtooth',0.2,1.8); playNoise(0.1,1.5,200); }
+  function sndHorn()     { playTone(220,'square',0.1,0.4); playTone(174,'square',0.08,0.6,true,0.35); }
+
   // ── OVERLAY HELPERS ───────────────────────────────────────────────────
   function makeOverlay(bgColor) {
     window.__lotrActive = true;
@@ -401,6 +447,25 @@
     ov.appendChild(dashBtn);
     if ('ontouchstart' in window) dashBtn.style.display = 'flex';
 
+    // Sound toggle button (top-right corner)
+    _audioEnabled = true; // on by default
+    const sndBtn = document.createElement('button');
+    sndBtn.textContent = '\uD83D\uDD0A';
+    Object.assign(sndBtn.style, {
+      position:'absolute', top:'8px', right:'8px',
+      background:'rgba(0,0,0,0.4)', border:'1px solid rgba(180,140,60,0.4)',
+      color:'rgba(200,160,60,0.9)', fontSize:'16px', width:'32px', height:'32px',
+      borderRadius:'6px', cursor:'pointer', zIndex:'10', lineHeight:'1',
+    });
+    sndBtn.title = 'Toggle sound';
+    sndBtn.addEventListener('click', () => {
+      _audioEnabled = !_audioEnabled;
+      sndBtn.textContent = _audioEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07';
+      sndBtn.style.color = _audioEnabled ? 'rgba(200,160,60,0.9)' : 'rgba(100,80,40,0.5)';
+      if (_audioEnabled) { const ac = getAudioCtx(); if (ac && ac.state==='suspended') ac.resume(); }
+    });
+    ov.appendChild(sndBtn);
+
     const keys = {};
 
     // ── Pointer follow (touch/mouse — Frodo follows finger/cursor) ───────────────
@@ -444,6 +509,15 @@
 
     // ── Keyboard input ──────────────────────────────────────────────────────
     const MOVE_KEYS = new Set(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','a','A','d','D','w','W','s','S']);
+    // Unlock AudioContext on first user gesture
+    function unlockAudio() {
+      const ac = getAudioCtx();
+      if (ac && ac.state === 'suspended') ac.resume();
+    }
+    canvas.addEventListener('mousedown', unlockAudio, {once:true});
+    canvas.addEventListener('touchstart', unlockAudio, {once:true, passive:true});
+    document.addEventListener('keydown', unlockAudio, {once:true});
+
     const onKd = e => {
       if (pauseCtrl.isPaused()) return; // block input while paused
       keys[e.key] = true;
@@ -708,8 +782,8 @@
 
         // Level clear
         if (Math.hypot(frodo.x-GOAL.x, frodo.y-GOAL.y) < frodo.r + GOAL.r) {
-          if (currentLevel < 8) { state='levelwin'; levelTransTimer=0; }
-          else { state='win'; }
+          if (currentLevel < 8) { state='levelwin'; levelTransTimer=0; sndLevelWin(); }
+          else { state='win'; sndLevelWin(); }
         }
 
         if (frodo.invincible){frodo.invTimer-=dt;if(frodo.invTimer<=0)frodo.invincible=false;}
@@ -751,7 +825,7 @@
           if(eye.timer>=eye.idleDur){eye.phase='warning';eye.timer=0;}
         } else if (eye.phase==='warning'){
           eye.open=Math.min(0.25,eye.open+dt*0.4);
-          if(eye.timer>=eye.warnDur){eye.phase='active';eye.timer=0;}
+          if(eye.timer>=eye.warnDur){eye.phase='active';eye.timer=0;sndEyeOpen();}
         } else if (eye.phase==='active'){
           eye.open=Math.min(1,eye.open+dt*2.5);
           eye.px=lerp(eye.px,lerp(W*0.2,W*0.8,frodo.x/W),dt*2);
@@ -997,6 +1071,7 @@
           balrog.firePhase += dt*2.5;
           if (!balrog.active && progress() > 0.52) {
             balrog.active = true;
+            sndBalrog();
             ynapassTimer = 1.8;
             shake = {x:0,y:0,dur:1.8,intensity:14};
             for(let i=0;i<28;i++){const a=(i/28)*Math.PI*2,s=3+Math.random()*4;
@@ -1104,6 +1179,7 @@
           if (hornActive > 0) hornActive -= dt;
           if (hornTimer <= 0 && hornActive <= 0) {
             hornActive = 3;
+            sndHorn();
             hornTimer = 20 + Math.random() * 10;
           }
         }
@@ -1129,6 +1205,7 @@
             keyPickup.pulse += dt*2.8;
             if(Math.hypot(frodo.x-keyPickup.x, frodo.y-keyPickup.y) < frodo.r+keyPickup.r) {
               goalUnlocked = true;
+              sndKey();
               keyPickup = null;
               shake = {x:0,y:0,dur:0.3,intensity:5};
               // Golden unlock burst
@@ -1165,6 +1242,7 @@
           lifePickup.pulse += dt*3;
           if(Math.hypot(frodo.x-lifePickup.x, frodo.y-lifePickup.y) < frodo.r+lifePickup.r) {
             frodo.lives = Math.min(maxLives(), frodo.lives+1);
+            sndPickup();
             // Burst particles
             for(let i=0;i<12;i++){const a=(i/12)*Math.PI*2,s=2+Math.random()*2;
               particles.push({x:lifePickup.x,y:lifePickup.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1,
@@ -1432,6 +1510,7 @@
 
     function hitFrodo() {
       if (!GOD_MODE) frodo.lives--;
+      sndHit();
       frodo.invincible=true; frodo.invTimer=2.8; frodo.hitFlash=1;
       shake={x:0,y:0,dur:0.45,intensity:9};
       for(let i=0;i<14;i++){
