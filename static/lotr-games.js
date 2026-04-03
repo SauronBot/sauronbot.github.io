@@ -443,8 +443,8 @@
       title:       'The Black Gate',
       subtitle:    '"The Gate is shut. There is no way in."',
       destination: 'The Secret Stair',
-      bgSky:   ['#040208','#080410'], bgGnd: ['#140808','#0a0404'],
-      roadCol: 'rgba(50,20,10,0.95)', horizon: '#160808',
+      bgSky:   ['#1a0604','#2a0a06'], bgGnd: ['#140808','#0a0404'],
+      roadCol: 'rgba(50,20,10,0.95)', horizon: '#1e0804',
       glow: [200,30,10], glowAlpha: 0.38, destGlow: [220,40,0],
       initWraiths:5, maxWraiths:9, wraithSpeed:1.65, eyeIdleBase:10, eyeActiveDur:9, spawnMin:2.5,
       hasGollum:true, hasBlindFlash:false, hasShelob:false, hasBalrog:false,
@@ -2847,11 +2847,10 @@
       // Far background: volcanic sky glow (screen-space)
       ctx.save();
       ctx.setTransform(1,0,0,1,0,0);
-      // Volcanic sky -- full width, covers entire sky area
+      // Volcanic pulse -- subtle uniform flicker over the base red sky
       const skyGlow=ctx.createLinearGradient(0,0,0,H*0.58);
-      skyGlow.addColorStop(0,`rgba(120,20,0,${0.18+Math.sin(t*0.3)*0.05})`);
-      skyGlow.addColorStop(0.4,`rgba(180,40,0,${0.22+Math.sin(t*0.4)*0.06})`);
-      skyGlow.addColorStop(0.75,`rgba(140,30,0,${0.12+Math.sin(t*0.5)*0.04})`);
+      skyGlow.addColorStop(0,`rgba(80,10,0,${0.10+Math.sin(t*0.3)*0.04})`);
+      skyGlow.addColorStop(0.5,`rgba(100,20,0,${0.12+Math.sin(t*0.4)*0.04})`);
       skyGlow.addColorStop(1,'rgba(0,0,0,0)');
       ctx.fillStyle=skyGlow; ctx.fillRect(0,0,W,H*0.58);
       ctx.restore(); // back to parallax
