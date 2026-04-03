@@ -1830,16 +1830,17 @@
                 ox.fillStyle=cg; ox.fillRect(0,0,W,H);
               }
             }
-            // Holes: egg sac clusters (Shelob, parallax 0.45x)
+            // Holes: egg sac clusters (Shelob, parallax 0.45x) -- sharp reveal like Moria torches
             if(def.hasShelob){
               for(let ci=0;ci<7;ci++){
                 const ctx_x=(100+ci*265)-cameraX*0.45;
                 const ctx_y=H*0.42+Math.sin(ci*1.3)*H*0.08;
-                const fl=0.75+Math.sin(t*2.1+ci*1.7)*0.18+Math.sin(t*5.3+ci)*0.07;
-                const cg=ox.createRadialGradient(ctx_x,ctx_y,0,ctx_x,ctx_y,320*fl);
+                const fl=0.82+Math.sin(t*2.1+ci*1.7)*0.12+Math.sin(t*5.3+ci)*0.06;
+                const cg=ox.createRadialGradient(ctx_x,ctx_y,0,ctx_x,ctx_y,260*fl);
                 cg.addColorStop(0,`rgba(0,0,0,${darkStr})`);
-                cg.addColorStop(0.25,`rgba(0,0,0,${0.80*darkStr})`);
-                cg.addColorStop(0.6,`rgba(0,0,0,${0.25*darkStr})`);
+                cg.addColorStop(0.28,`rgba(0,0,0,${0.88*darkStr})`);
+                cg.addColorStop(0.58,`rgba(0,0,0,${0.45*darkStr})`);
+                cg.addColorStop(0.82,`rgba(0,0,0,${0.10*darkStr})`);
                 cg.addColorStop(1,'rgba(0,0,0,0)');
                 ox.fillStyle=cg; ox.fillRect(0,0,W,H);
               }
@@ -2947,38 +2948,38 @@
       for(let i=0;i<7;i++){
         const ex=100+i*265, ey=H*0.42+Math.sin(i*1.3)*H*0.08;
         const fl=0.75+Math.sin(t*2.1+i*1.7)*0.18+Math.sin(t*5.3+i)*0.07;
-        // Wall glow halo -- cool blue-white, like a lantern casting real visibility
+        // Wall glow halo -- light green, reveals cave walls around it
         const eg=ctx.createRadialGradient(ex,ey,0,ex,ey,100);
-        eg.addColorStop(0,`rgba(180,220,255,${0.22*fl})`);
-        eg.addColorStop(0.5,`rgba(120,180,240,${0.10*fl})`);
+        eg.addColorStop(0,`rgba(80,200,80,${0.28*fl})`);
+        eg.addColorStop(0.5,`rgba(40,160,60,${0.12*fl})`);
         eg.addColorStop(1,'rgba(0,0,0,0)');
         ctx.fillStyle=eg; ctx.fillRect(ex-100,ey-100,200,200);
-        // Central sac cluster (3 bulges)
+        // Central sac cluster (3 bulges) -- crisp, not blurry
         for(let s=0;s<3;s++){
           const sx=ex+(s-1)*14, sy=ey+(s===1?-6:0), sr=10+s*2;
           ctx.save();
-          ctx.shadowColor=`rgba(160,210,255,${0.7*fl})`; ctx.shadowBlur=14;
-          const sg=ctx.createRadialGradient(sx-3,sy-3,0,sx,sy,sr);
-          sg.addColorStop(0,`rgba(230,245,255,${0.90*fl})`);
-          sg.addColorStop(0.5,`rgba(140,195,255,${0.65*fl})`);
-          sg.addColorStop(1,`rgba(60,100,180,${0.25*fl})`);
+          ctx.shadowColor=`rgba(60,220,80,${0.6*fl})`; ctx.shadowBlur=6;
+          const sg=ctx.createRadialGradient(sx-2,sy-2,0,sx,sy,sr);
+          sg.addColorStop(0,`rgba(180,255,160,${0.95*fl})`);
+          sg.addColorStop(0.5,`rgba(80,200,80,${0.75*fl})`);
+          sg.addColorStop(1,`rgba(20,100,30,${0.3*fl})`);
           ctx.fillStyle=sg;
           ctx.beginPath(); ctx.ellipse(sx,sy,sr,sr*1.1,Math.sin(i+s)*0.3,0,Math.PI*2); ctx.fill();
           ctx.restore();
         }
         // Web threads radiating from sac
-        ctx.save(); ctx.globalAlpha=0.25; ctx.strokeStyle=`rgba(160,200,255,${0.4*fl})`; ctx.lineWidth=0.8;
+        ctx.save(); ctx.globalAlpha=0.30; ctx.strokeStyle=`rgba(100,220,100,${0.45*fl})`; ctx.lineWidth=0.8;
         for(let r=0;r<6;r++){
           const ra=(r/6)*Math.PI*2;
           ctx.beginPath(); ctx.moveTo(ex,ey); ctx.lineTo(ex+Math.cos(ra)*55,ey+Math.sin(ra)*45); ctx.stroke();
         }
         ctx.restore();
       }
-      // Bioluminescent ground patches -- cool blue-white
+      // Bioluminescent ground patches -- light green
       for(let i=0;i<10;i++){
         const bx=40+i*190, by=H*0.60+Math.sin(i*1.7)*H*0.06;
         const bg=ctx.createRadialGradient(bx,by,0,bx,by,28);
-        bg.addColorStop(0,`rgba(160,210,255,${0.20+Math.sin(t*0.8+i)*0.08})`);
+        bg.addColorStop(0,`rgba(80,210,80,${0.22+Math.sin(t*0.8+i)*0.08})`);
         bg.addColorStop(1,'rgba(0,0,0,0)');
         ctx.fillStyle=bg; ctx.fillRect(bx-28,by-28,56,56);
       }
