@@ -785,7 +785,7 @@
             if(w.x<-80||w.x>WORLD_W+80||w.y<-80||w.y>H+80){
               w.wanderAngle=Math.atan2(H*0.65-w.y,(frodo?frodo.x:W/2)-w.x)+(Math.random()-0.5)*0.6; w.wanderTimer=2;
             }
-            if (!frodo.invincible && dist(frodo, w) < frodo.r + w.r) hitFrodoHard();
+            if (!frodo.invincible && dist(frodo, w) < frodo.r + w.r) hitFrodo();
             return;
           }
           // Morgul Wight: always drifts toward Frodo
