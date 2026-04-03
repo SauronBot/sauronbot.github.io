@@ -792,7 +792,8 @@
       keyPickup = { x: kx, y: ky, r: 14, pulse: 0, spawned: false, spawnTimer: 1 };
       GOAL.y = GOAL_Y_BY_LEVEL[lvl] || GOAL_Y_BY_LEVEL[0];
       spiderlings = def.hasShelob ? Array.from({length:5},()=>({x:W*0.5+Math.random()*200-100, y:-80+Math.random()*40, r:5, angle:Math.random()*Math.PI*2, speed:2.5+Math.random()})) : [];
-      blessingPickup = (lvl === 2 || lvl === 5) ? {x: WORLD_W*0.5, y: H*0.45, r: 16, pulse: 0, collected: false} : null;
+      blessingPickup = (lvl === 2 || lvl === 5 || lvl === 6 || lvl === 7 || lvl === 8)
+        ? {x: WORLD_W*0.5, y: H*0.45, r: 16, pulse: 0, collected: false} : null;
       blessingActive = 0;
       // blessingCount persists -- Galadriel's phials carry forward
       hornTimer = 20 + Math.random()*5;
