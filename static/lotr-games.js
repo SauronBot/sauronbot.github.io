@@ -3072,11 +3072,36 @@
       ctx.font='26px serif'; ctx.fillText('★',sx,sy); ctx.restore();
     }
     const nextDef=LEVEL_DEFS[lvl+1];
-    if(nextDef){
-      ctx.fillStyle='rgba(180,140,60,0.85)'; ctx.font='bold 13px serif';
-      ctx.fillText(`SPACE  --  ${nextDef.title}`,W/2,H/2+75);
-      ctx.fillStyle='rgba(140,110,50,0.55)'; ctx.font='italic 11px serif';
-      ctx.fillText(nextDef.subtitle,W/2,H/2+94);
+    // Chapter break: 2.5s rest moment with single quote before continue prompt
+    const REST_QUOTES = [
+      '"The road goes ever on and on..."',
+      '"Fly, you fools!"',
+      '"Even darkness must pass."',
+      '"Not all those who wander are lost."',
+      '"There is another way."',
+      '"In the darkness bind them."',
+      '"The power of the Ring could not be hidden."',
+      '"I cannot carry it for you, but I can carry you."',
+      '"It is done."',
+    ];
+    if(nextDef && timer > 1.8 && timer < 4.5){
+      const rf = Math.min(1,(timer-1.8)/0.6);
+      ctx.save(); ctx.globalAlpha=rf*0.9;
+      ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.fillRect(W/2-200,H/2+55,400,38);
+      ctx.fillStyle='rgba(255,255,255,0.85)'; ctx.font='italic 13px "Palatino Linotype",Palatino,Georgia,serif';
+      ctx.fillText(REST_QUOTES[lvl]||'',W/2,H/2+68);
+      ctx.fillStyle='rgba(180,160,120,0.5)'; ctx.font='9px serif';
+      ctx.fillText('-- J.R.R. Tolkien',W/2,H/2+82);
+      ctx.restore();
+    }
+    if(nextDef && timer > 4.2){
+      const cf = Math.min(1,(timer-4.2)/0.4);
+      ctx.save(); ctx.globalAlpha=cf*0.9;
+      ctx.fillStyle='rgba(180,140,60,0.9)'; ctx.font='bold 13px serif';
+      ctx.fillText(`SPACE  --  ${nextDef.title}`,W/2,H/2+105);
+      ctx.fillStyle='rgba(140,110,50,0.6)'; ctx.font='italic 11px serif';
+      ctx.fillText(nextDef.subtitle,W/2,H/2+122);
+      ctx.restore();
     }
     ctx.globalAlpha=1;
   }
