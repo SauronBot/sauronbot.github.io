@@ -218,9 +218,9 @@
       title:       'The Fellowship of the Ring',
       subtitle:    '"Even the smallest person can change the course of the future."',
       destination: 'Rivendell',
-      bgSky:   ['#05060a','#0c1218'], bgGnd: ['#142010','#0c180a'],
-      roadCol: 'rgba(55,70,30,0.9)', horizon: '#1a280e',
-      glow: [80,160,40], glowAlpha: 0.18, destGlow: [80,160,40],
+      bgSky:   ['#0a1520','#1a2c18'], bgGnd: ['#1a3010','#122008'],
+      roadCol: 'rgba(65,85,35,0.9)', horizon: '#223818',
+      glow: [100,180,60], glowAlpha: 0.20, destGlow: [100,180,60],
       initWraiths:3, maxWraiths:5, wraithSpeed:1.1, eyeIdleBase:22, eyeActiveDur:5, spawnMin:4.5,
       hasGollum:false, hasBlindFlash:false, hasShelob:false, hasBalrog:false,
       companion: 'fellowship', // Gandalf + Aragorn silhouettes at goal
@@ -1915,14 +1915,143 @@
     // Level atmosphere: parallax 0.45x mid-ground
     ctx.save(); ctx.translate(-cameraX*0.45, 0);
     if (def === LEVEL_DEFS[0]) {
-      // Shire: rolling green hills and scattered trees
-      ctx.fillStyle='#1e3a12';
-      ctx.beginPath(); ctx.arc(60,H*0.48,55,Math.PI,0); ctx.fill();
-      [W*0.28,W*0.52,W*0.78,W*1.05,W*1.35,W*1.6,W*1.85].forEach(tx=>{
-        ctx.fillStyle='#1a3010';
-        ctx.beginPath(); ctx.arc(tx,H*0.46,22+Math.sin(tx)*4,Math.PI,0); ctx.fill();
-        ctx.fillStyle='#162808'; ctx.fillRect(tx-3,H*0.46,6,14);
+      // Shire: lush rolling hills, hedgerows, oak trees, wildflowers, morning mist
+
+      // Rolling far hills (behind road, parallax already applied)
+      const hillColors = ['#1a3a0e','#1e4010','#163208'];
+      [[0.02,0.4,0.22],[0.18,0.5,0.18],[0.42,0.42,0.2],[0.65,0.5,0.16],[0.88,0.44,0.19],[1.1,0.48,0.17],[1.35,0.42,0.21],[1.62,0.50,0.18],[1.85,0.44,0.20]]
+        .forEach(([tx,ty,rr],i)=>{
+          ctx.fillStyle=hillColors[i%3];
+          ctx.beginPath(); ctx.arc(tx*W, H*ty, rr*W, Math.PI, 0); ctx.fill();
+        });
+
+      // Morning mist sitting in the valleys
+      for(let i=0;i<8;i++){
+        const mx=i*240+80, my=H*0.54;
+        const mg=ctx.createRadialGradient(mx,my,0,mx,my,90);
+        mg.addColorStop(0,`rgba(200,215,180,${0.07+Math.sin(t*0.3+i)*0.03})`);
+        mg.addColorStop(0.5,`rgba(180,200,160,0.04)`);
+        mg.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=mg; ctx.fillRect(mx-90,my-30,180,60);
+      }
+
+      // Hedgerows along the roadside — dense low shrubs
+      for(let i=0;i<18;i++){
+        const hx=i*118-20;
+        // Lower hedge
+        const hg=ctx.createRadialGradient(hx,H*0.595,0,hx,H*0.595,28);
+        hg.addColorStop(0,'#1c3a0c'); hg.addColorStop(0.6,'#142e08'); hg.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=hg; ctx.beginPath(); ctx.ellipse(hx,H*0.595,28,14,0,0,Math.PI*2); ctx.fill();
+        // Upper hedge bump
+        ctx.fillStyle='#1a3a0c';
+        ctx.beginPath(); ctx.ellipse(hx+Math.sin(i)*8,H*0.578,12,10,Math.sin(i)*0.2,0,Math.PI*2); ctx.fill();
+        // Occasional wildflower dot (yellow or white)
+        if(i%3===0){
+          ctx.fillStyle=i%6===0?'rgba(255,220,60,0.7)':'rgba(240,240,230,0.65)';
+          ctx.beginPath(); ctx.arc(hx+15,H*0.582,2.5,0,Math.PI*2); ctx.fill();
+        }
+      }
+
+      // Oak trees — proper silhouettes with trunk, main branches, irregular canopy
+      const OAKS = [
+        {x:0.06,  base:0.60, h:0.22, spread:0.055, lean: 0.04},
+        {x:0.19,  base:0.62, h:0.20, spread:0.048, lean:-0.02},
+        {x:0.36,  base:0.60, h:0.24, spread:0.060, lean: 0.03},
+        {x:0.52,  base:0.61, h:0.21, spread:0.052, lean:-0.03},
+        {x:0.68,  base:0.60, h:0.23, spread:0.057, lean: 0.02},
+        {x:0.84,  base:0.62, h:0.20, spread:0.050, lean:-0.02},
+        {x:1.00,  base:0.60, h:0.22, spread:0.055, lean: 0.03},
+        {x:1.18,  base:0.61, h:0.21, spread:0.048, lean:-0.03},
+        {x:1.36,  base:0.60, h:0.24, spread:0.058, lean: 0.02},
+        {x:1.54,  base:0.62, h:0.20, spread:0.050, lean:-0.02},
+        {x:1.72,  base:0.60, h:0.23, spread:0.055, lean: 0.03},
+        {x:1.90,  base:0.61, h:0.22, spread:0.052, lean:-0.02},
+      ];
+      OAKS.forEach((oak, i) => {
+        const tx = oak.x * W;
+        const baseY = H * oak.base;
+        const treeH = H * oak.h;
+        const spread = oak.spread * W;
+        const lean = oak.lean * W;
+        // Trunk — tapered, slightly curved
+        const trunkW = spread * 0.12;
+        const trunkG = ctx.createLinearGradient(tx-trunkW,0,tx+trunkW,0);
+        trunkG.addColorStop(0,'#2a1e0e'); trunkG.addColorStop(0.4,'#3a2a14'); trunkG.addColorStop(1,'#221808');
+        ctx.fillStyle = trunkG;
+        ctx.beginPath();
+        ctx.moveTo(tx - trunkW, baseY);
+        ctx.bezierCurveTo(tx - trunkW*0.6, baseY - treeH*0.45, tx + lean*0.3 - trunkW*0.3, baseY - treeH*0.7, tx + lean - trunkW*0.2, baseY - treeH*0.82);
+        ctx.lineTo(tx + lean + trunkW*0.2, baseY - treeH*0.82);
+        ctx.bezierCurveTo(tx + lean*0.3 + trunkW*0.3, baseY - treeH*0.7, tx + trunkW*0.6, baseY - treeH*0.45, tx + trunkW, baseY);
+        ctx.closePath(); ctx.fill();
+        // Main branches (2-3 visible)
+        ctx.strokeStyle='#2a1e0e'; ctx.lineWidth=trunkW*0.7; ctx.lineCap='round';
+        [[0.82,-0.55,0.4],[0.88, 0.65,0.38],[0.78,-0.30,0.28]].forEach(([fy,dir,ext])=>{
+          const bx=tx+lean*(fy-0.8)*1.5, by=baseY-treeH*fy;
+          ctx.beginPath();
+          ctx.moveTo(bx,by);
+          ctx.quadraticCurveTo(bx+dir*spread*0.45, by-treeH*0.08, bx+dir*spread*ext, by-treeH*0.18);
+          ctx.stroke();
+        });
+        // Canopy — 4-6 overlapping lobes for irregular oak shape
+        const canopyTop = baseY - treeH;
+        const cx = tx + lean;
+        const lobes = [
+          {ox:0,    oy:0,    rx:spread*0.82, ry:spread*0.72},
+          {ox:-spread*0.35, oy:spread*0.18, rx:spread*0.58, ry:spread*0.50},
+          {ox: spread*0.38, oy:spread*0.22, rx:spread*0.55, ry:spread*0.48},
+          {ox:-spread*0.18, oy:-spread*0.25,rx:spread*0.50, ry:spread*0.42},
+          {ox: spread*0.20, oy:-spread*0.20,rx:spread*0.48, ry:spread*0.40},
+        ];
+        // Back shadow lobe first
+        ctx.fillStyle=`hsl(115,42%,${12+i%3}%)`;
+        ctx.beginPath(); ctx.ellipse(cx, canopyTop+spread*0.15, spread*0.88, spread*0.75, 0, 0, Math.PI*2); ctx.fill();
+        // Main lobes
+        lobes.forEach((l,li)=>{
+          const shade=14+li*2+(i%2);
+          ctx.fillStyle=`hsl(${118+li*3},${44+li}%,${shade}%)`;
+          ctx.beginPath(); ctx.ellipse(cx+l.ox, canopyTop+l.oy, l.rx, l.ry, Math.sin(i+li)*0.15, 0, Math.PI*2); ctx.fill();
+        });
+        // Sunlight highlight on top-left
+        ctx.save(); ctx.globalAlpha=0.12+Math.sin(t*0.6+i)*0.05;
+        ctx.fillStyle='rgba(180,220,100,1)';
+        ctx.beginPath(); ctx.ellipse(cx-spread*0.25, canopyTop-spread*0.1, spread*0.32, spread*0.25, -0.3, 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+        // Leaf shimmer in wind
+        ctx.save(); ctx.globalAlpha=0.08+Math.sin(t*1.1+i*0.8)*0.05;
+        ctx.fillStyle='rgba(200,240,120,1)';
+        ctx.beginPath(); ctx.ellipse(cx+spread*0.2, canopyTop+spread*0.05, spread*0.22, spread*0.18, 0.2, 0, Math.PI*2); ctx.fill();
+        ctx.restore();
       });
+
+      // Wildflowers scattered in the grass (foreground)
+      for(let i=0;i<22;i++){
+        const fx=(i*193+37)%(W*2), fy=H*0.56+Math.sin(i*0.9)*H*0.04;
+        const fc=i%3===0?'rgba(255,220,60,0.75)':i%3===1?'rgba(255,255,255,0.65)':'rgba(200,100,180,0.6)';
+        ctx.fillStyle=fc;
+        ctx.beginPath(); ctx.arc(fx,fy,2+Math.sin(i)*0.5,0,Math.PI*2); ctx.fill();
+        // Stem
+        ctx.strokeStyle='rgba(80,120,40,0.4)'; ctx.lineWidth=1;
+        ctx.beginPath(); ctx.moveTo(fx,fy); ctx.lineTo(fx+Math.sin(i)*2,fy+6); ctx.stroke();
+      }
+
+      // Distant hobbit hole door (once, around x=W*0.55)
+      ctx.save();
+      const hx=W*0.55, hy=H*0.52;
+      ctx.fillStyle='#1a3008';
+      ctx.beginPath(); ctx.ellipse(hx,hy,22,18,0,Math.PI,0); ctx.fill();
+      ctx.fillStyle='#4a2808';
+      ctx.beginPath(); ctx.ellipse(hx,hy,18,14,0,Math.PI,0); ctx.fill();
+      ctx.strokeStyle='#6a3a10'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.arc(hx,hy,16,Math.PI,0); ctx.stroke();
+      // Round door
+      ctx.fillStyle='#3a1e08';
+      ctx.beginPath(); ctx.arc(hx,hy+2,7,0,Math.PI*2); ctx.fill();
+      ctx.save(); ctx.shadowColor='rgba(180,120,40,0.5)'; ctx.shadowBlur=6;
+      ctx.fillStyle='rgba(200,140,50,0.6)';
+      ctx.beginPath(); ctx.arc(hx+3,hy+1,1.5,0,Math.PI*2); ctx.fill(); // door knob
+      ctx.restore(); ctx.restore();
+
     } else if (def === LEVEL_DEFS[1]) {
       // Moria: stone columns + lava fissures + stalactites
       // Lava fissures on ground
