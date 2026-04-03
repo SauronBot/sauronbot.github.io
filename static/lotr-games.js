@@ -3612,13 +3612,39 @@
     ctx.fillText(def.winQuote,W/2,H/2-8);
     ctx.fillStyle='rgba(120,90,40,0.5)'; ctx.font='9px serif';
     ctx.fillText('-- J.R.R. Tolkien',W/2,H/2+10);
-    // Stars for completed book
+    // Book chapter progress -- show all 3 chapters of current book with checkmarks
+    const bookStart = Math.floor(lvl/3)*3; // 0, 3, or 6
+    const bookNames = ['Book I: The Fellowship','Book II: The Two Towers','Book III: Return of the King'];
+    const bookNum = Math.floor(lvl/3);
+    const chapterNames = LEVEL_DEFS.slice(bookStart, bookStart+3).map(d=>d.title);
+    const chapterY = H/2+30;
+    // Book title
+    ctx.fillStyle='rgba(180,140,50,0.6)'; ctx.font='bold 9px serif'; ctx.textAlign='center';
+    ctx.fillText(bookNames[bookNum], W/2, chapterY-14);
+    // 3 chapter pills
+    const pillW=100, pillGap=14, totalW=(pillW*3+pillGap*2);
+    const pillX0=W/2-totalW/2;
     for(let i=0;i<3;i++){
-      const sx=W/2-44+i*44, sy=H/2+38;
-      const lit=i<=Math.floor(lvl/3);
-      ctx.save(); ctx.shadowColor='#ffcc20'; ctx.shadowBlur=lit?14:0;
-      ctx.fillStyle=lit?'#ffd030':'rgba(80,60,20,0.4)';
-      ctx.font='26px serif'; ctx.fillText('★',sx,sy); ctx.restore();
+      const px=pillX0+i*(pillW+pillGap), py=chapterY, done=i<=(lvl-bookStart);
+      const isCurrent=i===(lvl-bookStart);
+      ctx.save();
+      // Pill background
+      ctx.fillStyle=isCurrent?'rgba(200,160,40,0.22)':done?'rgba(120,90,30,0.15)':'rgba(40,30,10,0.12)';
+      ctx.strokeStyle=isCurrent?'rgba(220,180,60,0.7)':done?'rgba(140,110,40,0.5)':'rgba(80,60,20,0.25)';
+      ctx.lineWidth=isCurrent?1.5:1;
+      ctx.beginPath(); ctx.roundRect ? ctx.roundRect(px,py,pillW,26,4) : ctx.rect(px,py,pillW,26); ctx.fill(); ctx.stroke();
+      // Chapter name
+      ctx.fillStyle=isCurrent?'rgba(240,200,70,0.95)':done?'rgba(180,150,60,0.75)':'rgba(100,80,40,0.35)';
+      ctx.font=`${isCurrent?'bold ':' '}8px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+      // Truncate long names
+      const cname = chapterNames[i]||'';
+      const shortName = cname.length>14 ? cname.slice(0,13)+'…' : cname;
+      ctx.fillText(shortName, px+pillW/2, py+10);
+      // Status icon
+      ctx.font=`10px serif`;
+      ctx.fillStyle=isCurrent?'rgba(255,220,80,0.9)':done?'rgba(160,200,100,0.8)':'rgba(80,60,20,0.3)';
+      ctx.fillText(isCurrent?'◆':done?'✓':'○', px+pillW/2, py+20);
+      ctx.restore();
     }
     const nextDef=LEVEL_DEFS[lvl+1];
     // Chapter break: 2.5s rest moment with single quote before continue prompt
