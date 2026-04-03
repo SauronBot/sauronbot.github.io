@@ -559,6 +559,7 @@
     let seenEnemyTypes = new Set(), enemyIntroTimer = 0, enemyIntroName = '';
     let flavourIdx = -1, flavourAlpha = 0;
     let hitFlashLevel = 0;
+    let whisperText = '', whisperTimer = 0, whisperCooldown = 0;
     let lifePickup = null;  // {x,y,r,pulse}
     let keyPickup = null;   // {x,y,r,pulse} — must collect before goal unlocks
     let goalUnlocked = false;
@@ -624,6 +625,7 @@
       enemyIntroTimer = 0; enemyIntroName = '';
       flavourIdx = -1; flavourAlpha = 0;
       hitFlashLevel = lvl;
+      whisperText = ''; whisperTimer = 0; whisperCooldown = 0;
       state = 'playing';
     }
 
@@ -843,6 +845,20 @@
         const enemySpeedMult = (blessingActive > 0 ? 0.8 : 1) * (hornActive > 0 ? 0.5 : 1);
         if (ynapassTimer > 0) ynapassTimer -= dt;
         if (enemyIntroTimer > 0) enemyIntroTimer -= dt;
+        if (whisperTimer > 0) whisperTimer -= dt;
+        if (whisperCooldown > 0) whisperCooldown -= dt;
+        // Contextual companion whispers
+        if (whisperCooldown <= 0) {
+          const nearestDist = wraiths.length ? Math.min(...wraiths.map(w=>Math.hypot(frodo.x-w.x,frodo.y-w.y))) : 9999;
+          const eyeNow = eye && eye.phase === 'active';
+          let wt = '';
+          if (frodo.lives === 1) wt = currentLevel<3?'Hold on, Mr. Frodo!':'Almost out of strength...';
+          else if (eyeNow && Math.random()<0.4) wt = currentLevel<3?'Don\'t put it on!':'The Eye sees you!';
+          else if (nearestDist < 80 && Math.random()<0.35) wt = currentLevel<3?'Keep to the shadows!':'Run, Mr. Frodo, run!';
+          else if (progress() > 0.85 && Math.random()<0.3) wt = currentLevel===8?'Throw it in the fire!':'Almost there...';
+          else if (progress() > 0.45 && Math.random()<0.12) wt = ['The road goes ever on...','Keep moving.','Trust in the Fellowship.','One step at a time.'][Math.floor(Math.random()*4)];
+          if (wt) { whisperText = wt; whisperTimer = 3.2; whisperCooldown = 12 + Math.random()*8; }
+        }
         // Enemy introduction detection
         wraiths.forEach(w => {
           if (!seenEnemyTypes.has(w.type) && (w.type==='troll'||w.type==='wight'||w.type==='uruk')) {
@@ -1331,6 +1347,18 @@
         // Permanent level atmosphere tint
         const LEVEL_TINTS=['rgba(20,10,5,0.06)','rgba(20,10,5,0.06)','rgba(10,30,10,0.05)','rgba(15,20,8,0.08)','rgba(20,5,0,0.08)','rgba(10,0,15,0.10)','rgba(0,20,5,0.09)','rgba(20,10,0,0.07)','rgba(25,5,0,0.12)'];
         if(LEVEL_TINTS[currentLevel]){ctx.fillStyle=LEVEL_TINTS[currentLevel];ctx.fillRect(0,0,W,H);}
+        // Companion whisper
+        if(whisperTimer>0&&whisperText){
+          const wFade=whisperTimer<0.6?whisperTimer/0.6:Math.min(1,(3.2-whisperTimer)*3);
+          ctx.save(); ctx.globalAlpha=wFade*0.88;
+          ctx.textAlign='center'; ctx.textBaseline='middle';
+          ctx.font='italic 12px "Palatino Linotype",Palatino,Georgia,serif';
+          const wm=ctx.measureText(whisperText);
+          ctx.fillStyle='rgba(0,0,0,0.45)'; ctx.fillRect(W/2-wm.width/2-12,H*0.88-10,wm.width+24,22);
+          ctx.fillStyle='rgba(200,180,130,0.95)';
+          ctx.fillText(whisperText,W/2,H*0.88);
+          ctx.restore();
+        }
         // Enemy introduction flash
         if(enemyIntroTimer>0){
           const introFade=enemyIntroTimer<0.5?enemyIntroTimer*2:Math.min(1,(2.2-enemyIntroTimer)*4);
