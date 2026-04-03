@@ -597,20 +597,7 @@
     sndBtn.addEventListener('click', toggleAudio);
     ov.appendChild(sndBtn);
 
-    // Title screen sound button (top-right of canvas overlay, visible before game starts)
-    const titleSndBtn = document.createElement('button');
-    titleSndBtn.textContent = _audioEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07';
-    titleSndBtn.className = '__lotr-sndbtn';
-    Object.assign(titleSndBtn.style, {
-      position:'absolute', top:'10px', right:'10px',
-      background:'rgba(0,0,0,0.4)', border:'1px solid rgba(180,140,60,0.4)',
-      color: _audioEnabled ? 'rgba(200,160,60,0.9)' : 'rgba(100,80,40,0.5)',
-      fontSize:'18px', width:'34px', height:'34px',
-      cursor:'pointer', borderRadius:'6px', zIndex:'5',
-    });
-    titleSndBtn.title = 'Toggle sound';
-    titleSndBtn.addEventListener('click', toggleAudio);
-    ov.appendChild(titleSndBtn);
+
 
     const keys = {};
 
