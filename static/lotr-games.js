@@ -2124,7 +2124,7 @@
         // Eagle particles (Pelennor distraction)
         eagleParticles.forEach(ep=>{
           ctx.save(); ctx.globalAlpha=Math.min(1,ep.life*0.5);
-          ctx.fillStyle='#c8a030'; ctx.font='18px serif';
+          ctx.fillStyle='#c8a030'; ctx.font='18px "Palatino Linotype",Palatino,Georgia,serif';
           ctx.textAlign='center'; ctx.textBaseline='middle';
           ctx.fillText('🦅',ep.x-cameraX,ep.y); ctx.restore();
         });
@@ -2208,7 +2208,7 @@
           ctx.fillStyle='#e8c840'; ctx.font='bold 13px "Palatino Linotype",Palatino,Georgia,serif';
           ctx.textAlign='center'; ctx.textBaseline='middle';
           ctx.fillText(enemyIntroName.toUpperCase(),W/2,H*0.42+13);
-          ctx.fillStyle='rgba(180,140,60,0.7)'; ctx.font='italic 10px serif';
+          ctx.fillStyle='rgba(180,140,60,0.7)'; ctx.font='italic 10px "Palatino Linotype",Palatino,Georgia,serif';
           ctx.fillText('new enemy',W/2,H*0.42+28);
           ctx.restore();
         }
@@ -2307,7 +2307,7 @@
         // Black Gate — first sight of the Eye
         if(currentLevel===4&&eye.phase==='active'&&timers.elapsed<20&&Math.sin(timers.elapsed*2)>0){
           ctx.save(); ctx.shadowColor='#ff2200'; ctx.shadowBlur=10;
-          ctx.fillStyle='rgba(220,60,0,0.9)'; ctx.font='bold 12px serif';
+          ctx.fillStyle='rgba(220,60,0,0.9)'; ctx.font='bold 12px "Palatino Linotype",Palatino,Georgia,serif';
           ctx.textAlign='center';
           ctx.fillText('THE EYE OF SAURON -- FIRST SIGHT',W/2,48);
           ctx.restore();
@@ -2315,7 +2315,7 @@
         // Pelennor — Eye distracted banner
         if(currentLevel===7&&eyeDistracted&&Math.sin(timers.elapsed*3)>0){
           ctx.save(); ctx.shadowColor='#80c030'; ctx.shadowBlur=8;
-          ctx.fillStyle='rgba(120,200,40,0.85)'; ctx.font='bold 11px serif';
+          ctx.fillStyle='rgba(120,200,40,0.85)'; ctx.font='bold 11px "Palatino Linotype",Palatino,Georgia,serif';
           ctx.textAlign='center';
           ctx.fillText('THE EYE TURNS TO WAR',W/2,32);
           ctx.restore();
@@ -2363,7 +2363,7 @@
           // Badge always visible in phase 1+2
           const badgeFade = el<0.4?el/0.4:1;
           ctx.globalAlpha = bgAlpha * badgeFade;
-          ctx.fillStyle='rgba(200,160,50,0.85)'; ctx.font='bold 12px serif';
+          ctx.fillStyle='rgba(200,160,50,0.85)'; ctx.font='bold 12px "Palatino Linotype",Palatino,Georgia,serif';
           ctx.fillText(`BOOK ${badge}  --  CHAPTER ${def.chapter||'?'}`,W/2,H/2-52);
           // Title + subtitle slide in at 1.2s
           if(el > 1.2) {
@@ -2498,7 +2498,7 @@
     g.addColorStop(0,'rgba(212,168,32,0.5)'); g.addColorStop(1,'rgba(0,0,0,0)');
     ctx.fillStyle=g; ctx.fillRect(p.x-p.r*2,p.y-p.r*2,p.r*4,p.r*4);
     ctx.fillStyle='rgba(220,180,40,0.95)';
-    ctx.font = `bold ${Math.round(p.r*1.2)}px serif`;
+    ctx.font = `bold ${Math.round(p.r*1.2)}px "Palatino Linotype",Palatino,Georgia,serif`;
     ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText('♥', p.x, p.y);
     ctx.restore();
@@ -2516,11 +2516,11 @@
     g.addColorStop(0,'rgba(80,140,255,0.4)'); g.addColorStop(1,'rgba(0,0,0,0)');
     ctx.fillStyle=g; ctx.fillRect(p.x-p.r*2,p.y-p.r*2,p.r*4,p.r*4);
     ctx.fillStyle='rgba(160,210,255,0.95)';
-    ctx.font=`bold ${Math.round(p.r*1.2)}px serif`;
+    ctx.font=`bold ${Math.round(p.r*1.2)}px "Palatino Linotype",Palatino,Georgia,serif`;
     ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText('⚡',p.x,p.y);
     ctx.shadowBlur=0;
-    ctx.fillStyle='rgba(120,180,255,0.8)'; ctx.font='bold 9px serif';
+    ctx.fillStyle='rgba(120,180,255,0.8)'; ctx.font='bold 9px "Palatino Linotype",Palatino,Georgia,serif';
     ctx.fillText('DASH +1',p.x,p.y+p.r+10);
     ctx.restore();
   }
@@ -2724,7 +2724,7 @@
       ctx.lineTo(x+aw,y+ah); ctx.stroke();
       // Skull motifs
       ctx.fillStyle=`rgba(40,180,70,${0.5+Math.sin(t*2)*0.2})`;
-      ctx.font=`${Math.round(r*0.7)}px serif`;
+      ctx.font=`${Math.round(r*0.7)}px "Palatino Linotype",Palatino,Georgia,serif`;
       ctx.textAlign='center'; ctx.textBaseline='middle';
       ctx.fillText('💀',x,y-ah*0.2);
       ctx.restore();
@@ -2852,13 +2852,13 @@
       ctx.strokeStyle = 'rgba(150,150,150,0.5)'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.stroke();
       ctx.fillStyle = 'rgba(160,160,160,0.7)';
-      ctx.font = `bold ${Math.round(r*1.1)}px serif`;
+      ctx.font = `bold ${Math.round(r*1.1)}px "Palatino Linotype",Palatino,Georgia,serif`;
       ctx.textAlign='center'; ctx.textBaseline='middle';
       ctx.fillText('🔒', x, y);
       ctx.globalAlpha = 1;
       ctx.shadowBlur = 0;
       ctx.fillStyle = 'rgba(140,140,140,0.5)';
-      ctx.font = 'bold 9px serif';
+      ctx.font = 'bold 9px "Palatino Linotype",Palatino,Georgia,serif';
       ctx.fillText('LOCKED', x, y + r + 10);
     } else {
       // Unlocked: full bright beacon
@@ -2882,12 +2882,12 @@
       cg.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = cg; ctx.fillRect(x-r*2.5, y-r*2.5, r*5, r*5);
       ctx.fillStyle = `rgba(${cr},${cg2},${cb},0.95)`;
-      ctx.font = `bold ${Math.round(r*0.9)}px serif`;
+      ctx.font = `bold ${Math.round(r*0.9)}px "Palatino Linotype",Palatino,Georgia,serif`;
       ctx.textAlign='center'; ctx.textBaseline='middle';
       ctx.fillText(GOAL_ICON[lvl]||'★', x, y);
       ctx.shadowBlur = 0;
       ctx.fillStyle = 'rgba(200,160,60,0.85)';
-      ctx.font = 'bold 9px serif';
+      ctx.font = 'bold 9px "Palatino Linotype",Palatino,Georgia,serif';
       ctx.fillText(def.destination.toUpperCase(), x, y + r + 10);
     }
     // Dotted path hint
@@ -2918,13 +2918,13 @@
     ctx.fillStyle=g; ctx.fillRect(k.x-k.r*2,k.y-k.r*2,k.r*4,k.y-k.y+k.r*4);
     // Key symbol
     ctx.fillStyle = '#ffd030';
-    ctx.font = `bold ${Math.round(k.r*1.3)}px serif`;
+    ctx.font = `bold ${Math.round(k.r*1.3)}px "Palatino Linotype",Palatino,Georgia,serif`;
     ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText('🔑', k.x, k.y);
     // Label
     ctx.shadowBlur = 0;
     ctx.fillStyle = 'rgba(255,200,60,0.8)';
-    ctx.font = 'bold 9px serif';
+    ctx.font = 'bold 9px "Palatino Linotype",Palatino,Georgia,serif';
     ctx.fillText('COLLECT ME', k.x, k.y + k.r + 10);
     ctx.restore();
   }
@@ -4090,7 +4090,7 @@
     ctx.fillStyle = ig;
     ctx.beginPath(); ctx.arc(0, 0, p.r * 0.6, 0, Math.PI*2); ctx.fill();
     ctx.shadowBlur = 0;
-    ctx.fillStyle = 'rgba(200,220,255,0.7)'; ctx.font = 'bold 8px serif';
+    ctx.fillStyle = 'rgba(200,220,255,0.7)'; ctx.font = 'bold 8px "Palatino Linotype",Palatino,Georgia,serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'top';
     ctx.fillText('BLESSING', 0, p.r + 4);
     ctx.restore();
@@ -4127,7 +4127,7 @@
       ctx.fillStyle = lit ? '#ffd030' : 'rgba(80,60,20,0.5)';
       ctx.beginPath(); ctx.arc(wx, mapY, isCurrent ? 6 : 4, 0, Math.PI*2); ctx.fill();
       ctx.fillStyle = lit ? 'rgba(200,160,60,0.9)' : 'rgba(100,80,40,0.4)';
-      ctx.font = isCurrent ? 'bold 9px serif' : '8px serif';
+      ctx.font = isCurrent ? 'bold 9px "Palatino Linotype",Palatino,Georgia,serif' : '8px "Palatino Linotype",Palatino,Georgia,serif';
       ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
       ctx.fillText(wp.label, wx, mapY - 9);
       ctx.restore();
@@ -4144,7 +4144,7 @@
     // Journey map at top
     drawJourneyMap(ctx, W, H/2 - 125, lvl);
     const badge=LEVEL_DEFS[lvl]?.book||'I';
-    ctx.fillStyle='rgba(180,140,50,0.7)'; ctx.font='bold 10px serif';
+    ctx.fillStyle='rgba(180,140,50,0.7)'; ctx.font='bold 10px "Palatino Linotype",Palatino,Georgia,serif';
     ctx.fillText(`BOOK ${badge}  --  CHAPTER ${LEVEL_DEFS[lvl]?.chapter||'?'}  COMPLETE`,W/2,H/2-88);
     ctx.fillStyle='#e8d060'; ctx.font=`bold 26px "Palatino Linotype",Palatino,Georgia,serif`;
     ctx.fillText(def.title,W/2,H/2-62);
@@ -4152,9 +4152,9 @@
     ctx.fillText(def.winMsg,W/2,H/2-36);
     // Tolkien quote with aged parchment feel
     ctx.fillStyle='rgba(180,140,60,0.15)'; ctx.fillRect(W/2-180,H/2-22,360,40);
-    ctx.fillStyle='rgba(160,120,50,0.8)'; ctx.font=`italic 12px serif`;
+    ctx.fillStyle='rgba(160,120,50,0.8)'; ctx.font=`italic 12px "Palatino Linotype",Palatino,Georgia,serif`;
     ctx.fillText(def.winQuote,W/2,H/2-8);
-    ctx.fillStyle='rgba(120,90,40,0.5)'; ctx.font='9px serif';
+    ctx.fillStyle='rgba(120,90,40,0.5)'; ctx.font='9px "Palatino Linotype",Palatino,Georgia,serif';
     ctx.fillText('-- J.R.R. Tolkien',W/2,H/2+10);
     // Book chapter progress -- show all 3 chapters of current book with checkmarks
     const bookStart = Math.floor(lvl/3)*3; // 0, 3, or 6
@@ -4163,7 +4163,7 @@
     const chapterNames = LEVEL_DEFS.slice(bookStart, bookStart+3).map(d=>d.title);
     const chapterY = H/2+30;
     // Book title
-    ctx.fillStyle='rgba(180,140,50,0.6)'; ctx.font='bold 9px serif'; ctx.textAlign='center';
+    ctx.fillStyle='rgba(180,140,50,0.6)'; ctx.font='bold 9px "Palatino Linotype",Palatino,Georgia,serif'; ctx.textAlign='center';
     ctx.fillText(bookNames[bookNum], W/2, chapterY-14);
     // 3 chapter pills
     const pillW=100, pillGap=14, totalW=(pillW*3+pillGap*2);
@@ -4179,13 +4179,13 @@
       ctx.beginPath(); ctx.roundRect ? ctx.roundRect(px,py,pillW,26,4) : ctx.rect(px,py,pillW,26); ctx.fill(); ctx.stroke();
       // Chapter name
       ctx.fillStyle=isCurrent?'rgba(240,200,70,0.95)':done?'rgba(180,150,60,0.75)':'rgba(100,80,40,0.35)';
-      ctx.font=`${isCurrent?'bold ':' '}8px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.font=`${isCurrent?'bold ':' '}8px "Palatino Linotype",Palatino,Georgia,serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
       // Truncate long names
       const cname = chapterNames[i]||'';
       const shortName = cname.length>14 ? cname.slice(0,13)+'…' : cname;
       ctx.fillText(shortName, px+pillW/2, py+10);
       // Status icon
-      ctx.font=`10px serif`;
+      ctx.font=`10px "Palatino Linotype",Palatino,Georgia,serif`;
       ctx.fillStyle=isCurrent?'rgba(255,220,80,0.9)':done?'rgba(160,200,100,0.8)':'rgba(80,60,20,0.3)';
       ctx.fillText(isCurrent?'◆':done?'✓':'○', px+pillW/2, py+20);
       ctx.restore();
@@ -4209,16 +4209,16 @@
       ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.fillRect(W/2-200,H/2+55,400,38);
       ctx.fillStyle='rgba(255,255,255,0.85)'; ctx.font='italic 13px "Palatino Linotype",Palatino,Georgia,serif';
       ctx.fillText(REST_QUOTES[lvl]||'',W/2,H/2+68);
-      ctx.fillStyle='rgba(180,160,120,0.5)'; ctx.font='9px serif';
+      ctx.fillStyle='rgba(180,160,120,0.5)'; ctx.font='9px "Palatino Linotype",Palatino,Georgia,serif';
       ctx.fillText('-- J.R.R. Tolkien',W/2,H/2+82);
       ctx.restore();
     }
     if(nextDef && timer > 4.2){
       const cf = Math.min(1,(timer-4.2)/0.4);
       ctx.save(); ctx.globalAlpha=cf*0.9;
-      ctx.fillStyle='rgba(180,140,60,0.9)'; ctx.font='bold 13px serif';
+      ctx.fillStyle='rgba(180,140,60,0.9)'; ctx.font='bold 13px "Palatino Linotype",Palatino,Georgia,serif';
       ctx.fillText(`SPACE  --  ${nextDef.title}`,W/2,H/2+105);
-      ctx.fillStyle='rgba(140,110,50,0.6)'; ctx.font='italic 11px serif';
+      ctx.fillStyle='rgba(140,110,50,0.6)'; ctx.font='italic 11px "Palatino Linotype",Palatino,Georgia,serif';
       ctx.fillText(nextDef.subtitle,W/2,H/2+122);
       ctx.restore();
     }
@@ -4235,26 +4235,26 @@
     ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillStyle='#ffd060'; ctx.font='bold 42px "Palatino Linotype",Palatino,Georgia,serif';
     ctx.fillText('It is done.',W/2,H/2-90);
-    ctx.fillStyle='#c07830'; ctx.font='italic 15px serif';
+    ctx.fillStyle='#c07830'; ctx.font='italic 15px "Palatino Linotype",Palatino,Georgia,serif';
     ctx.fillText('"My precious..."',W/2,H/2-50);
     // Three stars
     for(let i=0;i<3;i++){
       const sx=W/2-50+i*50, sy=H/2-5;
       ctx.save(); ctx.shadowColor='#ffcc20'; ctx.shadowBlur=18+Math.sin(t*2+i)*6;
       ctx.fillStyle=`hsl(45,90%,${58+Math.sin(t*3+i)*10}%)`;
-      ctx.font='32px serif'; ctx.fillText('★',sx,sy); ctx.restore();
+      ctx.font='32px "Palatino Linotype",Palatino,Georgia,serif'; ctx.fillText('★',sx,sy); ctx.restore();
     }
     const ry=H/2+45+Math.sin(t*1.6)*9;
     ctx.save(); ctx.shadowColor='#ff7700'; ctx.shadowBlur=30+Math.sin(t*4)*10;
     ctx.strokeStyle=`hsl(45,92%,${58+Math.sin(t*5)*10}%)`; ctx.lineWidth=3.5;
     ctx.beginPath(); ctx.arc(W/2,ry,22,0,Math.PI*2); ctx.stroke(); ctx.restore();
-    ctx.fillStyle='#b07030'; ctx.font='14px serif';
-    ctx.fillStyle='rgba(200,160,60,0.8)'; ctx.font='13px serif';
+    ctx.fillStyle='#b07030'; ctx.font='14px "Palatino Linotype",Palatino,Georgia,serif';
+    ctx.fillStyle='rgba(200,160,60,0.8)'; ctx.font='13px "Palatino Linotype",Palatino,Georgia,serif';
     ctx.fillText(`Round ${round} complete  ·  Score: ${Math.floor(score).toLocaleString()}`,W/2,H/2+80);
-    ctx.fillStyle='rgba(160,120,50,0.6)'; ctx.font='11px serif';
+    ctx.fillStyle='rgba(160,120,50,0.6)'; ctx.font='11px "Palatino Linotype",Palatino,Georgia,serif';
     ctx.fillText('Middle-earth is free — but darkness stirs again...',W/2,H/2+102);
     if(Math.sin(t*2.2)>0){
-      ctx.fillStyle='#c08838'; ctx.font='bold 14px serif';
+      ctx.fillStyle='#c08838'; ctx.font='bold 14px "Palatino Linotype",Palatino,Georgia,serif';
       ctx.fillText(`— Press SPACE for Round ${round+1} (harder) —`,W/2,H/2+130);
     }
   }
@@ -4282,13 +4282,13 @@
     }
     ctx.strokeStyle=`rgba(${140+Math.floor(ringHeaviness*80)},${Math.floor(95*(1-ringHeaviness*0.3))},40,0.75)`;
     ctx.lineWidth=1; ctx.strokeRect(10,10,210,18);
-    ctx.fillStyle='rgba(200,160,70,0.85)'; ctx.font='9px serif'; ctx.textAlign='left';
+    ctx.fillStyle='rgba(200,160,70,0.85)'; ctx.font='9px "Palatino Linotype",Palatino,Georgia,serif'; ctx.textAlign='left';
     ctx.fillText(def.progressLabel,13,23);
     // Level badge + round + score
     const badge=LEVEL_DEFS[lvl]?.book||'I';
-    ctx.fillStyle='rgba(180,140,50,0.7)'; ctx.font='bold 11px serif';
+    ctx.fillStyle='rgba(180,140,50,0.7)'; ctx.font='bold 11px "Palatino Linotype",Palatino,Georgia,serif';
     ctx.fillText(`BOOK ${badge}  --  RND ${round}`, 10, 42);
-    ctx.fillStyle='rgba(160,130,60,0.6)'; ctx.font='10px serif';
+    ctx.fillStyle='rgba(160,130,60,0.6)'; ctx.font='10px "Palatino Linotype",Palatino,Georgia,serif';
     ctx.fillText(`⭐ ${Math.floor(score)}`, 10, 56);
     // Combo multiplier
     // Unhurt bonus indicator
@@ -4299,7 +4299,7 @@
       ctx.textAlign='left'; ctx.textBaseline='middle';
       // Shield icon + multiplier
       ctx.fillStyle=`rgba(255,${180+Math.floor(comboFlash*60)},40,${cf})`;
-      ctx.font=`bold ${comboFlash>0?13:11}px serif`;
+      ctx.font=`bold ${comboFlash>0?13:11}px "Palatino Linotype",Palatino,Georgia,serif`;
       ctx.fillText(`🛡️ ×${comboMult} unhurt bonus`,10,70);
       // Tiny progress bar toward next tier
       if(comboMult < 4){
@@ -4310,13 +4310,13 @@
       ctx.restore();
     } else if(comboTimer > 4){
       ctx.fillStyle=`rgba(160,120,50,${0.25+(comboTimer-4)/6*0.3})`;
-      ctx.font='9px serif'; ctx.textAlign='left';
+      ctx.font='9px "Palatino Linotype",Palatino,Georgia,serif'; ctx.textAlign='left';
       ctx.fillText(`🛡️ unhurt bonus in ${Math.ceil(10-comboTimer)}s`,10,70);
     }
     // God mode badge (bottom-right corner)
     if (godMode) {
       ctx.save(); ctx.shadowColor='#ffd700'; ctx.shadowBlur=8;
-      ctx.fillStyle='rgba(255,215,0,0.75)'; ctx.font='bold 10px serif';
+      ctx.fillStyle='rgba(255,215,0,0.75)'; ctx.font='bold 10px "Palatino Linotype",Palatino,Georgia,serif';
       ctx.textAlign='right'; ctx.textBaseline='bottom';
       ctx.fillText('✨ GOD MODE', W-12, H-12);
       ctx.restore();
@@ -4329,13 +4329,13 @@
       if(lit){ctx.fillStyle='rgba(212,168,32,0.18)';ctx.beginPath();ctx.arc(lx,19,8,0,Math.PI*2);ctx.fill();}
       ctx.restore();}
     // Dash charges (⚡ pips, up to maxD)
-    ctx.font='bold 11px serif'; ctx.textAlign='right';
+    ctx.font='bold 11px "Palatino Linotype",Palatino,Georgia,serif'; ctx.textAlign='right';
     for(let i=0;i<maxD;i++){const lx=W-16-i*22,lit=i<dashCharges;
       ctx.save();
       if(lit){ctx.shadowColor='#60a0ff';ctx.shadowBlur=6;}
       ctx.fillStyle=lit?'rgba(100,160,255,0.95)':'rgba(40,60,120,0.3)';
       ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.font=`${lit?'bold ':' '}12px serif`;
+      ctx.font=`${lit?'bold ':' '}12px "Palatino Linotype",Palatino,Georgia,serif`;
       ctx.fillText('⚡',lx,40);
       ctx.restore();
     }
@@ -4363,7 +4363,7 @@
         ctx.restore();
       }
       // Label
-      ctx.fillStyle='rgba(140,190,255,0.7)'; ctx.font='8px serif';
+      ctx.fillStyle='rgba(140,190,255,0.7)'; ctx.font='8px "Palatino Linotype",Palatino,Georgia,serif';
       ctx.textAlign='right'; ctx.textBaseline='top';
       ctx.fillText(blessingActive>0?`${Math.ceil(blessingActive)}s`:'[E]',W-4,68);
     }
@@ -4379,12 +4379,12 @@
       ctx.shadowBlur  = isOn ? 10+Math.sin(elapsed*8)*4 : canUse ? 4 : 0;
       ctx.fillStyle   = isOn ? `rgba(255,160,0,${0.8+Math.sin(elapsed*6)*0.15})`
                       : canUse ? 'rgba(200,160,50,0.75)' : 'rgba(80,60,20,0.4)';
-      ctx.font = '14px serif';
+      ctx.font = '14px "Palatino Linotype",Palatino,Georgia,serif';
       ctx.fillText('💍', 12, H-48);
       // Label
       ctx.shadowBlur=0;
       ctx.fillStyle = isOn ? 'rgba(255,180,40,0.9)' : canUse ? 'rgba(180,140,50,0.65)' : 'rgba(100,80,30,0.4)';
-      ctx.font = '8px serif';
+      ctx.font = '8px "Palatino Linotype",Palatino,Georgia,serif';
       ctx.fillText(isOn ? `${Math.ceil(ringWorn)}s` : canUse ? '[R]' : `${Math.ceil(ringWornCooldown)}s`, 28, H-48);
       // Cooldown arc
       if(ringWornCooldown > 0){
@@ -4396,12 +4396,12 @@
 
     // Eye warning
     if(eye&&eye.phase==='warning'&&Math.sin(elapsed*11)>0){
-      ctx.fillStyle='#ff6010';ctx.font='bold 11px serif';ctx.textAlign='center';
+      ctx.fillStyle='#ff6010';ctx.font='bold 11px "Palatino Linotype",Palatino,Georgia,serif';ctx.textAlign='center';
       ctx.fillText('THE EYE OPENS...',W/2,32);}
     // Flavour
     if(prog>0.08 && flavourIdx >= 0 && flavourIdx < def.flavour.length){
       ctx.fillStyle=`rgba(200,138,38,${flavourAlpha*Math.min(1,(prog-0.08)*3)})`;
-      ctx.font='italic 11px serif'; ctx.textAlign='center';
+      ctx.font='italic 11px "Palatino Linotype",Palatino,Georgia,serif'; ctx.textAlign='center';
       ctx.fillText(def.flavour[flavourIdx],W/2,H-10);
     }
   }
@@ -4929,7 +4929,7 @@
     ctx.beginPath(); ctx.arc(ringX,ringY,ringR,0,Math.PI*2); ctx.stroke();
     // Fire inscription text rotating around the ring
     const INSCRIPTION = 'One Ring to rule them all  ';
-    ctx.font=`${Math.round(ringR*0.22)}px serif`;
+    ctx.font=`${Math.round(ringR*0.22)}px "Palatino Linotype",Palatino,Georgia,serif`;
     ctx.fillStyle=`rgba(255,${140+Math.floor(Math.sin(t*3)*30)},0,0.85)`;
     ctx.shadowColor='#ff6600'; ctx.shadowBlur=4;
     const chars = INSCRIPTION.split('');
@@ -4996,11 +4996,11 @@
       const ry = rowStart + i*rowH;
       ctx.textAlign='right';
       ctx.fillStyle='rgba(220,180,75,0.95)';
-      ctx.font=`bold ${fsLbl}px serif`;
+      ctx.font=`bold ${fsLbl}px "Palatino Linotype",Palatino,Georgia,serif`;
       ctx.fillText(label, W/2-Math.round(S*0.018), ry);
       ctx.textAlign='left';
       ctx.fillStyle='rgba(185,152,85,0.78)';
-      ctx.font=`${fsSm}px serif`;
+      ctx.font=`${fsSm}px "Palatino Linotype",Palatino,Georgia,serif`;
       ctx.fillText(desc, W/2+Math.round(S*0.018), ry);
     });
 
@@ -5333,7 +5333,7 @@
       '"The war is lost. The Eye turns south."',
       '"So close. So close to the fire."',
     ];
-    ctx.fillStyle='rgba(160,80,40,0.8)'; ctx.font=`italic 13px serif`;
+    ctx.fillStyle='rgba(160,80,40,0.8)'; ctx.font=`italic 13px "Palatino Linotype",Palatino,Georgia,serif`;
     ctx.fillText(DEATH_QUOTES[lvl]||'"All hope is gone."',W/2,H/2-80);
     // Journey map showing how far they got
     ctx.fillStyle='rgba(80,40,20,0.3)'; ctx.fillRect(W/2-200,H/2-62,400,20);
@@ -5344,7 +5344,7 @@
     const book=LEVEL_DEFS[lvl]?.book||'?';
     const levelTitle=LEVEL_DEFS[lvl]?.title||'?';
     const rows=[
-      [`Fell in: ${levelTitle}`, 'rgba(200,140,60,0.9)', 'bold 13px serif'],
+      [`Fell in: ${levelTitle}`, 'rgba(200,140,60,0.9)', 'bold 13px "Palatino Linotype",Palatino,Georgia,serif'],
       [`Score: ${Math.floor(score).toLocaleString()}  --  Round ${rnd}`, 'rgba(220,180,80,0.95)', 'bold 20px "Palatino Linotype",Palatino,Georgia,serif'],
     ];
     rows.forEach(([txt,col,font],i)=>{
@@ -5352,15 +5352,15 @@
       ctx.fillText(txt,W/2,H/2-14+i*30);
     });
     if(Math.sin(t*2.2)>0){
-      ctx.fillStyle='rgba(180,80,40,0.85)'; ctx.font='bold 14px serif';
+      ctx.fillStyle='rgba(180,80,40,0.85)'; ctx.font='bold 14px "Palatino Linotype",Palatino,Georgia,serif';
       const lvlNames2=['Shire','Moria','Lorien','Marshes','Black Gate','Shelob','Morgul','Pelennor','Mt.Doom'];
       if(checkpoint>0){
-        ctx.fillStyle='rgba(180,140,60,0.9)'; ctx.font='bold 13px serif';
+        ctx.fillStyle='rgba(180,140,60,0.9)'; ctx.font='bold 13px "Palatino Linotype",Palatino,Georgia,serif';
         ctx.fillText(`C — Continue from ${lvlNames2[checkpoint]}`,W/2,H/2+68);
-        ctx.fillStyle='rgba(140,100,40,0.65)'; ctx.font='11px serif';
+        ctx.fillStyle='rgba(140,100,40,0.65)'; ctx.font='11px "Palatino Linotype",Palatino,Georgia,serif';
         ctx.fillText('SPACE — Start over from The Shire',W/2,H/2+86);
       } else {
-        ctx.fillStyle='rgba(180,100,40,0.85)'; ctx.font='bold 13px serif';
+        ctx.fillStyle='rgba(180,100,40,0.85)'; ctx.font='bold 13px "Palatino Linotype",Palatino,Georgia,serif';
         ctx.fillText('— SPACE to try again —',W/2,H/2+82);
       }
     }
@@ -5379,10 +5379,10 @@
     ctx.font = `italic ${subSz}px "Palatino Linotype",Palatino,Georgia,serif`;
     ctx.fillStyle = '#9a7030';
     ctx.fillText(sub, W/2, H/2 - 26);
-    ctx.font = `${hintSz}px serif`; ctx.fillStyle = 'rgba(175,132,68,0.85)';
+    ctx.font = `${hintSz}px "Palatino Linotype",Palatino,Georgia,serif`; ctx.fillStyle = 'rgba(175,132,68,0.85)';
     ctx.fillText(hint2, W/2, H/2 + 20);
     if (Math.sin(t*2.4)>0){
-      ctx.fillStyle='#c89040'; ctx.font=`bold ${hintSz}px serif`;
+      ctx.fillStyle='#c89040'; ctx.font=`bold ${hintSz}px "Palatino Linotype",Palatino,Georgia,serif`;
       ctx.fillText('— Press SPACE to begin —', W/2, H/2 + 60);
     }
   }
