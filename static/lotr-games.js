@@ -1125,7 +1125,6 @@
             if (gollum.dartTimer <= 0) gollum.phase = 'lurk';
             gollum.y = Math.max(SKY_Y, Math.min(H, gollum.y));
             if (!frodo.invincible && dist(frodo, gollum) < frodo.r+gollum.r) hitFrodo();
-            return; // skip rest of gollum AI this frame
           }
 
           if (gollum.phase === 'jump') {
@@ -1191,7 +1190,7 @@
                 gollum.dartTimer=0.5 + Math.random()*0.4; // short burst
               }
             }
-          } else { // dart — Gollum's pounce: faster than Frodo's base, short duration
+          } else if (gollum.phase === 'dart') { // dart — Gollum's pounce: faster than Frodo's base, short duration
             const a = Math.atan2(frodo.y-gollum.y, frodo.x-gollum.x);
             // Dart speed: ~1.8× Frodo's current speed (comparable to Frodo's dash burst)
             const dartSpd = frodoSpd(def) * 1.8;
