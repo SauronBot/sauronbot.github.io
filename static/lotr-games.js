@@ -1360,10 +1360,20 @@
           // Record Frodo's trail
           sam.trail = sam.trail || [];
           sam.trail.push({x: frodo.x, y: frodo.y});
-          if (sam.trail.length > 38) sam.trail.shift(); // ~0.6s lag
-          const target = sam.trail[0] || {x: frodo.x - 28, y: frodo.y};
-          sam.x += (target.x - sam.x) * Math.min(1, dt * 5);
-          sam.y += (target.y - sam.y) * Math.min(1, dt * 5);
+          if (sam.trail.length > 50) sam.trail.shift(); // ~0.8s lag
+          const trailPt = sam.trail[0] || {x: frodo.x - 30, y: frodo.y};
+          // Offset target so Sam stays a step behind+beside Frodo, never on top of him
+          const dx = frodo.x - trailPt.x, dy = frodo.y - trailPt.y;
+          const dist = Math.hypot(dx, dy) || 1;
+          // Perpendicular offset: Sam hangs slightly to the right of the direction of travel
+          const perpX = -dy / dist, perpY = dx / dist;
+          const BEHIND = 22, SIDE = 14;
+          const target = {
+            x: trailPt.x - (dx/dist)*BEHIND + perpX*SIDE,
+            y: trailPt.y - (dy/dist)*BEHIND + perpY*SIDE,
+          };
+          sam.x += (target.x - sam.x) * Math.min(1, dt * 4);
+          sam.y += (target.y - sam.y) * Math.min(1, dt * 4);
         }
 
         // Gollum
@@ -4187,7 +4197,7 @@
 
     // Wings — sweeping bezier curves, animated flap
     // Slow soaring flap — gentle continuous motion like a large predator gliding
-    const flapAngle = Math.sin(t*1.4)*0.14 + Math.sin(t*2.1)*0.06;
+    const flapAngle = Math.sin(t*1.8)*0.32 + Math.sin(t*3.2)*0.12 + Math.sin(t*5.5)*0.04;
     const wingCol = ea?'#1a0520':'#120318';
     const wingEdge = ea?'rgba(180,20,80,0.25)':'rgba(100,10,40,0.2)';
     // Left wing
