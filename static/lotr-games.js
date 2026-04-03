@@ -1638,10 +1638,13 @@
         // Torch darkness (Moria + Shelob)
         if(def.hasBalrog||def.hasShelob){
           const fsx=frodo.x-cameraX, fsy=frodo.y;
-          const torchR=90-progress()*20;
-          const dark=ctx.createRadialGradient(fsx,fsy,torchR*0.25,fsx,fsy,torchR*2.8);
+          // Moria gets wider reach; Shelob stays claustrophobic
+          const torchR = def.hasBalrog
+            ? (160 - progress()*40) * (1 + Math.sin(t*2.1)*0.04) // flicker
+            : 90 - progress()*20;
+          const dark=ctx.createRadialGradient(fsx,fsy,torchR*0.18,fsx,fsy,torchR*2.2);
           dark.addColorStop(0,'rgba(0,0,0,0)');
-          dark.addColorStop(0.55,'rgba(0,0,0,0.65)');
+          dark.addColorStop(0.45,'rgba(0,0,0,0.55)');
           dark.addColorStop(1,'rgba(0,0,0,0.97)');
           ctx.fillStyle=dark; ctx.fillRect(0,0,W,H);
         }
@@ -2490,14 +2493,65 @@
         ctx.fillStyle=lg; ctx.fillRect(fx,fy,3+Math.sin(i)*2,20+Math.random()*8);
       }
       ctx.restore();
-      // Stone columns
+      // Stone columns with wall-mounted fire torches
       for(let i=0;i<8;i++){
         const cx=120+i*240, cw=32;
+        // Column glow from torch (drawn first, behind column)
+        const tgy=H*0.38; // torch height on column
+        const flicker=0.7+Math.sin(t*7.3+i*1.9)*0.15+Math.sin(t*13.1+i)*0.08;
+        const glow=ctx.createRadialGradient(cx+cw*0.5,tgy,0,cx+cw*0.5,tgy,90);
+        glow.addColorStop(0,`rgba(255,140,30,${0.22*flicker})`);
+        glow.addColorStop(0.4,`rgba(200,80,10,${0.10*flicker})`);
+        glow.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=glow; ctx.fillRect(cx-90,tgy-90,cw+180,180);
+        // Column body
         const cg=ctx.createLinearGradient(cx,H*0.35,cx+cw,H*0.35);
         cg.addColorStop(0,'#1a1210'); cg.addColorStop(0.5,'#2a1e18'); cg.addColorStop(1,'#141008');
         ctx.fillStyle=cg; ctx.fillRect(cx,H*0.35,cw,H*0.65);
         // Column cap
         ctx.fillStyle='#221a14'; ctx.fillRect(cx-4,H*0.35,cw+8,8);
+        // Torch bracket on front face of column
+        const tx=cx+cw*0.5, ty=tgy;
+        ctx.fillStyle='#3a2a18'; ctx.fillRect(tx-3,ty,6,12); // bracket stem
+        ctx.fillStyle='#4a3520'; ctx.fillRect(tx-6,ty-3,12,6); // bracket crossbar
+        // Torch bowl
+        ctx.fillStyle='#2a1e10'; ctx.beginPath();
+        ctx.moveTo(tx-5,ty-3); ctx.lineTo(tx+5,ty-3); ctx.lineTo(tx+3,ty+2); ctx.lineTo(tx-3,ty+2); ctx.closePath(); ctx.fill();
+        // Fire flames (layered for depth)
+        ctx.save();
+        const f1h=(14+Math.sin(t*8.1+i*2.3)*5)*flicker;
+        const f2h=(10+Math.sin(t*9.7+i*1.1+1)*4)*flicker;
+        const f3h=(7+Math.sin(t*11.3+i*3.1+2)*3)*flicker;
+        // Outer flame (orange)
+        const fg1=ctx.createRadialGradient(tx,ty-f1h*0.5,0,tx,ty-f1h*0.5,f1h*0.8);
+        fg1.addColorStop(0,`rgba(255,200,60,${0.9*flicker})`);
+        fg1.addColorStop(0.5,`rgba(255,100,10,${0.7*flicker})`);
+        fg1.addColorStop(1,'rgba(200,40,0,0)');
+        ctx.fillStyle=fg1;
+        ctx.beginPath(); ctx.ellipse(tx,ty-f1h*0.5,f1h*0.45,f1h*0.9,Math.sin(t*6+i)*0.12,0,Math.PI*2); ctx.fill();
+        // Mid flame (yellow)
+        const fg2=ctx.createRadialGradient(tx,ty-f2h*0.6,0,tx,ty-f2h*0.6,f2h*0.6);
+        fg2.addColorStop(0,`rgba(255,240,120,${0.95*flicker})`);
+        fg2.addColorStop(0.6,`rgba(255,160,20,${0.6*flicker})`);
+        fg2.addColorStop(1,'rgba(255,80,0,0)');
+        ctx.fillStyle=fg2;
+        ctx.beginPath(); ctx.ellipse(tx,ty-f2h*0.6,f2h*0.3,f2h*0.8,Math.sin(t*9+i+0.5)*0.15,0,Math.PI*2); ctx.fill();
+        // Core (white-hot)
+        const fg3=ctx.createRadialGradient(tx,ty-f3h*0.4,0,tx,ty-f3h*0.4,f3h*0.35);
+        fg3.addColorStop(0,`rgba(255,255,200,${flicker})`);
+        fg3.addColorStop(1,'rgba(255,200,80,0)');
+        ctx.fillStyle=fg3;
+        ctx.beginPath(); ctx.ellipse(tx,ty-f3h*0.4,f3h*0.18,f3h*0.55,0,0,Math.PI*2); ctx.fill();
+        // Ember sparks rising
+        for(let s=0;s<3;s++){
+          const sa=((t*40+i*17+s*7)%1);
+          const sx2=tx+(Math.sin(i*3+s*2.1+t*1.2))*8;
+          const sy2=ty-sa*28;
+          const salpha=Math.max(0,(1-sa)*0.8*flicker);
+          ctx.fillStyle=`rgba(255,180,40,${salpha})`;
+          ctx.beginPath(); ctx.arc(sx2,sy2,1.2*(1-sa*0.5),0,Math.PI*2); ctx.fill();
+        }
+        ctx.restore();
       }
       // Stalactites (top of screen)
       for(let i=0;i<20;i++){
