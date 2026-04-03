@@ -4349,8 +4349,8 @@
     ctx.fillStyle='hsl(20,45%,22%)';
     ctx.beginPath(); ctx.ellipse(-r*0.4,r*1.05,r*0.5,r*0.26,Math.PI*0.1,0,Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.ellipse(r*0.4,r*1.05,r*0.5,r*0.26,-Math.PI*0.1,0,Math.PI*2); ctx.fill();
-    // Cloak (warmer brown -- Sam's gardener clothes)
-    ctx.fillStyle='hsl(28,42%,26%)';
+    // Sam's gardener jacket -- earthy green, distinct from Frodo's brown cloak
+    ctx.fillStyle='hsl(85,30%,22%)';
     ctx.beginPath();
     ctx.moveTo(-r*0.55,-r*0.4); ctx.bezierCurveTo(-r*1.0,-r*0.1,-r*1.0,r*0.55,-r*0.45,r*0.9);
     ctx.lineTo(r*0.45,r*0.9); ctx.bezierCurveTo(r*1.0,r*0.55,r*1.0,-r*0.1,r*0.55,-r*0.4);
@@ -4358,10 +4358,11 @@
     // Head (rounder, more cheerful)
     ctx.fillStyle='hsl(28,52%,42%)';
     ctx.beginPath(); ctx.arc(0,-r*0.8,r*0.8,0,Math.PI*2); ctx.fill();
-    // Curly hair
-    ctx.fillStyle='hsl(22,50%,30%)';
+    // Curly red hair (Sam's trademark)
+    ctx.fillStyle='hsl(12,70%,38%)';
     ctx.beginPath(); ctx.arc(0,-r*1.35,r*0.62,Math.PI,0); ctx.fill();
     [-r*0.5,-r*0.22,0,r*0.22,r*0.5].forEach((hx,i)=>{
+      ctx.fillStyle=`hsl(${10+i*3},68%,${36+i*2}%)`;
       ctx.beginPath(); ctx.arc(hx,-r*1.33+Math.sin(i)*r*0.04,r*0.21,0,Math.PI*2); ctx.fill();
     });
     // Eyes (friendly, slightly wide)
@@ -4426,10 +4427,11 @@
     // Head
     ctx.fillStyle=`hsl(28,${50-prog*12}%,${40-prog*15}%)`;
     ctx.beginPath(); ctx.arc(0,-r*0.85,r*0.78,0,Math.PI*2); ctx.fill();
-    // Curly hair
-    ctx.fillStyle=`hsl(22,${55-prog*15}%,${28-prog*10}%)`;
+    // Curly black hair (Frodo -- dark, almost black, Baggins family trait)
+    ctx.fillStyle=`hsl(220,8%,${14-prog*6}%)`; // near-black with slight cool tint
     ctx.beginPath(); ctx.arc(0,-r*1.4,r*0.65,Math.PI,0); ctx.fill();
     [-r*0.55,-r*0.25,0,r*0.25,r*0.55].forEach((hx,i)=>{
+      ctx.fillStyle=`hsl(220,6%,${12+i*2-prog*5}%)`;
       ctx.beginPath(); ctx.arc(hx,-r*1.38+Math.sin(i)*r*0.05,r*0.22,0,Math.PI*2); ctx.fill();
     });
     // Eyes
