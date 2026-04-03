@@ -1734,10 +1734,10 @@
                 const ctx_x=(100+ci*265)-cameraX*0.45;
                 const ctx_y=H*0.42+Math.sin(ci*1.3)*H*0.08;
                 const fl=0.75+Math.sin(t*2.1+ci*1.7)*0.18+Math.sin(t*5.3+ci)*0.07;
-                const cg=ox.createRadialGradient(ctx_x,ctx_y,0,ctx_x,ctx_y,200*fl);
+                const cg=ox.createRadialGradient(ctx_x,ctx_y,0,ctx_x,ctx_y,320*fl);
                 cg.addColorStop(0,`rgba(0,0,0,${darkStr})`);
-                cg.addColorStop(0.3,`rgba(0,0,0,${0.85*darkStr})`);
-                cg.addColorStop(0.65,`rgba(0,0,0,${0.35*darkStr})`);
+                cg.addColorStop(0.25,`rgba(0,0,0,${0.80*darkStr})`);
+                cg.addColorStop(0.6,`rgba(0,0,0,${0.25*darkStr})`);
                 cg.addColorStop(1,'rgba(0,0,0,0)');
                 ox.fillStyle=cg; ox.fillRect(0,0,W,H);
               }
