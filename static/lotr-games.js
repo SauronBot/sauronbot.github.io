@@ -707,6 +707,17 @@
         else if (state === 'win') { round++; score+=200; startLevel(0); }
         else if (state === 'playing') triggerDash();
       }
+      // R key: put on / take off the Ring
+      if ((e.key === 'r' || e.key === 'R') && state === 'playing' && ringWornCooldown <= 0) {
+        if (ringWorn <= 0) {
+          ringWorn = RING_WORN_MAX;
+          whisperText = 'The Ring slips on... you are invisible — but the Eye stirs!'; whisperTimer = 3.5; whisperCooldown = 0;
+        } else {
+          ringWorn = 0; ringWornCooldown = RING_WORN_CD;
+          // Taking it off: Eye starts closing if it was active from Ring
+          whisperText = 'The Ring is off. The Eye searches blindly...'; whisperTimer = 2.5; whisperCooldown = 0;
+        }
+      }
       // E key: use Galadriel's phial
       if ((e.key === 'e' || e.key === 'E') && state === 'playing' && blessingCount > 0 && blessingActive <= 0) {
         blessingCount--;
@@ -751,6 +762,10 @@
     let ambientParticles = [], ambientSpawnTimer = 0;
     let comboTimer = 0, comboMult = 1, comboFlash = 0; // score combo
     let ringPullTimer = 0, ringPullActive = 0, ringPullAngle = 0; // Ring corruption pull
+    let ringWorn = 0;        // >0: Frodo has put on the Ring (seconds remaining)
+    let ringWornCooldown = 0; // cooldown before can use again
+    const RING_WORN_MAX = 6; // 6s max wear time before Eye locks on permanently
+    const RING_WORN_CD  = 18; // 18s cooldown between uses
     let lifePickup = null;  // {x,y,r,pulse}
     let keyPickup = null;   // {x,y,r,pulse} — must collect before goal unlocks
     let goalUnlocked = false;
@@ -822,6 +837,7 @@
       ambientParticles = []; ambientSpawnTimer = 0;
       comboTimer = 0; comboMult = 1; comboFlash = 0;
       ringPullTimer = 8 + Math.random()*8; ringPullActive = 0;
+      ringWorn = 0; ringWornCooldown = 0;
       state = 'playing';
       startLevelDrone(lvl);
     }
@@ -1120,6 +1136,16 @@
           if (w.x < SAFE_ZONE_X + w.r) {
             w.x += 60 * dt * 1.5; // drift back out
             return; // skip all AI/collision this frame
+          }
+          // Ring worn: enemies can't see Frodo (but Eye still hunts if active)
+          if (ringWorn > 0 && eye && eye.phase !== 'active') {
+            // Wander aimlessly
+            w.wanderTimer -= dt;
+            if (w.wanderTimer <= 0) { w.wanderAngle = Math.random()*Math.PI*2; w.wanderTimer = 2+Math.random()*3; }
+            w.x += Math.cos(w.wanderAngle)*w.speed*0.5*60*dt;
+            w.y += Math.sin(w.wanderAngle)*w.speed*0.5*60*dt;
+            w.sense = 0;
+            return;
           }
           // Galadriel's phial: enemies flee Frodo
           if (blessingActive > 0 && frodo) {
@@ -1619,6 +1645,21 @@
           if (frodo) { frodo.invincible = true; frodo.invTimer = 0.5; }
         }
 
+        // Ring worn mechanic
+        if (ringWornCooldown > 0) ringWornCooldown -= dt;
+        if (ringWorn > 0) {
+          ringWorn -= dt;
+          // Eye ALWAYS wakes when Ring is worn
+          if (eye && eye.phase === 'idle') { eye.phase = 'warning'; eye.timer = 0; }
+          if (eye && eye.phase === 'warning' && eye.timer > eye.warnDur * 0.5) { eye.phase = 'active'; eye.timer = 0; sndEyeOpen(); }
+          // Frodo invisible to wraiths/orcs (handled in enemy AI via ringWorn check)
+          if (ringWorn <= 0) {
+            ringWorn = 0;
+            ringWornCooldown = RING_WORN_CD;
+            whisperText = 'The Ring slips off — it burns to put it on again...'; whisperTimer = 2.5; whisperCooldown = 0;
+          }
+        }
+
         // Ambient particles (level atmosphere)
         ambientSpawnTimer -= dt;
         if (ambientSpawnTimer <= 0) {
@@ -1696,7 +1737,7 @@
         // Blessing pickup
         if (blessingPickup && !blessingPickup.collected) drawBlessingPickup(ctx, blessingPickup, t);
         drawWraiths1(ctx,wraiths,eye,H,SKY_Y,!!(def.hasBalrog||def.hasShelob));
-        if (frodo) drawFrodo1(ctx,frodo,progress(),timers.elapsed,currentLevel);
+        if (frodo) drawFrodo1(ctx,frodo,progress(),timers.elapsed,currentLevel,ringWorn>0);
         // Eagle particles (Pelennor distraction)
         eagleParticles.forEach(ep=>{
           ctx.save(); ctx.globalAlpha=Math.min(1,ep.life*0.5);
@@ -1923,7 +1964,7 @@
             ctx.restore();
           }
         }
-        drawUILevel(ctx,W,H,frodo,progress(),eye,timers.elapsed,currentLevel,def,dashCharges,score,round,GOD_MODE,maxLives(),maxDash(),comboMult,comboFlash,comboTimer,flavourIdx,flavourAlpha,blessingCount,blessingActive);
+        drawUILevel(ctx,W,H,frodo,progress(),eye,timers.elapsed,currentLevel,def,dashCharges,score,round,GOD_MODE,maxLives(),maxDash(),comboMult,comboFlash,comboTimer,flavourIdx,flavourAlpha,blessingCount,blessingActive,ringWorn,ringWornCooldown,RING_WORN_CD);
         // Cinematic level intro (4.5s total)
         if(timers.elapsed < 4.5) {
           const el = timers.elapsed;
@@ -3836,7 +3877,7 @@
   }
 
   // ── UI (shared) ───────────────────────────────────────────────────────
-  function drawUILevel(ctx,W,H,frodo,prog,eye,elapsed,lvl,def,dashCharges=0,score=0,round=1,godMode=false,maxL=3,maxD=3,comboMult=1,comboFlash=0,comboTimer=0,flavourIdx=-1,flavourAlpha=0,blessingCount=0,blessingActive=0){
+  function drawUILevel(ctx,W,H,frodo,prog,eye,elapsed,lvl,def,dashCharges=0,score=0,round=1,godMode=false,maxL=3,maxD=3,comboMult=1,comboFlash=0,comboTimer=0,flavourIdx=-1,flavourAlpha=0,blessingCount=0,blessingActive=0,ringWorn=0,ringWornCooldown=0,ringWornCD=18){
     // Progress bar -- grows heavier/darker with level number
     const ringHeaviness = lvl / 8; // 0 at Shire, 1.0 at Mount Doom
     ctx.fillStyle=`rgba(0,0,0,${0.55+ringHeaviness*0.25})`; ctx.fillRect(10,10,210,18);
@@ -3942,6 +3983,32 @@
       ctx.fillStyle='rgba(140,190,255,0.7)'; ctx.font='8px serif';
       ctx.textAlign='right'; ctx.textBaseline='top';
       ctx.fillText(blessingActive>0?`${Math.ceil(blessingActive)}s`:'[E]',W-4,68);
+    }
+    // Ring indicator (bottom-left, above sound btn)
+    {
+      const canUse = ringWornCooldown <= 0 && ringWorn <= 0;
+      const isOn   = ringWorn > 0;
+      const cdPct  = ringWornCooldown > 0 ? 1 - ringWornCooldown/ringWornCD : 0;
+      ctx.save();
+      ctx.textAlign='left'; ctx.textBaseline='bottom';
+      // Ring icon
+      ctx.shadowColor = isOn ? '#ff8800' : canUse ? '#d4a020' : 'transparent';
+      ctx.shadowBlur  = isOn ? 10+Math.sin(elapsed*8)*4 : canUse ? 4 : 0;
+      ctx.fillStyle   = isOn ? `rgba(255,160,0,${0.8+Math.sin(elapsed*6)*0.15})`
+                      : canUse ? 'rgba(200,160,50,0.75)' : 'rgba(80,60,20,0.4)';
+      ctx.font = '14px serif';
+      ctx.fillText('💍', 12, H-48);
+      // Label
+      ctx.shadowBlur=0;
+      ctx.fillStyle = isOn ? 'rgba(255,180,40,0.9)' : canUse ? 'rgba(180,140,50,0.65)' : 'rgba(100,80,30,0.4)';
+      ctx.font = '8px serif';
+      ctx.fillText(isOn ? `${Math.ceil(ringWorn)}s` : canUse ? '[R]' : `${Math.ceil(ringWornCooldown)}s`, 28, H-48);
+      // Cooldown arc
+      if(ringWornCooldown > 0){
+        ctx.strokeStyle='rgba(160,120,40,0.4)'; ctx.lineWidth=2;
+        ctx.beginPath(); ctx.arc(18,H-55,8,-Math.PI/2,-Math.PI/2+cdPct*Math.PI*2); ctx.stroke();
+      }
+      ctx.restore();
     }
 
     // Eye warning
@@ -4242,12 +4309,13 @@
     });
   }
 
-  function drawFrodo1(ctx,frodo,prog,elapsed,lvl=0){
+  function drawFrodo1(ctx,frodo,prog,elapsed,lvl=0,ringWorn=false){
     ctx.save(); ctx.translate(frodo.x,frodo.y);
     // Corruption: lean forward more with each book, cloak darkens
     const corruption = lvl / 8;  // 0 = Shire, 1.0 = Mount Doom
     if (corruption > 0.1) ctx.rotate(corruption * 0.22); // hunching forward
-    if(frodo.invincible&&Math.floor(elapsed*10)%2===0) ctx.globalAlpha=0.4;
+    if(ringWorn){ ctx.globalAlpha=0.18+Math.sin(elapsed*8)*0.06; } // near-invisible shimmer
+    else if(frodo.invincible&&Math.floor(elapsed*10)%2===0) ctx.globalAlpha=0.4;
     const warmth=(1-prog*0.72)*(1-corruption*0.4), r=frodo.r;
     // Ground shadow
     ctx.save(); ctx.globalAlpha=0.2;
