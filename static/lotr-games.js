@@ -969,6 +969,10 @@
         if (comboTimer >= 10 && comboMult < 4) {
           comboMult = Math.min(4, comboMult + 1);
           comboTimer = 0; comboFlash = 1.2;
+          // First combo: explain it via whisper
+          if (comboMult === 2 && whisperCooldown <= 0) {
+            whisperText = 'Unhurt bonus! Score ×2 while safe from hits'; whisperTimer = 4.5; whisperCooldown = 60;
+          }
           particles.push(...Array.from({length:10},(_,i)=>{
             const a=(i/10)*Math.PI*2;
             return {x:frodo.x,y:frodo.y,vx:Math.cos(a)*2,vy:Math.sin(a)*2-1,
@@ -3840,19 +3844,27 @@
     ctx.fillStyle='rgba(160,130,60,0.6)'; ctx.font='10px serif';
     ctx.fillText(`⭐ ${Math.floor(score)}`, 10, 56);
     // Combo multiplier
+    // Unhurt bonus indicator
     if(comboMult > 1){
-      const cf = Math.min(1, comboFlash > 0 ? 1 : 0.8);
+      const cf = Math.min(1, comboFlash > 0 ? 1 : 0.75);
       ctx.save();
-      if(comboFlash>0){ ctx.shadowColor='#ffd040'; ctx.shadowBlur=12; }
+      if(comboFlash>0){ ctx.shadowColor='#ffd040'; ctx.shadowBlur=14; }
+      ctx.textAlign='left'; ctx.textBaseline='middle';
+      // Shield icon + multiplier
       ctx.fillStyle=`rgba(255,${180+Math.floor(comboFlash*60)},40,${cf})`;
-      ctx.font=`bold ${comboFlash>0?14:11}px serif`;
-      ctx.fillText(`${comboMult}x COMBO`,10,70);
+      ctx.font=`bold ${comboFlash>0?13:11}px serif`;
+      ctx.fillText(`🛡️ ×${comboMult} unhurt bonus`,10,70);
+      // Tiny progress bar toward next tier
+      if(comboMult < 4){
+        const barW=80, barProg=comboTimer/10;
+        ctx.fillStyle=`rgba(60,50,20,0.5)`; ctx.fillRect(10,77,barW,3);
+        ctx.fillStyle=`rgba(255,200,40,${0.5*cf})`; ctx.fillRect(10,77,barW*barProg,3);
+      }
       ctx.restore();
-    } else if(comboTimer > 5){
-      const progress2 = (comboTimer-5)/5;
-      ctx.fillStyle=`rgba(160,120,50,${0.3+progress2*0.3})`;
-      ctx.font='9px serif';
-      ctx.fillText(`combo in ${Math.ceil(10-comboTimer)}s`,10,70);
+    } else if(comboTimer > 4){
+      ctx.fillStyle=`rgba(160,120,50,${0.25+(comboTimer-4)/6*0.3})`;
+      ctx.font='9px serif'; ctx.textAlign='left';
+      ctx.fillText(`🛡️ unhurt bonus in ${Math.ceil(10-comboTimer)}s`,10,70);
     }
     // God mode badge (bottom-right corner)
     if (godMode) {
