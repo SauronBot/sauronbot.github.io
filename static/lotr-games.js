@@ -602,6 +602,7 @@
     let hitFlashLevel = 0;
     let whisperText = '', whisperTimer = 0, whisperCooldown = 0;
     let ambientParticles = [], ambientSpawnTimer = 0;
+    let comboTimer = 0, comboMult = 1, comboFlash = 0; // score combo
     let lifePickup = null;  // {x,y,r,pulse}
     let keyPickup = null;   // {x,y,r,pulse} — must collect before goal unlocks
     let goalUnlocked = false;
@@ -669,6 +670,7 @@
       hitFlashLevel = lvl;
       whisperText = ''; whisperTimer = 0; whisperCooldown = 0;
       ambientParticles = []; ambientSpawnTimer = 0;
+      comboTimer = 0; comboMult = 1; comboFlash = 0;
       state = 'playing';
     }
 
@@ -804,8 +806,19 @@
       // ── UPDATE ──────────────────────────────────────────────────────
       if (state === 'playing' && !pauseCtrl.isPaused()) {
         timers.elapsed += dt;
-        // Score: points per second (scales with round + level)
-        score += dt * (1 + currentLevel * 0.5) * round;
+        // Score: points per second with combo multiplier
+        comboTimer += dt;
+        if (comboTimer >= 10 && comboMult < 4) {
+          comboMult = Math.min(4, comboMult + 1);
+          comboTimer = 0; comboFlash = 1.2;
+          particles.push(...Array.from({length:10},(_,i)=>{
+            const a=(i/10)*Math.PI*2;
+            return {x:frodo.x,y:frodo.y,vx:Math.cos(a)*2,vy:Math.sin(a)*2-1,
+              life:0.6,size:3,color:'#ffd040'};
+          }));
+        }
+        if (comboFlash > 0) comboFlash -= dt * 2;
+        score += dt * (1 + currentLevel * 0.5) * round * comboMult;
         const spd = frodoSpd(def);
         let dx=0,dy=0;
         if (keys['ArrowLeft']||keys['a']||keys['A']) dx-=1;
@@ -1652,6 +1665,7 @@
     function hitFrodo() {
       if (!GOD_MODE) frodo.lives--;
       sndHit();
+      comboMult = 1; comboTimer = 0;
       frodo.invincible=true; frodo.invTimer=2.8; frodo.hitFlash=1;
       shake={x:0,y:0,dur:0.45,intensity:9};
       for(let i=0;i<14;i++){
@@ -3267,6 +3281,21 @@
     ctx.fillText(`BOOK ${badge}  --  RND ${round}`, 10, 42);
     ctx.fillStyle='rgba(160,130,60,0.6)'; ctx.font='10px serif';
     ctx.fillText(`⭐ ${Math.floor(score)}`, 10, 56);
+    // Combo multiplier
+    if(comboMult > 1){
+      const cf = Math.min(1, comboFlash > 0 ? 1 : 0.8);
+      ctx.save();
+      if(comboFlash>0){ ctx.shadowColor='#ffd040'; ctx.shadowBlur=12; }
+      ctx.fillStyle=`rgba(255,${180+Math.floor(comboFlash*60)},40,${cf})`;
+      ctx.font=`bold ${comboFlash>0?14:11}px serif`;
+      ctx.fillText(`${comboMult}x COMBO`,10,70);
+      ctx.restore();
+    } else if(comboTimer > 5){
+      const progress2 = (comboTimer-5)/5;
+      ctx.fillStyle=`rgba(160,120,50,${0.3+progress2*0.3})`;
+      ctx.font='9px serif';
+      ctx.fillText(`combo in ${Math.ceil(10-comboTimer)}s`,10,70);
+    }
     // God mode badge
     if (godMode) {
       ctx.save(); ctx.shadowColor='#ffd700'; ctx.shadowBlur=8;
