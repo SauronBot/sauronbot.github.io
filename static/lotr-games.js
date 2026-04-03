@@ -115,8 +115,12 @@
   // ── AMBIENT DRONE ENGINE ──────────────────────────────────────────────────
   let _droneNodes = [];  // {osc, gain} pairs currently playing
   function stopDrones() {
+    const ac = _audioCtx;
     _droneNodes.forEach(({osc,gain}) => {
-      try { gain.gain.linearRampToValueAtTime(0, getAudioCtx().currentTime+1.5); osc.stop(getAudioCtx().currentTime+1.6); } catch(e){}
+      try {
+        if (ac) { gain.gain.linearRampToValueAtTime(0, ac.currentTime+1.0); osc.stop(ac.currentTime+1.1); }
+        else { osc.stop(); }
+      } catch(e){}
     });
     _droneNodes = [];
   }
@@ -2577,14 +2581,15 @@
       }
     } else if (def === LEVEL_DEFS[4]) {
       // Black Gate: multi-layered fortress, lava rivers, orc army silhouettes
-      // Far background: volcanic sky glow
-      ctx.restore(); // end parallax transform
+      // Far background: volcanic sky glow (screen-space)
+      ctx.save();
+      ctx.setTransform(1,0,0,1,0,0);
       const skyGlow=ctx.createLinearGradient(0,0,0,H*0.5);
       skyGlow.addColorStop(0,'rgba(0,0,0,0)');
       skyGlow.addColorStop(0.7,`rgba(180,40,0,${0.12+Math.sin(t*0.4)*0.04})`);
       skyGlow.addColorStop(1,'rgba(0,0,0,0)');
       ctx.fillStyle=skyGlow; ctx.fillRect(0,0,W,H*0.5);
-      ctx.save(); ctx.translate(-cameraX*0.45, 0); // restore parallax
+      ctx.restore(); // back to parallax
 
       // Ground dust clouds
       for(let i=0;i<8;i++){
@@ -2731,24 +2736,25 @@
           ctx.restore();
         }
       }
-      ctx.restore();
-      // Constant green glow from city
-      ctx.restore();
+      ctx.restore(); // end city parallax sub-save
+      // Constant green glow (screen-space)
+      ctx.save(); ctx.setTransform(1,0,0,1,0,0);
       const gg=ctx.createRadialGradient(W*0.6,H*0.4,0,W*0.6,H*0.4,W*0.75);
       gg.addColorStop(0,`rgba(40,200,80,${0.20+Math.sin(t*0.8)*0.06})`);
       gg.addColorStop(1,'rgba(0,0,0,0)');
       ctx.fillStyle=gg; ctx.fillRect(0,0,W,H);
-      return;
+      ctx.restore();
     } else if (def === LEVEL_DEFS[7]) {
       // Pelennor: massive war -- army clash, oliphaunts silhouette, fires everywhere
-      // War glow on horizon
-      ctx.restore();
+      // War glow on horizon (screen-space inside parallax save is fine with a nested save)
+      ctx.save();
+      ctx.setTransform(1,0,0,1,0,0); // reset to screen-space temporarily
       const warGlow=ctx.createLinearGradient(0,H*0.35,0,H*0.55);
       warGlow.addColorStop(0,'rgba(0,0,0,0)');
       warGlow.addColorStop(0.5,`rgba(200,80,0,${0.10+Math.sin(t*0.3)*0.04})`);
       warGlow.addColorStop(1,'rgba(0,0,0,0)');
       ctx.fillStyle=warGlow; ctx.fillRect(0,0,W,H);
-      ctx.save(); ctx.translate(-cameraX*0.45, 0);
+      ctx.restore(); // back to parallax transform
 
       // Distant infantry lines (far background)
       ctx.save(); ctx.translate(-cameraX*(0.08-0.45), 0);
