@@ -4640,74 +4640,90 @@
       ctx.fillStyle=fg; ctx.fillRect(fx-18,fy-18,36,36);
     }
 
+    // Responsive scale unit: based on smaller of W/H
+    const S = Math.min(W, H);
+    const fs = (rel) => `${Math.round(S * rel)}px`; // font size helper
+    const divLine = (y, hw=Math.min(W*0.44,300)) => {
+      ctx.strokeStyle='rgba(140,100,40,0.35)'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(W/2-hw, y); ctx.lineTo(W/2+hw, y); ctx.stroke();
+    };
+
     // Title
-    ctx.save(); ctx.shadowColor='#c8a020'; ctx.shadowBlur=20;
-    ctx.fillStyle='#e8c030'; ctx.font=`bold 46px "Palatino Linotype",Palatino,Georgia,serif`;
-    ctx.fillText('Carry the Ring',W/2,H*0.12);
+    ctx.save(); ctx.shadowColor='#c8a020'; ctx.shadowBlur=S*0.03;
+    ctx.fillStyle='#e8c030';
+    ctx.font=`bold ${fs(0.075)} "Palatino Linotype",Palatino,Georgia,serif`;
+    ctx.fillText('Carry the Ring', W/2, H*0.12);
     ctx.restore();
-    ctx.fillStyle='rgba(160,120,50,0.7)'; ctx.font=`italic 13px serif`;
-    ctx.fillText('"Even the smallest person can change the course of the future."',W/2,H*0.19);
+
+    // Quote
+    ctx.fillStyle='rgba(180,140,65,0.80)';
+    ctx.font=`italic ${fs(0.028)} serif`;
+    ctx.fillText('\u201cEven the smallest person can change the course of the future.\u201d', W/2, H*0.19);
 
     // Journey map
     drawJourneyMap(ctx, W, H*0.24+16, -1);
 
-    // Divider
-    ctx.strokeStyle='rgba(140,100,40,0.35)'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(W/2-220,H*0.33); ctx.lineTo(W/2+220,H*0.33); ctx.stroke();
+    divLine(H*0.33);
 
     // Controls
-    const rowH=21, rowStart=H*0.35;
+    const fsSm  = Math.round(S*0.026);
+    const fsLbl = Math.round(S*0.027);
+    const rowH  = Math.round(S*0.048);
+    const rowStart = H*0.36;
     const rows=[
-      ['🔸 Move',       'WASD / Arrow keys  (touch: hold screen)'],
-      ['⚡ Dash',       'SPACE -- burst of speed + brief invincibility'],
-      ['🔑 Key',        'Collect to unlock the goal'],
-      ['♥ Life',        'Restore 1 life (max 3)'],
-      ['👁️ Eye of Sauron', 'Opens periodically -- Nazgul hunt you when active'],
+      ['Move',        'WASD / Arrows  (touch: hold screen)'],
+      ['Dash',        'SPACE -- speed burst + brief invincibility'],
+      ['Ring [R]',    'Invisible to orcs, but the Eye awakens'],
+      ['Phial [E]',   'Galadriel\u2019s light -- enemies flee 5s'],
+      ['Key',         'Collect to unlock the chapter goal'],
+      ['Eye of Sauron','Opens periodically -- Nazg\u00fbl hunt you'],
     ];
     rows.forEach(([label,desc],i)=>{
-      const ry=rowStart+i*rowH;
-      ctx.textAlign='right'; ctx.fillStyle='rgba(210,170,70,0.9)'; ctx.font='bold 11px serif';
-      ctx.fillText(label,W/2-8,ry);
-      ctx.textAlign='left'; ctx.fillStyle='rgba(180,148,80,0.75)'; ctx.font='11px serif';
-      ctx.fillText(desc,W/2+8,ry);
+      const ry = rowStart + i*rowH;
+      ctx.textAlign='right';
+      ctx.fillStyle='rgba(220,180,75,0.95)';
+      ctx.font=`bold ${fsLbl}px serif`;
+      ctx.fillText(label, W/2-Math.round(S*0.018), ry);
+      ctx.textAlign='left';
+      ctx.fillStyle='rgba(185,152,85,0.78)';
+      ctx.font=`${fsSm}px serif`;
+      ctx.fillText(desc, W/2+Math.round(S*0.018), ry);
     });
 
-    // Chapter enemies legend
-    ctx.strokeStyle='rgba(140,100,40,0.35)';
-    ctx.beginPath(); ctx.moveTo(W/2-220,H*0.58); ctx.lineTo(W/2+220,H*0.58); ctx.stroke();
-    ctx.fillStyle='rgba(160,120,50,0.55)'; ctx.font='bold 9px serif'; ctx.textAlign='center';
-    ctx.fillText('CHAPTER ENEMIES',W/2,H*0.60);
-    const enemyRows=[
-      'L2 Moria: Cave Troll (heavy, -2 lives)    L5-6 Black Gate/Shelob: Uruk-hai (fast, flanks)',
-      'L7-8 Morgul/Pelennor: Morgul Wight (always hunts, bursts close)',
-    ];
-    ctx.font='9px serif'; ctx.fillStyle='rgba(140,110,50,0.5)';
-    enemyRows.forEach((r,i)=>ctx.fillText(r,W/2,H*0.625+i*14));
+    divLine(H*0.64);
 
-    // Divider
-    ctx.strokeStyle='rgba(140,100,40,0.35)';
-    ctx.beginPath(); ctx.moveTo(W/2-220,H*0.67); ctx.lineTo(W/2+220,H*0.67); ctx.stroke();
-
-    // Book list
-    ctx.font='10px serif'; ctx.fillStyle='rgba(150,115,50,0.5)';
-    ['Book I: Fellowship -- Shire, Moria, Lothlorien',
-     'Book II: Two Towers -- Marshes, Black Gate, Shelob',
-     'Book III: Return -- Morgul, Pelennor, Mt. Doom'
-    ].forEach((b,i)=>ctx.fillText(b,W/2,H*0.69+i*14));
+    // Books
+    ctx.textAlign='center';
+    ctx.fillStyle='rgba(160,125,55,0.65)';
+    ctx.font=`${fs(0.024)} serif`;
+    const bookY = H*0.67;
+    const bookRowH = Math.round(S*0.038);
+    ['Book I: Fellowship \u2014 Shire, Moria, Lothl\u00f3rien',
+     'Book II: Two Towers \u2014 Marshes, Black Gate, Shelob',
+     'Book III: Return \u2014 Morgul, Pelennor, Mt. Doom'
+    ].forEach((b,i)=>ctx.fillText(b, W/2, bookY+i*bookRowH));
 
     // Persistent progress badge
     if(hasSaved){
-      ctx.fillStyle='rgba(80,60,20,0.5)'; ctx.fillRect(W/2-150,H*0.73,300,28);
-      ctx.fillStyle='rgba(200,160,60,0.8)'; ctx.font='bold 10px serif'; ctx.textAlign='center';
+      const badgeY = H*0.79, badgeH = Math.round(S*0.052);
+      ctx.fillStyle='rgba(60,44,12,0.55)';
+      ctx.fillRect(W/2-Math.min(W*0.42,260), badgeY, Math.min(W*0.84,520), badgeH);
+      ctx.fillStyle='rgba(210,170,65,0.88)';
+      ctx.font=`bold ${fs(0.026)} serif`;
       const lvlNames=['Shire','Moria','Lorien','Marshes','Black Gate','Shelob','Morgul','Pelennor','Mt.Doom'];
       const fl = _savedProgress.furthestLevel||0;
-      ctx.fillText(`Best: ${(_savedProgress.bestScore||0).toLocaleString()} pts  --  Furthest: ${lvlNames[fl]}  --  Rounds: ${_savedProgress.bestRound||0}`,W/2,H*0.73+16);
+      ctx.fillText(
+        `Best: ${(_savedProgress.bestScore||0).toLocaleString()} pts \u2014 Furthest: ${lvlNames[fl]} \u2014 Rounds: ${_savedProgress.bestRound||0}`,
+        W/2, badgeY+badgeH*0.62
+      );
     }
+
     // Start prompt
     if(Math.sin(t*2.4)>0){
-      ctx.save(); ctx.shadowColor='#c89040'; ctx.shadowBlur=8;
-      ctx.fillStyle='#c89040'; ctx.font='bold 15px serif';
-      ctx.fillText('-- Press SPACE to begin --',W/2,H*0.82);
+      ctx.save(); ctx.shadowColor='#c89040'; ctx.shadowBlur=S*0.012;
+      ctx.fillStyle='#d4a040';
+      ctx.font=`bold ${fs(0.038)} serif`;
+      ctx.fillText('\u2014 Press SPACE to begin \u2014', W/2, H*0.92);
       ctx.restore();
     }
   }
