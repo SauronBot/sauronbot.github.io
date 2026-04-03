@@ -2011,15 +2011,16 @@
       ctx.lineTo(x+aw*0.8,y+ah); ctx.stroke();
       ctx.restore();
 
-      // Waterfall on right side — thin luminous streams
+      // Waterfall on right side — thin luminous streams (end at ground, not screen bottom)
+      const groundY = y + r*0.5; // tree base / ground level
       ctx.save(); ctx.shadowColor='rgba(160,220,255,0.5)'; ctx.shadowBlur=6;
       [r*3.5,r*4.0,r*4.5].forEach((ox,i)=>{
-        const wg=ctx.createLinearGradient(x+ox,y-r,x+ox,H);
+        const wg=ctx.createLinearGradient(x+ox,y-r*2,x+ox,groundY);
         wg.addColorStop(0,`rgba(180,230,255,${0.4+Math.sin(t*1.5+i)*0.1})`);
-        wg.addColorStop(1,'rgba(120,180,220,0.1)');
+        wg.addColorStop(1,'rgba(120,180,220,0.05)');
         ctx.strokeStyle=wg; ctx.lineWidth=r*0.08+i*r*0.03;
-        ctx.beginPath(); ctx.moveTo(x+ox,y-r);
-        ctx.bezierCurveTo(x+ox+r*0.1,y+r*1.5,x+ox-r*0.1,y+r*3,x+ox+r*0.05,H);
+        ctx.beginPath(); ctx.moveTo(x+ox,y-r*2);
+        ctx.bezierCurveTo(x+ox+r*0.08,y-r*0.5,x+ox-r*0.06,y+r*0.2,x+ox,groundY);
         ctx.stroke();
       });
       ctx.restore();
