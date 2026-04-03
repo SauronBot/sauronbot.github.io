@@ -1649,19 +1649,20 @@
             const fsx=frodo.x-cameraX, fsy=frodo.y;
             const torchR = def.hasBalrog
               ? (160 - progress()*40) * (1 + Math.sin(t*2.1)*0.04)
-              : 90 - progress()*20;
+              : (140 - progress()*30) * (1 + Math.sin(t*3.1)*0.05); // Shelob: wide but shrinks with dread
             const darkStr = 1 - eyeSuppression;
             // Offscreen mask: fill black, punch light holes with destination-out
             const oc = document.createElement('canvas');
             oc.width=W; oc.height=H;
             const ox = oc.getContext('2d');
-            ox.fillStyle=`rgba(0,0,0,${0.97*darkStr})`;
+            const maxDark = def.hasBalrog ? 0.97 : 0.80; // Shelob: less total darkness
+            ox.fillStyle=`rgba(0,0,0,${maxDark*darkStr})`;
             ox.fillRect(0,0,W,H);
             ox.globalCompositeOperation='destination-out';
             // Hole: Frodo's torch
-            const fg=ox.createRadialGradient(fsx,fsy,torchR*0.1,fsx,fsy,torchR*2.2);
+            const fg=ox.createRadialGradient(fsx,fsy,torchR*0.1,fsx,fsy,torchR*2.0);
             fg.addColorStop(0,`rgba(0,0,0,${darkStr})`);
-            fg.addColorStop(0.45,`rgba(0,0,0,${0.5*darkStr})`);
+            fg.addColorStop(0.55,`rgba(0,0,0,${0.6*darkStr})`);
             fg.addColorStop(1,'rgba(0,0,0,0)');
             ox.fillStyle=fg; ox.fillRect(0,0,W,H);
             // Holes: column torches (Moria only, parallax 0.45x)
