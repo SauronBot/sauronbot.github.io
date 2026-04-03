@@ -640,6 +640,15 @@
         else if (state === 'win') { round++; score+=200; startLevel(0); }
         else if (state === 'playing') triggerDash();
       }
+      // E key: use Galadriel's phial
+      if ((e.key === 'e' || e.key === 'E') && state === 'playing' && blessingCount > 0 && blessingActive <= 0) {
+        blessingCount--;
+        blessingActive = 12; // 12s: slow enemies, suppress Eye, halo
+        whisperText = "May it be a light for you in dark places..."; whisperTimer = 3.5; whisperCooldown = 0;
+        for(let i=0;i<20;i++){const a=(i/20)*Math.PI*2,s=1.5+Math.random()*3;
+          particles.push({x:frodo.x,y:frodo.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1.5,
+            life:1+Math.random()*0.5,size:3+Math.random()*4,color:'#c0d8ff'});}
+      }
     };
     const onKu = e => { keys[e.key] = false; };
     document.addEventListener('keydown', onKd);
@@ -662,6 +671,7 @@
     let spiderlings = [];
     let blessingPickup = null;
     let blessingActive = 0;
+    let blessingCount = 0; // Galadriel's phials -- max 3, carried across levels
     let hornTimer = 20;
     let hornActive = 0;
     let ynapassTimer = 0;
@@ -732,6 +742,7 @@
       spiderlings = def.hasShelob ? Array.from({length:5},()=>({x:W*0.5+Math.random()*200-100, y:-80+Math.random()*40, r:5, angle:Math.random()*Math.PI*2, speed:2.5+Math.random()})) : [];
       blessingPickup = (lvl === 2) ? {x: WORLD_W*0.5, y: H*0.4, r: 16, pulse: 0, collected: false} : null;
       blessingActive = 0;
+      // blessingCount persists -- Galadriel's phials carry forward
       hornTimer = 20 + Math.random()*5;
       hornActive = 0;
       ynapassTimer = 0;
@@ -981,7 +992,7 @@
         eye.timer+=dt;
         if (eye.phase==='idle'){
           eye.open=Math.max(0,eye.open-dt*1.5);
-          if(eye.timer>=eye.idleDur && !inSafeZone){eye.phase='warning';eye.timer=0;}
+          if(eye.timer>=eye.idleDur && !inSafeZone && blessingActive<=0){eye.phase='warning';eye.timer=0;}
         } else if (eye.phase==='warning'){
           eye.open=Math.min(0.25,eye.open+dt*0.4);
           if(eye.timer>=eye.warnDur){eye.phase='active';eye.timer=0;sndEyeOpen();}
@@ -1480,13 +1491,13 @@
           }
         }
 
-        // Galadriel's blessing (Lothlorien)
+        // Galadriel's phial (Lothlorien) -- collect, carry forward, use with E
         if (blessingPickup && !blessingPickup.collected) {
           blessingPickup.pulse += dt * 2;
           if (Math.hypot(frodo.x - blessingPickup.x, frodo.y - blessingPickup.y) < frodo.r + blessingPickup.r) {
             blessingPickup.collected = true;
-            dashCharges = Math.min(maxDash(), dashCharges + 2);
-            blessingActive = 8;
+            blessingCount = Math.min(3, blessingCount + 1);
+            whisperText = "Galadriel's light -- press E to use"; whisperTimer = 4.5; whisperCooldown = 0;
             for(let i=0;i<16;i++){const a=(i/16)*Math.PI*2,s=2+Math.random()*3;
               particles.push({x:frodo.x,y:frodo.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1.5,
                 life:0.8+Math.random()*0.4,size:4+Math.random()*4,color:'#c0d8ff'});}
@@ -1748,7 +1759,7 @@
             ctx.restore();
           }
         }
-        drawUILevel(ctx,W,H,frodo,progress(),eye,timers.elapsed,currentLevel,def,dashCharges,score,round,GOD_MODE,maxLives(),maxDash(),comboMult,comboFlash,comboTimer,flavourIdx,flavourAlpha);
+        drawUILevel(ctx,W,H,frodo,progress(),eye,timers.elapsed,currentLevel,def,dashCharges,score,round,GOD_MODE,maxLives(),maxDash(),comboMult,comboFlash,comboTimer,flavourIdx,flavourAlpha,blessingCount,blessingActive);
         // Cinematic level intro (4.5s total)
         if(timers.elapsed < 4.5) {
           const el = timers.elapsed;
@@ -3602,7 +3613,7 @@
   }
 
   // ── UI (shared) ───────────────────────────────────────────────────────
-  function drawUILevel(ctx,W,H,frodo,prog,eye,elapsed,lvl,def,dashCharges=0,score=0,round=1,godMode=false,maxL=3,maxD=3,comboMult=1,comboFlash=0,comboTimer=0,flavourIdx=-1,flavourAlpha=0){
+  function drawUILevel(ctx,W,H,frodo,prog,eye,elapsed,lvl,def,dashCharges=0,score=0,round=1,godMode=false,maxL=3,maxD=3,comboMult=1,comboFlash=0,comboTimer=0,flavourIdx=-1,flavourAlpha=0,blessingCount=0,blessingActive=0){
     // Progress bar -- grows heavier/darker with level number
     const ringHeaviness = lvl / 8; // 0 at Shire, 1.0 at Mount Doom
     ctx.fillStyle=`rgba(0,0,0,${0.55+ringHeaviness*0.25})`; ctx.fillRect(10,10,210,18);
@@ -3671,6 +3682,34 @@
       ctx.font=`${lit?'bold ':' '}12px serif`;
       ctx.fillText('⚡',lx,40);
       ctx.restore();
+    }
+
+    // Galadriel's phials inventory (bottom-right, above dash pips)
+    if(blessingCount > 0 || blessingActive > 0){
+      for(let i=0;i<3;i++){
+        const px=W-16-i*20, py=62;
+        const filled=i<blessingCount;
+        const isActive=blessingActive>0&&i===0&&blessingCount===0;
+        ctx.save();
+        if(filled||isActive){ctx.shadowColor='#80c8ff';ctx.shadowBlur=filled?8:12+Math.sin(elapsed*4)*4;}
+        // Phial shape: small teardrop/diamond
+        ctx.strokeStyle=filled?'#a0d0ff':isActive?'#ffffff':'#2a3a4a';
+        ctx.lineWidth=filled?1.5:isActive?2:1;
+        ctx.fillStyle=filled?'rgba(140,200,255,0.45)':isActive?`rgba(200,230,255,${0.5+Math.sin(elapsed*5)*0.3})`:'rgba(20,30,50,0.2)';
+        ctx.beginPath();
+        ctx.moveTo(px,py-7); ctx.lineTo(px+4,py); ctx.lineTo(px,py+5); ctx.lineTo(px-4,py); ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        // Inner light
+        if(filled||isActive){
+          ctx.fillStyle=`rgba(220,240,255,${isActive?0.5+Math.sin(elapsed*6)*0.3:0.3})`;
+          ctx.beginPath(); ctx.arc(px,py-1,2,0,Math.PI*2); ctx.fill();
+        }
+        ctx.restore();
+      }
+      // Label
+      ctx.fillStyle='rgba(140,190,255,0.7)'; ctx.font='8px serif';
+      ctx.textAlign='right'; ctx.textBaseline='top';
+      ctx.fillText(blessingActive>0?`${Math.ceil(blessingActive)}s`:'[E]',W-4,68);
     }
 
     // Eye warning
