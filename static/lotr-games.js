@@ -1349,6 +1349,12 @@
         // Shelob
         if (shelob) {
           shelob.firePhase += dt*3;
+          // Safe zone: Shelob stays out and resets drop timer while Frodo is safe
+          if (frodo && frodo.x < SAFE_ZONE_X) {
+            shelob.x = Math.max(shelob.x, SAFE_ZONE_X + shelob.r + 20);
+            shelob.phase = 'lurk';
+            shelob.dropTimer = Math.max(shelob.dropTimer, 2); // reset countdown
+          } else {
           shelob.dropTimer -= dt;
           if (shelob.phase === 'lurk') {
             // Track Frodo's X when nearly aligned
@@ -1375,6 +1381,7 @@
             shelob.y -= shelob.returnSpeed*60*dt;
             if (shelob.y <= -60) { shelob.y=-60; shelob.phase='lurk'; }
           }
+          } // end safe zone else
         }
 
         // Spiderlings (Shelob's lair)
