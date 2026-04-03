@@ -1606,7 +1606,7 @@
           const szScreenX = szX; // already in world-space (camera translate applied)
           ctx.save();
           ctx.setLineDash([5,9]);
-          ctx.strokeStyle = 'rgba(160,220,140,0.20)';
+          ctx.strokeStyle = 'rgba(160,220,140,0.08)';
           ctx.lineWidth = 1;
           ctx.beginPath(); ctx.moveTo(szX, SKY_Y); ctx.lineTo(szX, H); ctx.stroke();
           ctx.setLineDash([]);
