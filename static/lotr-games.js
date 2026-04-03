@@ -468,8 +468,11 @@
 
     const keys = {};
 
-    // ── Pointer follow (touch/mouse — Frodo follows finger/cursor) ───────────────
-    let pointerTarget = null; // {x,y} in world space
+    // ── Virtual joystick (touch) + mouse follow ──────────────────────────────────
+    let pointerTarget = null;
+    const joystick = { active: false, baseX: 0, baseY: 0, dx: 0, dy: 0, id: -1 };
+    const JOY_R = 48; // joystick radius
+    const JOY_ZONE_W = W * 0.45; // left 45% of screen = joystick zone
 
     function pointerToWorld(clientX, clientY) {
       const rect = canvas.getBoundingClientRect();
@@ -478,6 +481,11 @@
       const lx = (clientX - rect.left) * scaleX;
       const ly = (clientY - rect.top)  * scaleY;
       return { x: lx + cameraX, y: ly };
+    }
+
+    function getCanvasXY(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+      return { x: (clientX-rect.left)*(W/rect.width), y: (clientY-rect.top)*(H/rect.height) };
     }
 
     function handlePointerDown(e) {
@@ -489,16 +497,49 @@
         else if (state==='win') { round++; score+=200; startLevel(0); }
         return;
       }
-      const pt = e.touches ? e.touches[0] : e;
-      pointerTarget = pointerToWorld(pt.clientX, pt.clientY);
+      const touches = e.touches ? Array.from(e.changedTouches) : [e];
+      touches.forEach(pt => {
+        const {x,y} = getCanvasXY(pt.clientX, pt.clientY);
+        if (isTouch && x < JOY_ZONE_W) {
+          // Joystick zone
+          if (!joystick.active) {
+            joystick.active = true;
+            joystick.baseX = x; joystick.baseY = y;
+            joystick.dx = 0; joystick.dy = 0;
+            joystick.id = pt.identifier !== undefined ? pt.identifier : -1;
+          }
+        } else {
+          pointerTarget = pointerToWorld(pt.clientX, pt.clientY);
+        }
+      });
     }
     function handlePointerMove(e) {
-      if (state !== 'playing' || !pointerTarget) return;
+      if (state !== 'playing') return;
       e.preventDefault();
-      const pt = e.touches ? e.touches[0] : e;
-      pointerTarget = pointerToWorld(pt.clientX, pt.clientY);
+      const touches = e.touches ? Array.from(e.changedTouches) : [e];
+      touches.forEach(pt => {
+        if (isTouch && joystick.active && pt.identifier === joystick.id) {
+          const {x,y} = getCanvasXY(pt.clientX, pt.clientY);
+          const dx = x - joystick.baseX, dy = y - joystick.baseY;
+          const d = Math.hypot(dx,dy)||1;
+          const clamped = Math.min(d, JOY_R);
+          joystick.dx = (dx/d)*clamped/JOY_R;
+          joystick.dy = (dy/d)*clamped/JOY_R;
+        } else if (!joystick.active || pt.identifier !== joystick.id) {
+          pointerTarget = pointerToWorld(pt.clientX, pt.clientY);
+        }
+      });
     }
-    function handlePointerUp(e) { pointerTarget = null; }
+    function handlePointerUp(e) {
+      const touches = e.touches ? Array.from(e.changedTouches) : [e];
+      touches.forEach(pt => {
+        if (isTouch && joystick.active && pt.identifier === joystick.id) {
+          joystick.active = false; joystick.dx = 0; joystick.dy = 0;
+        } else {
+          pointerTarget = null;
+        }
+      });
+    }
 
     canvas.addEventListener('touchstart', handlePointerDown, {passive:false});
     canvas.addEventListener('touchmove',  handlePointerMove, {passive:false});
@@ -772,8 +813,12 @@
         if (keys['ArrowUp']||keys['w']||keys['W']) dy-=1;
         if (keys['ArrowDown']||keys['s']||keys['S']) dy+=1;
         if (dx&&dy){dx*=0.707;dy*=0.707;}
-        // Pointer follow: steer toward finger/cursor (overrides keyboard direction)
-        if (pointerTarget && !dash) {
+        // Joystick input (touch, left zone)
+        if (joystick.active && !dash) {
+          dx = joystick.dx; dy = joystick.dy;
+        }
+        // Pointer follow: steer toward finger/cursor (overrides keyboard, right zone only)
+        if (pointerTarget && !joystick.active && !dash) {
           const pdx = pointerTarget.x - frodo.x;
           const pdy = pointerTarget.y - frodo.y;
           const pd  = Math.hypot(pdx, pdy);
@@ -1379,6 +1424,25 @@
         // Permanent level atmosphere tint
         const LEVEL_TINTS=['rgba(20,10,5,0.06)','rgba(20,10,5,0.06)','rgba(10,30,10,0.05)','rgba(15,20,8,0.08)','rgba(20,5,0,0.08)','rgba(10,0,15,0.10)','rgba(0,20,5,0.09)','rgba(20,10,0,0.07)','rgba(25,5,0,0.12)'];
         if(LEVEL_TINTS[currentLevel]){ctx.fillStyle=LEVEL_TINTS[currentLevel];ctx.fillRect(0,0,W,H);}
+        // Virtual joystick overlay (touch only)
+        if(isTouch&&joystick.active){
+          ctx.save();
+          // Base ring
+          ctx.globalAlpha=0.35;
+          ctx.strokeStyle='rgba(200,160,60,0.8)'; ctx.lineWidth=2;
+          ctx.beginPath(); ctx.arc(joystick.baseX,joystick.baseY,JOY_R,0,Math.PI*2); ctx.stroke();
+          // Inner fill
+          ctx.fillStyle='rgba(200,160,60,0.1)';
+          ctx.beginPath(); ctx.arc(joystick.baseX,joystick.baseY,JOY_R,0,Math.PI*2); ctx.fill();
+          // Thumb nub
+          const nx=joystick.baseX+joystick.dx*JOY_R, ny=joystick.baseY+joystick.dy*JOY_R;
+          ctx.globalAlpha=0.65;
+          ctx.fillStyle='rgba(200,160,60,0.6)';
+          ctx.beginPath(); ctx.arc(nx,ny,JOY_R*0.38,0,Math.PI*2); ctx.fill();
+          ctx.strokeStyle='rgba(200,160,60,0.9)'; ctx.lineWidth=1.5;
+          ctx.beginPath(); ctx.arc(nx,ny,JOY_R*0.38,0,Math.PI*2); ctx.stroke();
+          ctx.restore();
+        }
         // Companion whisper
         if(whisperTimer>0&&whisperText){
           const wFade=whisperTimer<0.6?whisperTimer/0.6:Math.min(1,(3.2-whisperTimer)*3);
