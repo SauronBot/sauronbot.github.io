@@ -964,6 +964,8 @@
           else { eye.idleDur=Math.max(6,(LEVEL_DEFS[7].eyeIdleBase+3+Math.random()*6)/diffMult()); eye.activeDur=LEVEL_DEFS[7].eyeActiveDur; }
         }
 
+        // Lothlórien — Eye glows silver-green instead of red
+        // (handled in drawEye1 via def flag; here just soften its red tinge)
         // Minas Morgul — Eye never fully closes
         if (currentLevel === 6 && eye.open < 0.22) eye.open = 0.22;
 
