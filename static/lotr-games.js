@@ -404,9 +404,9 @@
       roadCol: 'rgba(30,20,10,0.95)', horizon: '#0d0a0a',
       glow: [180,80,20], glowAlpha: 0.35, destGlow: [200,90,10],
       initWraiths:4, maxWraiths:8, wraithSpeed:1.3, eyeIdleBase:15, eyeActiveDur:7, spawnMin:3.5,
-      hasGollum:true, hasBlindFlash:false, hasShelob:false, hasBalrog:true,
+      hasGollum:false, hasBlindFlash:false, hasShelob:false, hasBalrog:true,
       companion: 'gandalf',
-      flavour:['The darkness is absolute...','Something stirs in the deep...','Gollum’s eyes glow in the dark...','The drums... drums in the deep...','The bridge is ahead!'],
+      flavour:['The darkness is absolute...','Something stirs in the deep...','The drums... drums in the deep...','The bridge is ahead!'],
       winMsg:'You have crossed Khazad-dûm.', winQuote:'"You cannot pass!"',
       progressLabel:'THE MINES OF MORIA',
     },
@@ -419,9 +419,9 @@
       roadCol: 'rgba(20,50,20,0.85)', horizon: '#0a1e0a',
       glow: [160,255,180], glowAlpha: 0.15, destGlow: [160,255,180],
       initWraiths:2, maxWraiths:4, wraithSpeed:1.0, eyeIdleBase:28, eyeActiveDur:4, spawnMin:6,
-      hasGollum:true, hasBlindFlash:false, hasShelob:false, hasBalrog:false,
+      hasGollum:false, hasBlindFlash:false, hasShelob:false, hasBalrog:false,
       companion: 'galadriel',
-      flavour:['The wood breathes...','Light flows between the leaves...','Something follows at the forest’s edge...','The Mirror calls...','Do not look into it!'],
+      flavour:['The wood breathes...','Light flows between the leaves...','The Mirror calls...','Do not look into it!'],
       winMsg:"Galadriel's gift is yours.", winQuote:'"Even the smallest person can change the course of the future."',
       progressLabel:'THE GOLDEN WOOD',
     },
@@ -450,7 +450,7 @@
       roadCol: 'rgba(50,20,10,0.95)', horizon: '#1e0804',
       glow: [200,30,10], glowAlpha: 0.38, destGlow: [220,40,0],
       initWraiths:5, maxWraiths:9, wraithSpeed:1.65, eyeIdleBase:10, eyeActiveDur:9, spawnMin:2.5,
-      hasGollum:true, hasBlindFlash:false, hasShelob:false, hasBalrog:false,
+      hasGollum:true, hasBlindFlash:false, hasShelob:false, hasBalrog:false, hasMouthOfSauron:true,
       companion: null,
       flavour:['The armies of Mordor mass at the gate...','No way through the front...','Gollum knows another path...','The stair is close!'],
       winMsg:'You found the secret stair.', winQuote:'"There is another way... Gollum knows it."',
@@ -481,9 +481,9 @@
       roadCol: 'rgba(10,30,10,0.95)', horizon: '#081008',
       glow: [40,200,60], glowAlpha: 0.28, destGlow: [60,220,80],
       initWraiths:6, maxWraiths:10, wraithSpeed:1.8, eyeIdleBase:8, eyeActiveDur:11, spawnMin:2.2,
-      hasGollum:true, hasBlindFlash:true, hasShelob:false, hasBalrog:false,
+      hasGollum:true, hasBlindFlash:true, hasShelob:false, hasBalrog:false, hasWitchKing:true,
       companion: null,
-      flavour:['The dead city pulses with green light...','The Nazgûl Lord rides out...','The Ring screams to be used...','Keep moving!'],
+      flavour:['The dead city pulses with green light...','The Witch-king stirs...','The Ring screams to be used...','Keep moving!'],
       winMsg:'Minas Morgul is behind you.', winQuote:'"The power of the Ring could not be hidden."',
       progressLabel:'THE MORGUL ROAD',
     },
@@ -496,9 +496,9 @@
       roadCol: 'rgba(60,20,10,0.9)', horizon: '#200a06',
       glow: [255,120,20], glowAlpha: 0.35, destGlow: [255,140,0],
       initWraiths:7, maxWraiths:12, wraithSpeed:1.9, eyeIdleBase:6, eyeActiveDur:12, spawnMin:2.0,
-      hasGollum:true, hasBlindFlash:true, hasShelob:false, hasBalrog:false,
+      hasGollum:true, hasBlindFlash:true, hasShelob:false, hasBalrog:false, hasMumak:true,
       companion: null,
-      flavour:['The battle rages all around...','Eagles! The eagles are coming!','The Eye is distracted by war...','Almost to Mordor!'],
+      flavour:['The battle rages all around...','The earth shakes beneath the Oliphaunt...','Eagles! The eagles are coming!','The Eye is distracted by war...','Almost to Mordor!'],
       winMsg:'The battle is won. Mordor awaits.', winQuote:'"I cannot carry it for you... but I can carry you!"',
       progressLabel:'ACROSS PELENNOR',
     },
@@ -511,9 +511,9 @@
       roadCol: 'rgba(65,30,10,0.9)', horizon: '#1e0a04',
       glow: [255,50,5], glowAlpha: 0.45, destGlow: [255,60,0],
       initWraiths:8, maxWraiths:14, wraithSpeed:2.2, eyeIdleBase:5, eyeActiveDur:14, spawnMin:1.6,
-      hasGollum:true, hasBlindFlash:true, hasShelob:false, hasBalrog:false,
+      hasGollum:true, hasBlindFlash:true, hasShelob:false, hasBalrog:false, hasGollumBoss:true,
       companion: null,
-      flavour:['Every step is agony...','The Eye sees all...','The Ring commands you to stop...','Throw it in the fire!'],
+      flavour:['Every step is agony...','The Eye sees all...','Gollum’s eyes gleam with hunger...','The Ring commands you to stop...','Throw it in the fire!'],
       winMsg:'It is done.', winQuote:'"My precious..."',
       progressLabel:'THE ROAD TO MOUNT DOOM',
     },
@@ -799,6 +799,7 @@
     let lastScore = 0, lastRound = 1, lastLevel = 0; // for gameover screen
     let sessionCheckpoint = 0; // furthest level reached this session
     let frodo, wraiths=[], gollum=null, balrog=null, shelob=null, particles=[], eye=null, shake={x:0,y:0}, timers={elapsed:0};
+    let mouthOfSauron=null, witchKing=null, mumak=null, gollumBoss=null;
     let sam = null; // Sam follows in Book I (levels 0-2)
     let spiderlings = [];
     let blessingPickup = null;
@@ -851,6 +852,10 @@
       gollum = def.hasGollum ? makeGollum() : null;
       balrog = def.hasBalrog ? makeBalrog() : null;
       shelob = def.hasShelob ? makeShelob() : null;
+      mouthOfSauron = def.hasMouthOfSauron ? makeMouthOfSauron() : null;
+      witchKing = def.hasWitchKing ? makeWitchKing() : null;
+      mumak = def.hasMumak ? makeMumak() : null;
+      gollumBoss = def.hasGollumBoss ? makeGollumBoss() : null;
       eyeDistracted=false; eyeDistractTimer=15+Math.random()*5; eyeEagleTimer=0; eagleParticles=[];
       particles = [];
       eye = {
@@ -929,6 +934,51 @@
         firePhase: 0, phase: 'lurk',
         dropTimer: 4 + Math.random()*3,
         returnSpeed: 3.5,
+      };
+    }
+
+    function makeMouthOfSauron() {
+      return {
+        x: WORLD_W - 200, y: H*0.6, r: 16, speed: 3.2,
+        phase: 'patrol', patrolDir: -1, patrolTimer: 3 + Math.random()*2,
+        firePhase: 0, active: false,
+        tauntTimer: 12 + Math.random()*6,
+        chargeTimer: 5 + Math.random()*3, charging: false, chargeAngle: 0, chargeDur: 0,
+      };
+    }
+
+    function makeWitchKing() {
+      return {
+        x: WORLD_W - 300, y: H*0.3, r: 28, speed: 2.8,
+        firePhase: 0, active: false,
+        phase: 'approach',
+        diveTimer: 8 + Math.random()*4,
+        screeching: false, screechTimer: 0,
+        landShockTimer: 0,
+        altY: H*0.25,
+        frozenTimer: 0,
+      };
+    }
+
+    function makeMumak() {
+      return {
+        x: -400, y: H*0.65, r: 55, speed: 1.8,
+        firePhase: 0, active: false,
+        phase: 'enter',
+        chargeDir: 1, nextChargeTimer: 8 + Math.random()*5,
+        stompTimer: 0,
+      };
+    }
+
+    function makeGollumBoss() {
+      return {
+        x: WORLD_W - 250, y: H*0.55, r: 11,
+        speed: 3.5, firePhase: 0, active: false,
+        phase: 'stalk',
+        lungeTimer: 3 + Math.random()*2,
+        lungeElapsed: 0, feral: false,
+        ringGrabDone: false, ringGrabTimer: 0,
+        screamTimer: 0,
       };
     }
 
@@ -1089,8 +1139,9 @@
           const pd  = Math.hypot(pdx, pdy);
           if (pd > 6) { dx = pdx/pd; dy = pdy/pd; } else { dx=0; dy=0; }
         }
-        frodo.x = Math.max(frodo.r, Math.min(WORLD_W-frodo.r, frodo.x+dx*spd*60*dt));
-        frodo.y = Math.max(frodo.r, Math.min(H-frodo.r, frodo.y+dy*spd*60*dt));
+        const frozenMult = (witchKing && witchKing.frozenTimer > 0) ? 0 : 1;
+        frodo.x = Math.max(frodo.r, Math.min(WORLD_W-frodo.r, frodo.x+dx*spd*60*dt*frozenMult));
+        frodo.y = Math.max(frodo.r, Math.min(H-frodo.r, frodo.y+dy*spd*60*dt*frozenMult));
         updateCamera();
         frodo.ringAngle += dt*(1.2+progress()*2.5);
 
@@ -1629,6 +1680,228 @@
           });
         }
 
+        // ── Mouth of Sauron (Ch.5) ─────────────────────────────────────
+        if (mouthOfSauron && frodo) {
+          mouthOfSauron.firePhase += dt * 2.5;
+          if (!mouthOfSauron.active && progress() > 0.40) {
+            mouthOfSauron.active = true;
+            whisperText = '"There is no life in the void..."'; whisperTimer = 3.5; whisperCooldown = 0;
+            shake = {x:0,y:0,dur:0.6,intensity:8};
+          }
+          if (mouthOfSauron.active) {
+            const mos = mouthOfSauron;
+            if (mos.x < SAFE_ZONE_X + mos.r) mos.x += 60*dt*2;
+            mos.tauntTimer -= dt;
+            if (mos.tauntTimer <= 0) {
+              const taunts=['"There is no life in the void..."','"The age of Men is over..."','"You cannot hide from the Eye..."','"Kneel before Sauron!"'];
+              whisperText = taunts[Math.floor(Math.random()*taunts.length)]; whisperTimer = 3; whisperCooldown = 0;
+              mos.tauntTimer = 10 + Math.random()*8;
+            }
+            if (mos.charging) {
+              mos.chargeDur -= dt;
+              mos.x += Math.cos(mos.chargeAngle) * mos.chargeSpeed * 60 * dt;
+              mos.y += Math.sin(mos.chargeAngle) * mos.chargeSpeed * 60 * dt;
+              mos.y = Math.max(H*0.5, Math.min(H*0.8, mos.y));
+              if (mos.chargeDur <= 0) { mos.charging = false; mos.chargeTimer = 4 + Math.random()*3; }
+            } else {
+              mos.chargeTimer -= dt;
+              mos.patrolTimer -= dt;
+              if (mos.patrolTimer <= 0) { mos.patrolDir *= -1; mos.patrolTimer = 3 + Math.random()*2; }
+              mos.x += mos.patrolDir * mos.speed * 0.6 * 60 * dt;
+              mos.y = Math.max(H*0.5, Math.min(H*0.8, mos.y));
+              if (mos.chargeTimer <= 0 && dist(frodo, mos) < 400) {
+                mos.chargeAngle = Math.atan2(frodo.y - mos.y, frodo.x - mos.x);
+                mos.charging = true; mos.chargeSpeed = 8; mos.chargeDur = 0.8;
+              }
+            }
+            if (!frodo.invincible && dist(frodo, mos) < frodo.r + mos.r) {
+              if (!GOD_MODE) { frodo.lives = Math.max(0, frodo.lives - 1); if (frodo.lives <= 0) { lastScore=score;lastRound=round;lastLevel=currentLevel; state='gameover'; } }
+              frodo.invincible=true; frodo.invTimer=2.5; frodo.hitFlash=1;
+              shake={x:0,y:0,dur:0.5,intensity:10}; sndHit();
+              const backA = Math.atan2(frodo.y-mos.y, frodo.x-mos.x)+Math.PI;
+              mos.x = frodo.x + Math.cos(backA)*350; mos.y = Math.max(H*0.5,Math.min(H*0.8,frodo.y));
+              mos.charging = false;
+            }
+          }
+        }
+
+        // ── Witch-king of Angmar (Ch.7) ────────────────────────────────
+        if (witchKing && frodo) {
+          witchKing.firePhase += dt * 2.0;
+          if (witchKing.frozenTimer > 0) witchKing.frozenTimer -= dt;
+          if (!witchKing.active && progress() > 0.35) {
+            witchKing.active = true;
+            eye.phase = 'active'; eye.open = 1; eye.timer = 9999;
+            shake = {x:0,y:0,dur:1.0,intensity:12};
+            whisperText = 'The Witch-king of Angmar has come!'; whisperTimer = 3.5; whisperCooldown = 0;
+          }
+          if (witchKing.active) {
+            const wk = witchKing;
+            eye.open = Math.max(eye.open, 0.85);
+            if (wk.x < SAFE_ZONE_X + wk.r) wk.x += 60*dt*2;
+            wk.firePhase += dt * 0; // already incremented above
+            if (wk.screeching) {
+              wk.screechTimer -= dt;
+              if (wk.screechTimer <= 0) {
+                wk.screeching = false;
+                wk.landShockTimer = 0.6;
+                // shock ring particles
+                for(let i=0;i<24;i++){const a=(i/24)*Math.PI*2;
+                  particles.push({x:wk.x+cameraX,y:wk.y,vx:Math.cos(a)*4,vy:Math.sin(a)*2,life:0.5,size:5,color:'rgba(160,40,220,0.9)'}); }
+              }
+            }
+            if (wk.landShockTimer > 0) {
+              wk.landShockTimer -= dt;
+              if (!frodo.invincible && Math.hypot(frodo.x-wk.x,frodo.y-wk.y) < 90) {
+                if (!GOD_MODE) { frodo.lives = Math.max(0,frodo.lives-1); if(frodo.lives<=0){lastScore=score;lastRound=round;lastLevel=currentLevel;state='gameover';} }
+                frodo.invincible=true; frodo.invTimer=2.5; frodo.hitFlash=1; sndHit();
+                shake={x:0,y:0,dur:0.5,intensity:10};
+              }
+              if (wk.landShockTimer <= 0) {
+                wk.phase = 'approach';
+                wk.diveTimer = 6 + Math.random()*4;
+                wk.altY = H*0.18 + Math.random()*H*0.12;
+              }
+            } else if (!wk.screeching) {
+              if (wk.phase === 'approach') {
+                wk.y += (wk.altY - wk.y) * dt * 2;
+                wk.x += (frodo.x - wk.x) * dt * 0.6;
+                wk.diveTimer -= dt;
+                if (wk.diveTimer <= 0) wk.phase = 'dive';
+              } else if (wk.phase === 'dive') {
+                const da = Math.atan2(frodo.y+40 - wk.y, frodo.x - wk.x);
+                wk.x += Math.cos(da) * wk.speed * 1.8 * 60 * dt;
+                wk.y += Math.sin(da) * wk.speed * 1.8 * 60 * dt;
+                if (wk.y > H*0.85 || dist(frodo,wk) < 80) {
+                  wk.screeching = true; wk.screechTimer = 1.8;
+                  wk.frozenTimer = 1.4;
+                  shake={x:0,y:0,dur:0.4,intensity:6};
+                  sndHit();
+                  for(let i=0;i<20;i++){const a=(i/20)*Math.PI*2;
+                    particles.push({x:wk.x+cameraX,y:wk.y,vx:Math.cos(a)*3,vy:Math.sin(a)*2-1,life:0.8,size:4,color:'rgba(180,60,255,0.9)'}); }
+                }
+              }
+            }
+            if (!frodo.invincible && dist(frodo,wk) < frodo.r+wk.r && !wk.screeching) {
+              if (!GOD_MODE) { frodo.lives=Math.max(0,frodo.lives-1); if(frodo.lives<=0){lastScore=score;lastRound=round;lastLevel=currentLevel;state='gameover';} }
+              frodo.invincible=true; frodo.invTimer=2.5; frodo.hitFlash=1; sndHit();
+              shake={x:0,y:0,dur:0.5,intensity:12};
+              const backA=Math.atan2(frodo.y-wk.y,frodo.x-wk.x)+Math.PI;
+              wk.x=frodo.x+Math.cos(backA)*500; wk.y=wk.altY;
+              wk.phase='approach'; wk.diveTimer=5+Math.random()*3;
+              wk.screeching=true; wk.screechTimer=1.8; wk.frozenTimer=1.4;
+            }
+          }
+        }
+
+        // ── Mûmak / Oliphaunt (Ch.8) ───────────────────────────────────
+        if (mumak && frodo) {
+          mumak.firePhase += dt * 2.2;
+          if (!mumak.active && progress() > 0.30) {
+            mumak.active = true;
+            shake={x:0,y:0,dur:1.2,intensity:14};
+            whisperText='The earth shakes — an Oliphaunt!'; whisperTimer=3.5; whisperCooldown=0;
+          }
+          if (mumak.active) {
+            const mk = mumak;
+            if (mk.phase === 'enter') {
+              mk.x += mk.speed * 60 * dt;
+              if (mk.x > 0) mk.phase = 'charge';
+            } else if (mk.phase === 'charge') {
+              mk.x += mk.chargeDir * 7 * 60 * dt;
+              mk.x = Math.max(-mk.r, Math.min(WORLD_W+mk.r, mk.x));
+              mk.nextChargeTimer -= dt;
+              // Dust particles
+              if (Math.random() < 0.4) {
+                const dustSide = mk.chargeDir > 0 ? mk.x - mk.r : mk.x + mk.r;
+                particles.push({x:dustSide+cameraX,y:mk.y+mk.r*0.5,vx:-mk.chargeDir*(1+Math.random()*2),vy:-(0.5+Math.random()),life:0.6+Math.random()*0.4,size:6+Math.random()*8,color:`rgba(160,140,100,${0.3+Math.random()*0.2})`});
+              }
+              if (mk.nextChargeTimer <= 0) { mk.phase='turn'; mk.stompTimer=1.2; shake={x:0,y:0,dur:0.8,intensity:12}; }
+            } else if (mk.phase === 'turn') {
+              mk.stompTimer -= dt;
+              if (mk.stompTimer <= 0) { mk.chargeDir *= -1; mk.nextChargeTimer = 7+Math.random()*5; mk.phase='charge'; }
+            }
+            if (!frodo.invincible && dist(frodo,mk) < frodo.r+mk.r) {
+              if (!GOD_MODE) { frodo.lives=Math.max(0,frodo.lives-2); if(frodo.lives<=0){lastScore=score;lastRound=round;lastLevel=currentLevel;state='gameover';} }
+              frodo.invincible=true; frodo.invTimer=4.0; frodo.hitFlash=1; sndHit();
+              shake={x:0,y:0,dur:1.0,intensity:18};
+              whisperText='The Oliphaunt tramples all!'; whisperTimer=2; whisperCooldown=0;
+            }
+          }
+        }
+
+        // ── Gollum Boss Fight (Ch.9) ────────────────────────────────────
+        if (gollumBoss && frodo) {
+          gollumBoss.firePhase += dt * 3;
+          if (!gollumBoss.active && progress() > 0.60) {
+            gollumBoss.active = true;
+            whisperText = 'Gollum goes feral — he wants the Precious!'; whisperTimer=3.5; whisperCooldown=0;
+          }
+          if (gollumBoss.active) {
+            const gb = gollumBoss;
+            if (gb.x < SAFE_ZONE_X + gb.r) gb.x += 60*dt*2;
+            if (!gb.feral && progress() > 0.85) {
+              gb.feral = true;
+              whisperText = 'Gollum is feral — MY PRECIOUS!'; whisperTimer=3; whisperCooldown=0;
+              for(let i=0;i<16;i++){const a=(i/16)*Math.PI*2;
+                particles.push({x:gb.x+cameraX,y:gb.y,vx:Math.cos(a)*2,vy:Math.sin(a)*2,life:0.6,size:3,color:'rgba(200,200,180,0.8)'}); }
+            }
+            // Ring grab ending
+            if (progress() > 0.95 && !gb.ringGrabDone) {
+              gb.ringGrabDone = true; gb.ringGrabTimer = 3.5;
+              gb.phase = 'ring_grab';
+              whisperText = 'Gollum seizes the Ring!'; whisperTimer=3.5; whisperCooldown=0;
+            }
+            if (gb.phase === 'ring_grab') {
+              gb.ringGrabTimer -= dt;
+              const ga2 = Math.atan2(GOAL.y - gb.y, GOAL.x - gb.x);
+              gb.x += Math.cos(ga2) * gb.speed * 2 * 60 * dt;
+              gb.y += Math.sin(ga2) * gb.speed * 2 * 60 * dt;
+              if (gb.ringGrabTimer <= 1.0 && whisperTimer <= 0) {
+                whisperText = 'It slips into the fire...'; whisperTimer=2.5; whisperCooldown=0;
+              }
+              if (gb.ringGrabTimer <= 0) {
+                score += 500;
+                if (currentLevel < 8) { state='levelwin'; levelTransTimer=0; sndLevelWin(); sessionCheckpoint=Math.max(sessionCheckpoint,currentLevel+1); }
+                else { state='win'; sndLevelWin(); updateProgress(); }
+              }
+            } else {
+            gb.lungeTimer -= dt;
+            const d2f = dist(frodo, gb);
+            const lunge_cd = gb.feral ? 1 + Math.random()*1.5 : 3 + Math.random()*2;
+            if (gb.phase === 'stalk') {
+              // Circle around Frodo at comfortable distance
+              const stalka = Math.atan2(gb.y-frodo.y, gb.x-frodo.x);
+              const targetDist = 100 + Math.sin(gb.firePhase*0.5)*30;
+              const circleX = frodo.x + Math.cos(stalka + dt*0.8) * targetDist;
+              const circleY = frodo.y + Math.sin(stalka + dt*0.8) * targetDist;
+              gb.x += (circleX - gb.x) * dt * (gb.feral ? 4 : 3);
+              gb.y += (circleY - gb.y) * dt * (gb.feral ? 4 : 3);
+              if (gb.lungeTimer <= 0 && d2f < 200) {
+                gb.phase = 'lunge'; gb.lungeElapsed = 0;
+                gb.lungeTimer = lunge_cd;
+              }
+            } else if (gb.phase === 'lunge') {
+              gb.lungeElapsed += dt;
+              const la = Math.atan2(frodo.y-gb.y, frodo.x-gb.x);
+              const lspd = gb.speed * (gb.feral ? 3 : 2.5);
+              gb.x += Math.cos(la) * lspd * 60 * dt;
+              gb.y += Math.sin(la) * lspd * 60 * dt;
+              if (gb.lungeElapsed > 0.5 || d2f < frodo.r + gb.r + 5 || d2f > 250) {
+                gb.phase = 'stalk';
+              }
+            }
+            gb.y = Math.max(H*0.1, Math.min(H*0.9, gb.y));
+            if (!frodo.invincible && d2f < frodo.r + gb.r) {
+              if (!GOD_MODE) { frodo.lives=Math.max(0,frodo.lives-1); if(frodo.lives<=0){lastScore=score;lastRound=round;lastLevel=currentLevel;state='gameover';} }
+              frodo.invincible=true; frodo.invTimer=2.0; frodo.hitFlash=1; sndHit();
+              shake={x:0,y:0,dur:0.4,intensity:8};
+              gb.phase='stalk';
+            }
+            } // end else (not ring_grab)
+          }
+        }
+
         // Pelennor Eye distraction mechanic
         if (currentLevel === 7) {
           eyeDistractTimer -= dt;
@@ -1809,6 +2082,10 @@
         if(dashRefill) drawDashRefill(ctx,dashRefill,t);
         if (gollum) drawGollum(ctx,gollum,eye,frodo);
         if (balrog && balrog.active) drawBalrog(ctx,balrog,H);
+        if (mouthOfSauron && mouthOfSauron.active) drawMouthOfSauron(ctx,mouthOfSauron,eye);
+        if (witchKing && witchKing.active) drawWitchKing(ctx,witchKing,eye);
+        if (mumak && mumak.active) drawMumak(ctx,mumak,timers.elapsed);
+        if (gollumBoss && gollumBoss.active) drawGollumBoss(ctx,gollumBoss,timers.elapsed);
         if (shelob) {
           // Shelob telegraph shadow on ground when about to drop
           if (shelob.phase==='lurk' && shelob.dropTimer<1.5) {
@@ -4785,6 +5062,253 @@
       ctx.fillText('\u2014 Begin the Quest \u2014', W/2, btnY + btnH/2);
       ctx.restore();
     }
+  }
+
+  // ── MOUTH OF SAURON ────────────────────────────────────────────────────
+  function drawMouthOfSauron(ctx, m, eye) {
+    const ea = eye && eye.phase === 'active';
+    ctx.save(); ctx.translate(m.x, m.y);
+    const t = m.firePhase;
+    const r = m.r;
+    // Glow
+    const glowR = r * 4;
+    const gg = ctx.createRadialGradient(0,0,0,0,0,glowR);
+    gg.addColorStop(0,`rgba(200,20,0,${0.3+ea*0.15})`); gg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=gg; ctx.fillRect(-glowR,-glowR,glowR*2,glowR*2);
+    // Horse legs (animated)
+    const legSwing = Math.sin(t*3)*r*0.5;
+    ctx.strokeStyle='#2a1008'; ctx.lineWidth=r*0.38;
+    [[-r*0.55,r*0.6,legSwing],[r*0.55,r*0.6,-legSwing],[-r*0.25,r*0.7,-legSwing*0.7],[r*0.25,r*0.7,legSwing*0.7]].forEach(([lx,ly,sw])=>{
+      ctx.beginPath(); ctx.moveTo(lx,ly); ctx.lineTo(lx+sw*0.3,ly+r*0.7+Math.abs(sw)*0.3); ctx.stroke();
+    });
+    // Horse body
+    ctx.fillStyle='#2a1008';
+    ctx.beginPath(); ctx.ellipse(0,r*0.2,r*1.05,r*0.55,0,0,Math.PI*2); ctx.fill();
+    // Horse head/neck
+    ctx.fillStyle='#261006';
+    ctx.beginPath(); ctx.moveTo(-r*0.6,-r*0.1); ctx.bezierCurveTo(-r*1.0,-r*0.5,-r*1.2,-r*0.4,-r*1.1,-r*0.05); ctx.bezierCurveTo(-r*1.05,r*0.15,-r*0.8,r*0.1,-r*0.6,-r*0.1); ctx.fill();
+    // Rider torso
+    ctx.fillStyle='#1a0808';
+    ctx.beginPath(); ctx.ellipse(0,-r*0.5,r*0.5,r*0.7,0,0,Math.PI*2); ctx.fill();
+    // Helm
+    ctx.fillStyle='#0e0404';
+    ctx.beginPath(); ctx.ellipse(0,-r*1.3,r*0.4,r*0.44,0,0,Math.PI*2); ctx.fill();
+    // Helm slit glow
+    ctx.save(); ctx.shadowColor='#ff2200'; ctx.shadowBlur=8+ea*6;
+    ctx.fillStyle=`rgba(255,${ea?60:30},0,${0.8+Math.sin(t*3)*0.1})`;
+    ctx.fillRect(-r*0.22,-r*1.32,r*0.44,r*0.1);
+    ctx.restore();
+    // Sword arm
+    ctx.save();
+    ctx.strokeStyle='#c0c8e0'; ctx.lineWidth=r*0.12;
+    ctx.shadowColor='#a0b0ff'; ctx.shadowBlur=4+ea*6;
+    ctx.beginPath(); ctx.moveTo(r*0.4,-r*0.6); ctx.lineTo(r*2.0,-r*0.1); ctx.stroke();
+    // Crossguard
+    ctx.lineWidth=r*0.18;
+    ctx.beginPath(); ctx.moveTo(r*1.3,-r*0.45); ctx.lineTo(r*1.5,r*0.05); ctx.stroke();
+    ctx.restore();
+    ctx.restore();
+  }
+
+  // ── WITCH-KING OF ANGMAR ───────────────────────────────────────────────
+  function drawWitchKing(ctx, wk, eye) {
+    const ea = eye && eye.phase === 'active';
+    ctx.save(); ctx.translate(wk.x, wk.y);
+    const t = wk.firePhase;
+    const r = wk.r;
+    // Outer glow — purple/black
+    const glowR = r * 4;
+    const wg = ctx.createRadialGradient(0,0,0,0,0,glowR);
+    wg.addColorStop(0,`rgba(160,30,240,${0.35+ea*0.15})`); wg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=wg; ctx.fillRect(-glowR,-glowR*1.2,glowR*2,glowR*2.4);
+    // Fell beast (wings + body)
+    const flapAngle = Math.sin(t*1.9)*0.35 + Math.sin(t*3.4)*0.14;
+    const wingCol = '#0e0118'; const wingEdge = 'rgba(180,40,255,0.3)';
+    // Left wing
+    ctx.fillStyle=wingCol;
+    ctx.beginPath();
+    ctx.moveTo(-r*0.4,-r*0.2);
+    ctx.bezierCurveTo(-r*1.9,-r*(1.3+flapAngle),-r*3.1,-r*(0.5+flapAngle),-r*2.7,r*(0.6-flapAngle));
+    ctx.bezierCurveTo(-r*2.1,r*0.9,-r*1.2,r*0.5,-r*0.4,r*0.3);
+    ctx.closePath(); ctx.fill();
+    // Left wing tips: purple fire
+    ctx.save(); ctx.strokeStyle=wingEdge; ctx.lineWidth=1.5;
+    for(let i=1;i<=3;i++){const f=i/4;
+      ctx.beginPath(); ctx.moveTo(-r*0.4,-r*0.2); ctx.bezierCurveTo(-r*(0.9+f),-r*(0.8+flapAngle*f),-r*(2.1+f*0.5),-r*(0.2+flapAngle*f),-r*(2.7-f*0.3),r*(0.6-flapAngle)*f); ctx.stroke();
+    } ctx.restore();
+    // Right wing
+    ctx.fillStyle=wingCol;
+    ctx.beginPath();
+    ctx.moveTo(r*0.4,-r*0.2);
+    ctx.bezierCurveTo(r*1.9,-r*(1.3+flapAngle),r*3.1,-r*(0.5+flapAngle),r*2.7,r*(0.6-flapAngle));
+    ctx.bezierCurveTo(r*2.1,r*0.9,r*1.2,r*0.5,r*0.4,r*0.3);
+    ctx.closePath(); ctx.fill();
+    ctx.save(); ctx.strokeStyle=wingEdge; ctx.lineWidth=1.5;
+    for(let i=1;i<=3;i++){const f=i/4;
+      ctx.beginPath(); ctx.moveTo(r*0.4,-r*0.2); ctx.bezierCurveTo(r*(0.9+f),-r*(0.8+flapAngle*f),r*(2.1+f*0.5),-r*(0.2+flapAngle*f),r*(2.7-f*0.3),r*(0.6-flapAngle)*f); ctx.stroke();
+    } ctx.restore();
+    // Beast body
+    ctx.fillStyle='#1a0820';
+    ctx.beginPath(); ctx.ellipse(0,-r*0.1,r*0.7,r*0.9,0,0,Math.PI*2); ctx.fill();
+    // Rider cloak
+    const wave = Math.sin(t)*r*0.3;
+    ctx.fillStyle='#0d0118';
+    ctx.beginPath();
+    ctx.moveTo(0,-r*0.8);
+    ctx.bezierCurveTo(-r*1.4,r*0.1+wave,-r*1.6,r*1.1+wave,0,r*2.0);
+    ctx.bezierCurveTo(r*1.6,r*1.1-wave,r*1.4,r*0.1-wave,0,-r*0.8);
+    ctx.fill();
+    // Crown of fire (7 points)
+    for(let i=0;i<7;i++){
+      const ca = (i/7)*Math.PI*2 - Math.PI/2;
+      const fl = r*0.35 + Math.sin(t*4+i*1.2)*r*0.12;
+      const fx = Math.cos(ca)*r*0.38;
+      const fy = -r*1.55 + Math.sin(ca)*r*0.18 - fl*0.5;
+      ctx.save();
+      ctx.shadowColor='#ff6600'; ctx.shadowBlur=8;
+      ctx.strokeStyle=`rgba(255,${120+Math.floor(Math.sin(t*5+i)*60)},0,0.9)`;
+      ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(fx,fy); ctx.lineTo(fx+Math.cos(ca)*fl*0.15,fy-fl); ctx.stroke();
+      ctx.restore();
+    }
+    // Helm
+    ctx.fillStyle='#0a0114';
+    ctx.beginPath(); ctx.ellipse(0,-r*1.5,r*0.38,r*0.42,0,0,Math.PI*2); ctx.fill();
+    // Eye slit
+    ctx.save(); ctx.shadowColor='#cc00ff'; ctx.shadowBlur=10;
+    ctx.fillStyle=`rgba(220,80,255,${0.8+Math.sin(t*3)*0.15})`;
+    ctx.fillRect(-r*0.18,-r*1.53,r*0.36,r*0.09);
+    ctx.restore();
+    // Morgul blade
+    ctx.save();
+    ctx.strokeStyle='#80c8a0'; ctx.lineWidth=1.5;
+    ctx.shadowColor='#40ff80'; ctx.shadowBlur=6;
+    ctx.beginPath(); ctx.moveTo(r*0.5,-r*0.5); ctx.lineTo(r*1.8,r*0.8); ctx.stroke();
+    ctx.restore();
+    // Screech ring
+    if (wk.screeching) {
+      const sr = (1.8 - wk.screechTimer) / 1.8;
+      ctx.save(); ctx.globalAlpha = 0.6 * (1-sr); ctx.strokeStyle='rgba(220,180,255,0.8)'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.arc(0,0,r*1.5+sr*r*5,0,Math.PI*2); ctx.stroke();
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  // ── MÛMAK / OLIPHAUNT ─────────────────────────────────────────────────
+  function drawMumak(ctx, m, elapsed) {
+    ctx.save(); ctx.translate(m.x, m.y);
+    const t = m.firePhase;
+    const r = m.r;
+    // Ground shadow
+    ctx.save(); ctx.globalAlpha=0.3;
+    const sg=ctx.createRadialGradient(0,r*0.9,0,0,r*0.9,r*2.5);
+    sg.addColorStop(0,'rgba(0,0,0,0.8)'); sg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=sg; ctx.beginPath(); ctx.ellipse(0,r*0.9,r*2.5,r*0.55,0,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+    // Legs (4 pillars, staggered animation)
+    ctx.lineWidth=r*0.36; ctx.strokeStyle='#222018';
+    const legOff = Math.sin(t*2)*r*0.22;
+    [[-r*0.6,r*0.45,legOff],[-r*0.22,r*0.48,-legOff],[r*0.22,r*0.48,legOff],[r*0.6,r*0.45,-legOff]].forEach(([lx,ly,lo])=>{
+      ctx.beginPath(); ctx.moveTo(lx,ly); ctx.lineTo(lx+lo*0.2,ly+r*0.75+Math.abs(lo)*0.3); ctx.stroke();
+    });
+    // Body
+    const bodyG=ctx.createLinearGradient(-r,0,r,0);
+    bodyG.addColorStop(0,'#222018'); bodyG.addColorStop(0.5,'#2e2c22'); bodyG.addColorStop(1,'#222018');
+    ctx.fillStyle=bodyG;
+    ctx.beginPath(); ctx.ellipse(0,-r*0.05,r*1.05,r*0.72,0,0,Math.PI*2); ctx.fill();
+    // War paint (red streaks)
+    ctx.save(); ctx.globalAlpha=0.55; ctx.strokeStyle='#991010'; ctx.lineWidth=r*0.08;
+    [[-r*0.5,-r*0.3,r*0.3],[r*0.5,-r*0.25,-r*0.28],[0,-r*0.4,r*0.35]].forEach(([px,py,pw])=>{
+      ctx.beginPath(); ctx.moveTo(px,py); ctx.lineTo(px+pw,py+r*0.2); ctx.stroke();
+    }); ctx.restore();
+    // Trunk (sway)
+    const trunkSway = Math.sin(t*1.5)*8;
+    ctx.fillStyle='#2a2820';
+    ctx.beginPath();
+    ctx.moveTo(-r*0.6,-r*0.5);
+    ctx.bezierCurveTo(-r*0.85,-r*0.9,-r*1.1,-r*0.75,-r*1.2,-r*0.3+trunkSway*0.3);
+    ctx.bezierCurveTo(-r*1.15,r*0.1+trunkSway,-r*0.85,r*0.05,-r*0.6,-r*0.1);
+    ctx.closePath(); ctx.fill();
+    // Tusks
+    ctx.save(); ctx.strokeStyle='rgba(220,210,190,0.9)'; ctx.lineWidth=r*0.13;
+    ctx.beginPath(); ctx.moveTo(-r*0.5,-r*0.55); ctx.bezierCurveTo(-r*1.1,-r*0.8,-r*1.4,-r*0.6,-r*1.3,-r*0.25); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-r*0.5,-r*0.4); ctx.bezierCurveTo(-r*1.05,-r*0.7,-r*1.35,-r*0.5,-r*1.25,-r*0.15); ctx.stroke();
+    ctx.restore();
+    // Howdah / tower on back
+    const hwX=-r*0.35, hwY=-r*0.85, hwW=r*0.75, hwH=r*0.5;
+    ctx.fillStyle='#3a2810';
+    ctx.fillRect(hwX,hwY,hwW,hwH);
+    ctx.strokeStyle='#5a3c18'; ctx.lineWidth=1.5;
+    ctx.strokeRect(hwX,hwY,hwW,hwH);
+    // Orc archers (silhouettes)
+    ctx.fillStyle='#0a0604';
+    [-r*0.18,r*0.08].forEach(ox=>{
+      ctx.beginPath(); ctx.arc(hwX+hwW*0.25+ox+r*0.18,hwY+hwH*0.25,r*0.1,0,Math.PI*2); ctx.fill();
+      ctx.fillRect(hwX+hwW*0.25+ox+r*0.12,hwY+hwH*0.3,r*0.12,r*0.25);
+    });
+    ctx.restore();
+  }
+
+  // ── GOLLUM BOSS FIGHT ─────────────────────────────────────────────────
+  function drawGollumBoss(ctx, gb, elapsed) {
+    ctx.save(); ctx.translate(gb.x, gb.y);
+    const t = gb.firePhase;
+    const r = gb.r;
+    const feral = gb.feral;
+    // Glow
+    const glowR = r*3.5;
+    const gg=ctx.createRadialGradient(0,0,0,0,0,glowR);
+    gg.addColorStop(0,`rgba(${feral?'200,200,160':'160,180,120'},${feral?0.18:0.1})`); gg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=gg; ctx.fillRect(-glowR,-glowR,glowR*2,glowR*2);
+    // Body shaking when feral
+    const shake2 = feral ? (Math.random()-0.5)*2.5 : 0;
+    ctx.translate(shake2, 0);
+    // Shadow
+    ctx.save(); ctx.globalAlpha=0.15;
+    const sg=ctx.createRadialGradient(0,r*1.3,0,0,r*1.3,r*2);
+    sg.addColorStop(0,'rgba(0,0,0,0.7)'); sg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=sg; ctx.beginPath(); ctx.ellipse(0,r*1.3,r*1.6,r*0.35,0,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+    // Legs/feet
+    ctx.fillStyle='hsl(20,30%,18%)';
+    ctx.beginPath(); ctx.ellipse(-r*0.4,r*1.1,r*0.45,r*0.22,Math.PI*0.1,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(r*0.4,r*1.1,r*0.45,r*0.22,-Math.PI*0.1,0,Math.PI*2); ctx.fill();
+    // Hunched body (crouched lower when feral)
+    const crouchY = feral ? r*0.15 : 0;
+    ctx.fillStyle='hsl(35,20%,16%)';
+    ctx.beginPath(); ctx.ellipse(0,r*0.1+crouchY,r*0.62,r*0.72,0,0,Math.PI*2); ctx.fill();
+    // Arms (extended wide when feral)
+    ctx.strokeStyle='hsl(30,20%,20%)'; ctx.lineWidth=r*0.28;
+    const armSpread = feral ? 1.8 : 1.3;
+    ctx.beginPath(); ctx.moveTo(-r*0.55,r*0.05+crouchY); ctx.lineTo(-r*armSpread,r*0.5); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(r*0.55,r*0.05+crouchY); ctx.lineTo(r*armSpread,r*0.5); ctx.stroke();
+    // Ring grab: right hand extends with ring
+    if (gb.phase === 'ring_grab') {
+      const ringGlow = 0.6 + Math.sin(t*6)*0.3;
+      ctx.save();
+      ctx.shadowColor='#ffd040'; ctx.shadowBlur=12+ringGlow*10;
+      ctx.fillStyle=`rgba(255,200,40,${ringGlow})`;
+      ctx.beginPath(); ctx.arc(r*2.0,r*0.1,r*0.4,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle=`rgba(255,220,80,${ringGlow*0.9})`; ctx.lineWidth=r*0.12;
+      ctx.beginPath(); ctx.arc(r*2.0,r*0.1,r*0.4,0,Math.PI*2); ctx.stroke();
+      ctx.restore();
+    }
+    // Head
+    const headY = -r*0.78 + crouchY*0.5;
+    ctx.fillStyle='hsl(40,18%,20%)';
+    ctx.beginPath(); ctx.arc(0,headY,r*0.55,0,Math.PI*2); ctx.fill();
+    // Eyes
+    const eyeR = feral ? r*0.2 : r*0.15;
+    const eyeCol = feral ? '#ffffff' : '#c8e090';
+    const eyeGlow = feral ? '#ffffff' : '#80c840';
+    ctx.save(); ctx.shadowColor=eyeGlow; ctx.shadowBlur=feral?12:6;
+    ctx.fillStyle=eyeCol;
+    [-r*0.2,r*0.2].forEach(ex=>{
+      ctx.beginPath(); ctx.arc(ex,headY-r*0.05,eyeR,0,Math.PI*2); ctx.fill();
+    });
+    ctx.restore();
+    ctx.restore();
   }
 
   function drawGameOver(ctx,W,H,t,score,rnd,lvl,checkpoint=0) {
