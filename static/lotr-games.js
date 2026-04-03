@@ -783,7 +783,7 @@
         // Level clear
         if (Math.hypot(frodo.x-GOAL.x, frodo.y-GOAL.y) < frodo.r + GOAL.r) {
           if (currentLevel < 8) { state='levelwin'; levelTransTimer=0; sndLevelWin(); }
-          else { state='win'; sndLevelWin(); }
+          else { state='win'; sndLevelWin(); updateProgress(); }
         }
 
         if (frodo.invincible){frodo.invTimer-=dt;if(frodo.invTimer<=0)frodo.invincible=false;}
@@ -1470,8 +1470,25 @@
       requestAnimationFrame(loop);
     }
 
+    // Persistent progress helpers
+    function loadProgress() {
+      try { return JSON.parse(localStorage.getItem('lotr_ring_progress')||'{}'); } catch(e) { return {}; }
+    }
+    function saveProgress(data) {
+      try { localStorage.setItem('lotr_ring_progress', JSON.stringify(data)); } catch(e) {}
+    }
+    function updateProgress() {
+      const p = loadProgress();
+      if (score > (p.bestScore||0)) p.bestScore = Math.floor(score);
+      if (round > (p.bestRound||0)) p.bestRound = round;
+      if (currentLevel > (p.furthestLevel||0)) p.furthestLevel = currentLevel;
+      p.gamesPlayed = (p.gamesPlayed||0) + 1;
+      saveProgress(p);
+    }
+
     function fullReset() {
       // lastScore/lastRound/lastLevel already captured in hitFrodo()
+      updateProgress();
       round = 1; score = 0; dashCharges = maxDash(); // round=1 → 3
       frodo = null;
     }
@@ -3563,6 +3580,10 @@
   // ── SHARED SCREEN HELPER ──────────────────────────────────────────────
   function drawTitleScreen(ctx,W,H,t) {
     ctx.fillStyle='rgba(0,0,0,0.88)'; ctx.fillRect(0,0,W,H);
+    // Load + show persistent progress
+    let _savedProgress = {};
+    try { _savedProgress = JSON.parse(localStorage.getItem('lotr_ring_progress')||'{}'); } catch(e) {}
+    const hasSaved = _savedProgress.bestScore > 0 || _savedProgress.furthestLevel > 0;
     ctx.textAlign='center'; ctx.textBaseline='middle';
 
     // Ambient firefly glow
@@ -3630,11 +3651,19 @@
      'Book III: Return -- Morgul, Pelennor, Mt. Doom'
     ].forEach((b,i)=>ctx.fillText(b,W/2,H*0.69+i*14));
 
+    // Persistent progress badge
+    if(hasSaved){
+      ctx.fillStyle='rgba(80,60,20,0.5)'; ctx.fillRect(W/2-150,H*0.73,300,28);
+      ctx.fillStyle='rgba(200,160,60,0.8)'; ctx.font='bold 10px serif'; ctx.textAlign='center';
+      const lvlNames=['Shire','Moria','Lorien','Marshes','Black Gate','Shelob','Morgul','Pelennor','Mt.Doom'];
+      const fl = _savedProgress.furthestLevel||0;
+      ctx.fillText(`Best: ${(_savedProgress.bestScore||0).toLocaleString()} pts  --  Furthest: ${lvlNames[fl]}  --  Rounds: ${_savedProgress.bestRound||0}`,W/2,H*0.73+16);
+    }
     // Start prompt
     if(Math.sin(t*2.4)>0){
       ctx.save(); ctx.shadowColor='#c89040'; ctx.shadowBlur=8;
       ctx.fillStyle='#c89040'; ctx.font='bold 15px serif';
-      ctx.fillText('-- Press SPACE to begin --',W/2,H*0.80);
+      ctx.fillText('-- Press SPACE to begin --',W/2,H*0.82);
       ctx.restore();
     }
   }
