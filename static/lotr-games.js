@@ -517,7 +517,7 @@
     const sndBtn = document.createElement('button');
     sndBtn.textContent = '\uD83D\uDD0A';
     Object.assign(sndBtn.style, {
-      position:'absolute', top:'8px', right:'8px',
+      position:'absolute', bottom:'12px', left:'12px',
       background:'rgba(0,0,0,0.4)', border:'1px solid rgba(180,140,60,0.4)',
       color:'rgba(200,160,60,0.9)', fontSize:'16px', width:'32px', height:'32px',
       borderRadius:'6px', cursor:'pointer', zIndex:'10', lineHeight:'1',
