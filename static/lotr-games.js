@@ -4251,7 +4251,6 @@
     ctx.fillText('"Even the smallest person can change the course of the future."',W/2,H*0.19);
 
     // Journey map
-    ctx.fillStyle='rgba(140,100,40,0.3)'; ctx.fillRect(W/2-220,H*0.24,440,32);
     drawJourneyMap(ctx, W, H*0.24+16, -1);
 
     // Divider
