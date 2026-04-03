@@ -882,6 +882,9 @@
       // ── UPDATE ──────────────────────────────────────────────────────
       if (state === 'playing' && !pauseCtrl.isPaused()) {
         timers.elapsed += dt;
+        // Safe zone: first 12% of world width -- no score, enemies keep distance
+        const SAFE_ZONE_X = WORLD_W * 0.12;
+        const inSafeZone = frodo && frodo.x < SAFE_ZONE_X;
         // Score: points per second with combo multiplier
         comboTimer += dt;
         if (comboTimer >= 10 && comboMult < 4) {
@@ -894,7 +897,7 @@
           }));
         }
         if (comboFlash > 0) comboFlash -= dt * 2;
-        score += dt * (1 + currentLevel * 0.5) * round * comboMult;
+        if (!inSafeZone) score += dt * (1 + currentLevel * 0.5) * round * comboMult;
         // Ring corruption pull (Books II+, progress > 0.35)
         if (currentLevel >= 3 && progress() > 0.35) {
           ringPullTimer -= dt;
@@ -978,7 +981,7 @@
         eye.timer+=dt;
         if (eye.phase==='idle'){
           eye.open=Math.max(0,eye.open-dt*1.5);
-          if(eye.timer>=eye.idleDur){eye.phase='warning';eye.timer=0;}
+          if(eye.timer>=eye.idleDur && !inSafeZone){eye.phase='warning';eye.timer=0;}
         } else if (eye.phase==='warning'){
           eye.open=Math.min(0.25,eye.open+dt*0.4);
           if(eye.timer>=eye.warnDur){eye.phase='active';eye.timer=0;sndEyeOpen();}
@@ -1030,6 +1033,11 @@
         const SENSE_RADIUS = Math.round(120 * areaScale); // scales with canvas size
         let nearMiss = false;
         wraiths.forEach(w=>{
+          // Safe zone: push enemies back if they drift in, never chase into it
+          if (w.x < SAFE_ZONE_X + w.r) {
+            w.x += 60 * dt * 1.5; // drift back out
+            return; // skip all AI/collision this frame
+          }
           // Cave Troll: slow stomp, ground-bound
           if (w.type === 'troll') {
             w.capePhase += dt;
@@ -1157,6 +1165,9 @@
 
         // Gollum
         if (gollum) {
+          // Safe zone: Gollum slinks back
+          if (gollum.x < SAFE_ZONE_X + gollum.r) { gollum.x += 60*dt*1.2; }
+          else {
           gollum.capePhase += dt*3;
           gollum.dartTimer -= dt;
           gollum.jumpCD -= dt;
@@ -1277,11 +1288,14 @@
           if(!frodo.invincible&&dist(frodo,gollum)<frodo.r+gollum.r){
             hitFrodo();
           }
+          } // end safe zone else
         }
 
         // Balrog
         if (balrog) {
           balrog.firePhase += dt*2.5;
+          // Safe zone: keep Balrog at bay
+          if (balrog.x < SAFE_ZONE_X + balrog.r) { balrog.x += 60*dt*2; }
           if (!balrog.active && progress() > 0.52) {
             balrog.active = true;
             sndBalrog();
@@ -1670,10 +1684,11 @@
               for(let ci=0;ci<8;ci++){
                 const ctx_x=(120+ci*240+16)-cameraX*0.45;
                 const ctx_y=H*0.38;
-                const fl=0.7+Math.sin(t*7.3+ci*1.9)*0.15+Math.sin(t*13.1+ci)*0.08;
-                const cg=ox.createRadialGradient(ctx_x,ctx_y,0,ctx_x,ctx_y,160*fl);
+                const fl=0.85+Math.sin(t*7.3+ci*1.9)*0.12+Math.sin(t*13.1+ci)*0.06;
+                const cg=ox.createRadialGradient(ctx_x,ctx_y,0,ctx_x,ctx_y,220*fl);
                 cg.addColorStop(0,`rgba(0,0,0,${darkStr})`);
-                cg.addColorStop(0.45,`rgba(0,0,0,${0.55*darkStr})`);
+                cg.addColorStop(0.3,`rgba(0,0,0,${0.85*darkStr})`);
+                cg.addColorStop(0.65,`rgba(0,0,0,${0.4*darkStr})`);
                 cg.addColorStop(1,'rgba(0,0,0,0)');
                 ox.fillStyle=cg; ox.fillRect(0,0,W,H);
               }
