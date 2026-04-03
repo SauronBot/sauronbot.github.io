@@ -276,7 +276,7 @@
       ['', ''],
       ['<span style="color:#c8a030;font-weight:bold">Game design & development</span>', ''],
       ['<a href="https://chemaclass.com" target="_blank" style="color:#80c8ff;text-decoration:none">Jose Maria Valera Reales (Chemaclass)</a>', ''],
-      ['<a href="https://github.com/sponsors/Chemaclass" target="_blank" style="color:#80c8ff;font-size:12px;text-decoration:none">♥ Sponsor Chema on GitHub</a>', ''],
+      ['<a href="https://chemaclass.com/sponsor/" target="_blank" style="color:#80c8ff;font-size:12px;text-decoration:none">♥ Support Chema</a>', ''],
       ['', ''],
       ['<span style="color:#c8a030;font-weight:bold">Built by</span>', ''],
       ['<a href="https://sauronbot.github.io" target="_blank" style="color:#80c8ff;text-decoration:none">Sauron (AI companion)</a>', ''],
