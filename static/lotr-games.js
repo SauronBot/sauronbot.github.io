@@ -667,7 +667,16 @@
     function handlePointerDown(e) {
       e.preventDefault();
       if (state !== 'playing') {
-        if (state==='title') startLevel(0);
+        if (state==='title') {
+          // Only start when the Start button is tapped/clicked
+          if (_titleStartBtnRect) {
+            const pt = e.touches ? e.changedTouches[0] : e;
+            const {x, y} = getCanvasXY(pt.clientX, pt.clientY);
+            const r = _titleStartBtnRect;
+            if (x >= r.x && x <= r.x+r.w && y >= r.y && y <= r.y+r.h) startLevel(0);
+          }
+          return;
+        }
         else if (state==='levelwin') startLevel(currentLevel+1);
         else if (state==='gameover') {
           if (e.key === 'c' || e.key === 'C') { if (sessionCheckpoint > 0) { fullReset(); startLevel(sessionCheckpoint); } }
@@ -783,6 +792,7 @@
     }).observe(document.body, {childList:true});
 
     let state = 'title';
+    let _titleStartBtnRect = null; // set by drawTitleScreen, checked in handlePointerDown
     let currentLevel = 0;
     let round = 1;    // increments after completing all 3 levels
     let score = 0;    // accumulated points
@@ -4642,7 +4652,8 @@
 
     // Responsive scale unit: based on smaller of W/H
     const S = Math.min(W, H);
-    const fs = (rel) => `${Math.round(S * rel)}px`; // font size helper
+    // fs(rel, maxPx): responsive font size capped for tablet/laptop comfort
+    const fs = (rel, maxPx=9999) => `${Math.min(Math.round(S * rel), maxPx)}px`;
     const divLine = (y, hw=Math.min(W*0.44,300)) => {
       ctx.strokeStyle='rgba(140,100,40,0.35)'; ctx.lineWidth=1;
       ctx.beginPath(); ctx.moveTo(W/2-hw, y); ctx.lineTo(W/2+hw, y); ctx.stroke();
@@ -4651,13 +4662,13 @@
     // Title
     ctx.save(); ctx.shadowColor='#c8a020'; ctx.shadowBlur=S*0.03;
     ctx.fillStyle='#e8c030';
-    ctx.font=`bold ${fs(0.075)} "Palatino Linotype",Palatino,Georgia,serif`;
+    ctx.font=`bold ${fs(0.065, 42)} "Palatino Linotype",Palatino,Georgia,serif`;
     ctx.fillText('Carry the Ring', W/2, H*0.12);
     ctx.restore();
 
     // Quote
     ctx.fillStyle='rgba(180,140,65,0.80)';
-    ctx.font=`italic ${fs(0.028)} serif`;
+    ctx.font=`italic ${fs(0.024, 16)} serif`;
     ctx.fillText('\u201cEven the smallest person can change the course of the future.\u201d', W/2, H*0.19);
 
     // Journey map
@@ -4666,8 +4677,8 @@
     divLine(H*0.33);
 
     // Controls
-    const fsSm  = Math.round(S*0.026);
-    const fsLbl = Math.round(S*0.027);
+    const fsSm  = Math.min(Math.round(S*0.024), 14);
+    const fsLbl = Math.min(Math.round(S*0.025), 15);
     const rowH  = Math.round(S*0.048);
     const rowStart = H*0.36;
     const rows=[
@@ -4695,7 +4706,7 @@
     // Books
     ctx.textAlign='center';
     ctx.fillStyle='rgba(160,125,55,0.65)';
-    ctx.font=`${fs(0.024)} serif`;
+    ctx.font=`${fs(0.022, 14)} serif`;
     const bookY = H*0.67;
     const bookRowH = Math.round(S*0.038);
     ['Book I: Fellowship \u2014 Shire, Moria, Lothl\u00f3rien',
@@ -4709,7 +4720,7 @@
       ctx.fillStyle='rgba(60,44,12,0.55)';
       ctx.fillRect(W/2-Math.min(W*0.42,260), badgeY, Math.min(W*0.84,520), badgeH);
       ctx.fillStyle='rgba(210,170,65,0.88)';
-      ctx.font=`bold ${fs(0.026)} serif`;
+      ctx.font=`bold ${fs(0.024, 15)} serif`;
       const lvlNames=['Shire','Moria','Lorien','Marshes','Black Gate','Shelob','Morgul','Pelennor','Mt.Doom'];
       const fl = _savedProgress.furthestLevel||0;
       ctx.fillText(
@@ -4718,12 +4729,34 @@
       );
     }
 
-    // Start prompt
-    if(Math.sin(t*2.4)>0){
-      ctx.save(); ctx.shadowColor='#c89040'; ctx.shadowBlur=S*0.012;
-      ctx.fillStyle='#d4a040';
-      ctx.font=`bold ${fs(0.038)} serif`;
-      ctx.fillText('\u2014 Press SPACE to begin \u2014', W/2, H*0.92);
+    // Start button (drawn on canvas; rect stored for hit-testing)
+    {
+      const btnW = Math.min(Math.round(S * 0.42), 220);
+      const btnH = Math.min(Math.round(S * 0.068), 44);
+      const btnX = Math.round(W/2 - btnW/2);
+      const btnY = Math.round(H * 0.88 - btnH/2);
+      _titleStartBtnRect = {x: btnX, y: btnY, w: btnW, h: btnH};
+
+      // Button glow / pulse
+      const pulse = 0.5 + Math.sin(t * 2.0) * 0.15;
+      ctx.save();
+      ctx.shadowColor = '#d4a020'; ctx.shadowBlur = 12 + pulse * 8;
+      const grad = ctx.createLinearGradient(btnX, btnY, btnX, btnY + btnH);
+      grad.addColorStop(0, `rgba(90,64,14,${0.88 + pulse * 0.08})`);
+      grad.addColorStop(1, `rgba(55,38,8,${0.88 + pulse * 0.08})`);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(btnX, btnY, btnW, btnH, 6); else ctx.rect(btnX, btnY, btnW, btnH);
+      ctx.fill();
+      ctx.strokeStyle = `rgba(212,160,32,${0.7 + pulse * 0.25})`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      const btnFontSize = Math.min(Math.round(S * 0.034), 20);
+      ctx.font = `bold ${btnFontSize}px "Palatino Linotype",Palatino,Georgia,serif`;
+      ctx.fillStyle = `rgba(232,192,48,${0.9 + pulse * 0.1})`;
+      ctx.shadowBlur = 0;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('\u2014 Begin the Quest \u2014', W/2, btnY + btnH/2);
       ctx.restore();
     }
   }
@@ -4784,18 +4817,22 @@
   }
 
   function drawScreen(ctx, W, H, title, sub, hint2, t, isDeath) {
+    const S = Math.min(W, H);
+    const titleSz = Math.min(Math.round(S * 0.068), 38);
+    const subSz   = Math.min(Math.round(S * 0.030), 16);
+    const hintSz  = Math.min(Math.round(S * 0.028), 14);
     ctx.fillStyle = 'rgba(0,0,0,0.78)'; ctx.fillRect(0,0,W,H);
     ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.font = `bold 38px "Palatino Linotype",Palatino,Georgia,serif`;
+    ctx.font = `bold ${titleSz}px "Palatino Linotype",Palatino,Georgia,serif`;
     ctx.fillStyle = isDeath ? '#8c0010' : '#d4a020';
     ctx.fillText(title, W/2, H/2 - 72);
-    ctx.font = `italic 13px "Palatino Linotype",Palatino,Georgia,serif`;
+    ctx.font = `italic ${subSz}px "Palatino Linotype",Palatino,Georgia,serif`;
     ctx.fillStyle = '#9a7030';
     ctx.fillText(sub, W/2, H/2 - 26);
-    ctx.font = '13px serif'; ctx.fillStyle = 'rgba(175,132,68,0.85)';
+    ctx.font = `${hintSz}px serif`; ctx.fillStyle = 'rgba(175,132,68,0.85)';
     ctx.fillText(hint2, W/2, H/2 + 20);
     if (Math.sin(t*2.4)>0){
-      ctx.fillStyle='#c89040'; ctx.font='bold 14px serif';
+      ctx.fillStyle='#c89040'; ctx.font=`bold ${hintSz}px serif`;
       ctx.fillText('— Press SPACE to begin —', W/2, H/2 + 60);
     }
   }
