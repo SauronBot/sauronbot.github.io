@@ -1819,7 +1819,7 @@
             // Galadriel's phial: massive light radius
             const phialBoost = blessingActive > 0 ? Math.min(1, blessingActive / 2) : 0; // fade in over 2s
             const baseTorchR = def.hasBalrog
-              ? (160 - progress()*40) * (1 + Math.sin(t*2.1)*0.04)
+              ? (240 - progress()*50) * (1 + Math.sin(t*2.1)*0.04)
               : (140 - progress()*30) * (1 + Math.sin(t*3.1)*0.05);
             const torchR = baseTorchR + phialBoost * (W * 0.55 - baseTorchR); // up to 55% screen width
             const darkStr = 1 - eyeSuppression;
