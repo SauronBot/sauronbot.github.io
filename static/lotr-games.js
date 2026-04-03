@@ -1140,15 +1140,20 @@
             w.x += 60 * dt * 1.5; // drift back out
             return; // skip all AI/collision this frame
           }
-          // Ring worn: enemies can't see Frodo (but Eye still hunts if active)
-          if (ringWorn > 0 && eye && eye.phase !== 'active') {
-            // Wander aimlessly
-            w.wanderTimer -= dt;
-            if (w.wanderTimer <= 0) { w.wanderAngle = Math.random()*Math.PI*2; w.wanderTimer = 2+Math.random()*3; }
-            w.x += Math.cos(w.wanderAngle)*w.speed*0.5*60*dt;
-            w.y += Math.sin(w.wanderAngle)*w.speed*0.5*60*dt;
-            w.sense = 0;
-            return;
+          // Ring worn: physical enemies go blind, but Nazgûl sense the Ring MORE
+          if (ringWorn > 0) {
+            const isNazgul = w.type === 'wraith'; // Nazgûl = spiritual, sense Ring directly
+            if (!isNazgul) {
+              // Orcs, trolls, uruk-hai: completely blind
+              w.wanderTimer -= dt;
+              if (w.wanderTimer <= 0) { w.wanderAngle = Math.random()*Math.PI*2; w.wanderTimer = 2+Math.random()*3; }
+              w.x += Math.cos(w.wanderAngle)*w.speed*0.5*60*dt;
+              w.y += Math.sin(w.wanderAngle)*w.speed*0.5*60*dt;
+              w.sense = 0;
+              return;
+            }
+            // Nazgûl: always hunt when Ring is worn (they feel it)
+            // fall through to normal AI below
           }
           // Galadriel's phial: enemies flee Frodo
           if (blessingActive > 0 && frodo) {
