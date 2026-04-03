@@ -603,6 +603,7 @@
     let whisperText = '', whisperTimer = 0, whisperCooldown = 0;
     let ambientParticles = [], ambientSpawnTimer = 0;
     let comboTimer = 0, comboMult = 1, comboFlash = 0; // score combo
+    let ringPullTimer = 0, ringPullActive = 0, ringPullAngle = 0; // Ring corruption pull
     let lifePickup = null;  // {x,y,r,pulse}
     let keyPickup = null;   // {x,y,r,pulse} — must collect before goal unlocks
     let goalUnlocked = false;
@@ -671,6 +672,7 @@
       whisperText = ''; whisperTimer = 0; whisperCooldown = 0;
       ambientParticles = []; ambientSpawnTimer = 0;
       comboTimer = 0; comboMult = 1; comboFlash = 0;
+      ringPullTimer = 8 + Math.random()*8; ringPullActive = 0;
       state = 'playing';
     }
 
@@ -819,6 +821,24 @@
         }
         if (comboFlash > 0) comboFlash -= dt * 2;
         score += dt * (1 + currentLevel * 0.5) * round * comboMult;
+        // Ring corruption pull (Books II+, progress > 0.35)
+        if (currentLevel >= 3 && progress() > 0.35) {
+          ringPullTimer -= dt;
+          if (ringPullActive > 0) {
+            ringPullActive -= dt;
+            // Pull toward Eye (top-center of screen)
+            const pullStrength = 0.55 * (1 - ringPullActive / 0.6);
+            frodo.x = Math.max(frodo.r, Math.min(WORLD_W-frodo.r, frodo.x + Math.cos(ringPullAngle)*pullStrength*60*dt));
+            frodo.y = Math.max(frodo.r, Math.min(H-frodo.r, frodo.y + Math.sin(ringPullAngle)*pullStrength*60*dt));
+            blindFlash = Math.min(0.25, blindFlash + dt*0.3);
+          }
+          if (ringPullTimer <= 0 && ringPullActive <= 0) {
+            ringPullActive = 0.6;
+            ringPullAngle = Math.atan2(0 - frodo.y, (W/2+cameraX) - frodo.x); // toward Eye
+            ringPullTimer = 12 + Math.random()*10;
+            playTone(180,'sine',0.06,0.5);
+          }
+        }
         const spd = frodoSpd(def);
         let dx=0,dy=0;
         if (keys['ArrowLeft']||keys['a']||keys['A']) dx-=1;
