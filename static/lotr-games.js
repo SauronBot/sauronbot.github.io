@@ -3831,6 +3831,35 @@
     const hasSaved = _savedProgress.bestScore > 0 || _savedProgress.furthestLevel > 0;
     ctx.textAlign='center'; ctx.textBaseline='middle';
 
+    // Animated One Ring -- right side of title area
+    const ringX = W*0.82, ringY = H*0.14, ringR = Math.min(36, W*0.045);
+    ctx.save();
+    // Outer glow
+    const rg=ctx.createRadialGradient(ringX,ringY,ringR*0.6,ringX,ringY,ringR*2.2);
+    rg.addColorStop(0,`rgba(200,160,40,${0.18+Math.sin(t*1.4)*0.06})`);
+    rg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=rg; ctx.fillRect(ringX-ringR*2.2,ringY-ringR*2.2,ringR*4.4,ringR*4.4);
+    // Ring band
+    ctx.shadowColor='#d4a020'; ctx.shadowBlur=10+Math.sin(t*1.8)*4;
+    ctx.strokeStyle=`hsl(42,80%,${46+Math.sin(t*2)*6}%)`; ctx.lineWidth=ringR*0.22;
+    ctx.beginPath(); ctx.arc(ringX,ringY,ringR,0,Math.PI*2); ctx.stroke();
+    // Fire inscription text rotating around the ring
+    const INSCRIPTION = 'One Ring to rule them all  ';
+    ctx.font=`${Math.round(ringR*0.22)}px serif`;
+    ctx.fillStyle=`rgba(255,${140+Math.floor(Math.sin(t*3)*30)},0,0.85)`;
+    ctx.shadowColor='#ff6600'; ctx.shadowBlur=4;
+    const chars = INSCRIPTION.split('');
+    const angleStep = (Math.PI*2)/chars.length;
+    chars.forEach((ch,i)=>{
+      const a = i*angleStep + t*0.4;
+      const cx2=ringX+Math.cos(a)*(ringR+ringR*0.32);
+      const cy2=ringY+Math.sin(a)*(ringR+ringR*0.32);
+      ctx.save(); ctx.translate(cx2,cy2); ctx.rotate(a+Math.PI/2);
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(ch,0,0); ctx.restore();
+    });
+    ctx.restore();
+
     // Ambient firefly glow
     for(let i=0;i<6;i++){
       const fx=W*0.1+Math.sin(t*0.5+i*1.1)*W*0.38, fy=H*0.15+Math.cos(t*0.4+i*0.8)*H*0.12;
