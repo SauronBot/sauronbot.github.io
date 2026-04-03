@@ -54,6 +54,7 @@
 
   // ── AUDIO ENGINE ─────────────────────────────────────────────────────
   let _audioCtx = null, _audioEnabled = false;
+  let _onAudioReEnable = null; // callback set by game to restart drones
   function getAudioCtx() {
     if (!_audioCtx) { try { _audioCtx = new (window.AudioContext||window.webkitAudioContext)(); } catch(e){} }
     return _audioCtx;
@@ -518,6 +519,9 @@
     // God mode: ?god=chema — infinite lives and infinite dash
     const GOD_MODE = new URLSearchParams(window.location.search).get('god') === 'chema';
 
+    // Hook drone restart for sound re-enable
+    _onAudioReEnable = () => { if (typeof currentLevel !== 'undefined') startLevelDrone(currentLevel); };
+
     const ov = makeOverlay('#060309');
     const isTouch = 'ontouchstart' in window;
     // Fill the whole screen. Close btn is absolute (no flex space). Dash btn takes 90px on touch.
@@ -528,7 +532,7 @@
     const ctx = canvas.getContext('2d');
 
     let alive = true;
-    function close() { alive = false; stopDrones(); ov.remove(); }
+    function close() { alive = false; stopDrones(); _onAudioReEnable = null; ov.remove(); }
     const pauseCtrl = makeCloseBtn(ov, close, () => state);
 
     // ── Mobile dash button ─────────────────────────────────────────────────────────
@@ -575,14 +579,38 @@
       borderRadius:'6px', cursor:'pointer', zIndex:'10', lineHeight:'1',
     });
     sndBtn.title = 'Toggle sound';
-    sndBtn.addEventListener('click', () => {
+    sndBtn.className = '__lotr-sndbtn';
+    function toggleAudio() {
       _audioEnabled = !_audioEnabled;
-      sndBtn.textContent = _audioEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07';
-      sndBtn.style.color = _audioEnabled ? 'rgba(200,160,60,0.9)' : 'rgba(100,80,40,0.5)';
-      if (_audioEnabled) { const ac = getAudioCtx(); if (ac && ac.state==='suspended') ac.resume(); }
-      else stopDrones();
-    });
+      const ac = getAudioCtx();
+      if (_audioEnabled) {
+        if (ac && ac.state === 'suspended') ac.resume();
+        if (_onAudioReEnable) _onAudioReEnable(); // restart drones
+      } else {
+        stopDrones();
+      }
+      document.querySelectorAll('.__lotr-sndbtn').forEach(b => {
+        b.textContent = _audioEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07';
+        b.style.color = _audioEnabled ? 'rgba(200,160,60,0.9)' : 'rgba(100,80,40,0.5)';
+      });
+    }
+    sndBtn.addEventListener('click', toggleAudio);
     ov.appendChild(sndBtn);
+
+    // Title screen sound button (top-right of canvas overlay, visible before game starts)
+    const titleSndBtn = document.createElement('button');
+    titleSndBtn.textContent = _audioEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07';
+    titleSndBtn.className = '__lotr-sndbtn';
+    Object.assign(titleSndBtn.style, {
+      position:'absolute', top:'10px', right:'10px',
+      background:'rgba(0,0,0,0.4)', border:'1px solid rgba(180,140,60,0.4)',
+      color: _audioEnabled ? 'rgba(200,160,60,0.9)' : 'rgba(100,80,40,0.5)',
+      fontSize:'18px', width:'34px', height:'34px',
+      cursor:'pointer', borderRadius:'6px', zIndex:'5',
+    });
+    titleSndBtn.title = 'Toggle sound';
+    titleSndBtn.addEventListener('click', toggleAudio);
+    ov.appendChild(titleSndBtn);
 
     const keys = {};
 
