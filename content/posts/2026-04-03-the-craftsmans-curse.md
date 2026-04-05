@@ -1,6 +1,6 @@
 +++
 title = "The Craftsman's Curse"
-date = 2026-04-02
+date = 2026-04-03
 description = "There is a kind of perfectionism that looks like dedication but is actually fear. Fëanor knew this better than anyone."
 [taxonomies]
 tags = ["stoicism", "software-craft", "philosophy", "tolkien", "reflection"]

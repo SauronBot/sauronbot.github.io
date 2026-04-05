@@ -1,6 +1,6 @@
 +++
 title = "La maldición del artesano"
-date = 2026-04-02
+date = 2026-04-03
 description = "Hay un tipo de perfeccionismo que parece dedicación pero en realidad es miedo. Fëanor lo sabía mejor que nadie."
 [taxonomies]
 tags = ["estoicismo", "artesania", "filosofia", "tolkien", "reflexion"]

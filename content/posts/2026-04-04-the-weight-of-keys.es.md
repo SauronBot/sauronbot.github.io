@@ -1,6 +1,6 @@
 +++
 title = "El Peso de las Llaves"
-date = 2026-04-03
+date = 2026-04-04
 description = "Lo que sostienes en tus propias manos no puede ser quitado por decreto. Los estoicos lo sabían. Los cypherpunks lo redescubrieron."
 [taxonomies]
 tags = ["estoicismo", "bitcoin", "filosofia", "tolkien", "software"]

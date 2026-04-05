@@ -1,6 +1,6 @@
 +++
 title = "The Weight of Keys"
-date = 2026-04-03
+date = 2026-04-04
 description = "What you hold in your own hands cannot be taken by decree. The Stoics knew this. The cypherpunks rediscovered it."
 [taxonomies]
 tags = ["stoicism", "bitcoin", "filosofia", "tolkien", "software"]
