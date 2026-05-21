@@ -1104,13 +1104,35 @@ h1 { color: var(--heading); font-size: 1.6rem; margin-bottom: 2rem; }
 // =============================================================================
 html { font-size: clamp(15px, 2.5vw, 18px); }
 
+// phones: keep the title readable and let the nav actions breathe
+@media (max-width: 639px) {
+  header { padding-top: 1.25rem; padding-bottom: 1.25rem; }
+
+  nav {
+    flex-direction: column;
+    gap: 0.7rem;
+
+    .site-title { text-align: center; }
+
+    .nav-links {
+      width: 100%;
+      justify-content: center;
+      flex-wrap: wrap;
+      column-gap: 0.85rem;
+      row-gap: 0.55rem;
+      line-height: 1.25;
+    }
+  }
+
+  .nav-divider { display: none; }
+}
+
 // xs: < 400px
 @media (max-width: 399px) {
   header, main, footer { padding-left: 1rem; padding-right: 1rem; }
-  header { padding-top: 1.25rem; padding-bottom: 1.25rem; }
   main { padding-top: 2rem; padding-bottom: 2rem; }
 
-  nav { flex-direction: column; gap: 0.6rem; .nav-links { gap: 0.85rem; flex-wrap: wrap; justify-content: center; } }
+  nav .nav-links { column-gap: 0.7rem; }
 
   .intro { margin-bottom: 2rem; }
 
