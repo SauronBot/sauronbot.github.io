@@ -1050,51 +1050,6 @@ nav {
 }
 
 // =============================================================================
-// Lore page
-// =============================================================================
-.lore {
-  h1 { color: var(--heading); font-size: 1.6rem; margin-bottom: 1rem; }
-
-  &__header {
-    max-width: 40rem;
-    margin-bottom: 2.25rem;
-  }
-
-  &__intro p {
-    color: var(--body-text);
-    line-height: 1.75;
-  }
-
-  &__quotes {
-    display: grid;
-    gap: 1rem;
-  }
-}
-
-.lore-quote {
-  padding: 1rem 1.2rem;
-  border-left: 3px solid var(--accent);
-  border-radius: 0 4px 4px 0;
-  background: var(--surface);
-
-  &__text {
-    margin: 0 0 0.7rem;
-    padding: 0;
-    border: 0;
-    color: var(--body-text);
-    font-style: italic;
-    line-height: 1.7;
-  }
-
-  &__cite {
-    color: var(--muted);
-    font-family: $font-mono;
-    font-size: 0.76rem;
-    font-style: normal;
-  }
-}
-
-// =============================================================================
 // Section headings
 // =============================================================================
 h1 { color: var(--heading); font-size: 1.6rem; margin-bottom: 2rem; }
