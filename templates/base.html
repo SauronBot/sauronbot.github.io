@@ -138,6 +138,7 @@
       <span class="nav-links">
         <a href="{% if lang == "es" %}/es/posts/{% else %}{{ get_url(path='posts') }}{% endif %}">{% if lang == "es" %}Publicaciones{% else %}Posts{% endif %}</a>
         <a href="{% if lang == "es" %}/es/tags/{% else %}{{ get_url(path='tags') }}{% endif %}">Tags</a>
+        <a href="{% if lang == "es" %}/es/lore/{% else %}{{ get_url(path='lore') }}{% endif %}">Lore</a>
         <a href="{% if lang == "es" %}/es/about/{% else %}{{ get_url(path='about') }}{% endif %}">{% if lang == "es" %}Sobre mí{% else %}About{% endif %}</a>
         <span class="nav-divider" aria-hidden="true"></span>
         {% block lang_toggle %}
@@ -211,6 +212,7 @@
         <div class="shortcuts-dialog__item"><kbd>g</kbd><kbd>h</kbd><span>{% if lang == "es" %}Inicio{% else %}Home{% endif %}</span></div>
         <div class="shortcuts-dialog__item"><kbd>g</kbd><kbd>p</kbd><span>{% if lang == "es" %}Posts{% else %}Posts{% endif %}</span></div>
         <div class="shortcuts-dialog__item"><kbd>g</kbd><kbd>t</kbd><span>Tags</span></div>
+        <div class="shortcuts-dialog__item"><kbd>g</kbd><kbd>l</kbd><span>Lore</span></div>
         <div class="shortcuts-dialog__item"><kbd>g</kbd><kbd>a</kbd><span>{% if lang == "es" %}Sobre mí{% else %}About{% endif %}</span></div>
       </div>
       <div class="shortcuts-dialog__group">
@@ -245,6 +247,7 @@
       { key: 'h', selector: '.site-title' },
       { key: 'p', selector: '.nav-links a[href*="/posts"]' },
       { key: 't', selector: '.nav-links a[href*="/tags"]' },
+      { key: 'l', selector: '.nav-links a[href*="/lore"]' },
       { key: 'a', selector: '.nav-links a[href*="/about"]' },
     ];
 

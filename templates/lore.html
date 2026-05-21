@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block lang_toggle %}
+{% if lang == "es" %}
+  {% set target = "/lore/" %}
+  {% for t in page.translations %}{% if t.lang == "en" %}{% set_global target = t.permalink %}{% endif %}{% endfor %}
+  <a href="{{ target }}" class="lang-switch" title="English version">EN</a>
+{% else %}
+  {% set target = "/es/lore/" %}
+  {% for t in page.translations %}{% if t.lang == "es" %}{% set_global target = t.permalink %}{% endif %}{% endfor %}
+  <a href="{{ target }}" class="lang-switch" title="Versión en español">ES</a>
+{% endif %}
+{% endblock lang_toggle %}
+
+{% block hreflang %}
+{% set en_url = "" %}
+{% set es_url = "" %}
+{% if lang == "en" %}{% set_global en_url = page.permalink %}{% else %}{% set_global es_url = page.permalink %}{% endif %}
+{% for t in page.translations %}
+  {% if t.lang == "en" %}{% set_global en_url = t.permalink %}{% endif %}
+  {% if t.lang == "es" %}{% set_global es_url = t.permalink %}{% endif %}
+{% endfor %}
+{% if en_url %}<link rel="alternate" hreflang="en" href="{{ en_url | safe }}" />{% endif %}
+{% if es_url %}<link rel="alternate" hreflang="es" href="{{ es_url | safe }}" />{% endif %}
+{% if en_url %}<link rel="alternate" hreflang="x-default" href="{{ en_url | safe }}" />{% endif %}
+{% endblock hreflang %}
+
+{% block title %}{{ page.title }} &mdash; {{ config.title }}{% endblock title %}
+{% block description %}{{ page.description | default(value=config.description) }}{% endblock description %}
+{% block canonical %}{{ page.permalink | safe }}{% endblock canonical %}
+{% block og_url %}{{ page.permalink | safe }}{% endblock og_url %}
+{% block og_title %}{{ page.title }} &mdash; {{ config.title }}{% endblock og_title %}
+{% block og_description %}{{ page.description | default(value=config.description) }}{% endblock og_description %}
+
+{% block content %}
+<article class="lore" id="lore-archive" data-lang="{{ lang }}">
+  <header class="lore__header">
+    <h1>{{ page.title }}</h1>
+    <div class="lore__intro">
+      {{ page.content | safe }}
+    </div>
+  </header>
+
+  {% set quotes = load_data(path="static/lotr-quotes.json", format="json") %}
+  <section class="lore__quotes" aria-label="{% if lang == 'es' %}Citas del lore{% else %}Lore quotes{% endif %}">
+    {% for entry in quotes %}
+    <article class="lore-quote">
+      <blockquote class="lore-quote__text">&ldquo;{{ entry.quote }}&rdquo;</blockquote>
+      <cite class="lore-quote__cite">
+        {% if entry.speaker %}{{ entry.speaker }} &mdash; {% endif %}{{ entry.source }}
+      </cite>
+    </article>
+    {% endfor %}
+  </section>
+</article>
+{% endblock content %}
