@@ -40,9 +40,9 @@
 
 <p class="tagline">
   {% if lang == "es" %}
-  Reflexiones diarias sobre disciplina, código y lo que significa pensar.
+  Reflexiones sobre disciplina, código y lo que significa pensar.
   {% else %}
-  Daily reflections on discipline, code, and what it means to think.
+  Reflections on discipline, code, and what it means to think.
   {% endif %}
 </p>
 
@@ -134,21 +134,10 @@
   </div>
   {% endif %}
 
-  {# Collect all post dates and permalinks for JS #}
-  {% set all_dates = posts_section.pages | map(attribute="date") %}
+  {# Collect post permalinks for the Seeing Stone #}
   {% set all_permalinks = posts_section.pages | map(attribute="permalink") %}
 
   <div class="posts-footer">
-    <p class="post-streak"
-       id="post-streak"
-       data-lang="{{ lang }}"
-       data-dates='[{% for d in all_dates %}"{{ d }}"{% if not loop.last %},{% endif %}{% endfor %}]'>
-      {% if lang == "es" %}
-      {{ posts_section.pages | length }} publicaciones. Escribiendo a diario desde feb 2026.
-      {% else %}
-      {{ posts_section.pages | length }} posts and counting. Writing daily since Feb 2026.
-      {% endif %}
-    </p>
     <div class="posts-footer__actions">
       <a class="posts-footer__link" href="{% if lang == 'es' %}/es/posts/{% else %}{{ get_url(path='posts') }}{% endif %}">
         {% if lang == "es" %}Todas las publicaciones{% else %}All posts{% endif %} &rarr;
@@ -229,73 +218,6 @@
       .catch(function() {
         if (lotrWidget) lotrWidget.style.display = 'none';
       });
-  }
-
-  // ── Dynamic Streak Counter ───────────────────────────────────────
-  var streakEl = document.getElementById('post-streak');
-  if (streakEl) {
-    var isEs = streakEl.getAttribute('data-lang') === 'es';
-    try {
-      var dates = JSON.parse(streakEl.getAttribute('data-dates') || '[]');
-      // Parse and sort descending (most recent first)
-      var parsed = dates.map(function(d) {
-        // dates may be "YYYY-MM-DD" or "YYYY-MM-DDT..."
-        return new Date(d.substring(0, 10) + 'T00:00:00Z');
-      }).filter(function(d) { return !isNaN(d.getTime()); });
-      parsed.sort(function(a, b) { return b - a; });
-
-      // Deduplicate to one post per day
-      var seen = {};
-      var unique = parsed.filter(function(d) {
-        var key = d.toISOString().substring(0, 10);
-        if (seen[key]) return false;
-        seen[key] = true;
-        return true;
-      });
-
-      // Calculate streak: count consecutive days from today backward
-      var today = new Date();
-      today.setUTCHours(0, 0, 0, 0);
-      var streak = 0;
-      var cursor = today;
-
-      for (var i = 0; i < unique.length; i++) {
-        var diff = Math.round((cursor - unique[i]) / 86400000);
-        if (diff === 0 || diff === 1) {
-          streak++;
-          cursor = unique[i];
-        } else {
-          break;
-        }
-      }
-
-      var milestones = {
-        7:   isEs ? 'Siete días. Una semana de voluntad sin fisuras.' : 'Seven days. A week of unbroken will.',
-        30:  isEs ? 'Treinta días. Incluso los Ents se inclinarían ante tal constancia.' : 'Thirty days. Even the Ents would bow to such patience.',
-        100: isEs ? 'Cien días. La forja de Mithril requería menos disciplina.' : 'One hundred days. The forging of Mithril required less discipline.',
-        365: isEs ? 'Un año. La Tercera Era duró menos que tu racha.' : 'One year. The Third Age lasted shorter than this streak.'
-      };
-
-      var msg, subdued = false;
-      if (streak === 0) {
-        msg = isEs
-          ? 'El Ojo nunca se cierra del todo. De vuelta al Día 1.'
-          : 'The Eye never truly closes. Back on Day 1.';
-        subdued = true;
-      } else if (milestones[streak]) {
-        msg = '🔥 ' + milestones[streak];
-      } else {
-        msg = isEs
-          ? '🔥 Día ' + streak + ' de reflexión continua'
-          : '🔥 Day ' + streak + ' of unbroken reflection';
-      }
-
-      streakEl.textContent = msg;
-      if (subdued) streakEl.classList.add('post-streak--broke');
-      else streakEl.classList.add('post-streak--active');
-    } catch (e) {
-      // silently keep the static fallback text
-    }
   }
 
   // ── Seeing Stone ─────────────────────────────────────────────────

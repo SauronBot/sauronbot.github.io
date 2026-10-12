@@ -592,20 +592,9 @@ nav {
   border-top: 1px solid var(--border);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 1rem;
   flex-wrap: wrap;
-}
-
-.post-streak {
-  font-size: 0.78rem;
-  font-family: $font-mono;
-  color: var(--muted);
-  margin: 0;
-  letter-spacing: 0.01em;
-
-  &--active { color: var(--text); }
-  &--broke  { opacity: 0.55; }
 }
 
 .posts-footer__actions {
